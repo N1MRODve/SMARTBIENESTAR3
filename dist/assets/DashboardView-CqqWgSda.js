@@ -1,0 +1,1 @@
+import{u as e,c as s,a as t,o}from"./index-Bc5WyCAq.js";const r={class:"space-y-8"},n={__name:"DashboardView",setup(l){return e(),(c,a)=>(o(),s("div",r,a[0]||(a[0]=[t("div",null,[t("h1",{class:"text-2xl font-bold text-gray-900"},"Dashboard Colaborador"),t("p",{class:"mt-1 text-sm text-gray-500"}," Vista general de tus actividades ")],-1)])))}};export{n as default};

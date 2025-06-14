@@ -1,0 +1,289 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+:root {
+  /* SMART Bienestar Color Palette */
+  --color-primary: 42, 75, 140; /* #2A4B8C */
+  --color-primary-dark: 36, 62, 115; /* #243E73 */
+  --color-secondary: 84, 191, 131; /* #54BF83 */
+  --color-accent: 242, 229, 162; /* #F2E5A2 */
+  --color-dark: 13, 13, 13; /* #0D0D0D */
+  --color-background: 249, 250, 251; /* Gray 50 */
+  --color-gray: 107, 114, 128; /* Gray 500 */
+  --color-gray-light: 156, 163, 175; /* Gray 400 */
+  --color-gray-dark: 75, 85, 99; /* Gray 600 */
+}
+
+@layer base {
+  html {
+    @apply font-sans antialiased;
+    background-color: rgb(var(--color-background));
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    @apply leading-relaxed;
+    color: rgb(var(--color-dark));
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium tracking-tight;
+    color: rgb(var(--color-dark));
+  }
+
+  #app {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  /* Colores personalizados como clases utilitarias */
+  .bg-primary {
+    background-color: rgb(var(--color-primary));
+  }
+  
+  .text-primary {
+    color: rgb(var(--color-primary));
+  }
+  
+  /* Layout base - CORREGIDO */
+  .dashboard-layout {
+    @apply flex min-h-screen;
+    margin: 0;
+    padding: 0;
+    background-color: rgb(var(--color-background));
+  }
+
+  /* Sidebar - CORREGIDO */
+  .sidebar {
+    background-color: rgb(var(--color-primary));
+    @apply text-white flex flex-col;
+    width: 16rem;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  /* Main content - CORREGIDO */
+  .main-content {
+    @apply flex-1 min-h-screen;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    background-color: rgb(var(--color-background));
+  }
+
+  /* Responsive adjustments - CORREGIDO */
+  @media (max-width: 1023px) {
+    .dashboard-layout {
+      @apply block;
+    }
+    
+    .sidebar {
+      @apply fixed inset-y-0 left-0 z-50;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+      margin: 0;
+    }
+    
+    .sidebar.open {
+      transform: translateX(0);
+    }
+    
+    .main-content {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .sidebar {
+      @apply relative;
+      transform: none !important;
+      flex-shrink: 0;
+      margin: 0;
+    }
+    
+    .main-content {
+      margin-left: 0;
+      flex: 1;
+    }
+  }
+
+  /* Sidebar navegación */
+  .sidebar-item {
+    @apply flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-150;
+  }
+  
+  .sidebar-item:hover {
+    background-color: rgb(var(--color-primary-dark));
+  }
+  
+  .sidebar-item.active,
+  .sidebar-item.router-link-active {
+    background-color: rgb(var(--color-secondary));
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium 
+           transition-all duration-200 ease-in-out
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opacity-50
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .btn-primary {
+    background-color: rgb(var(--color-primary));
+    @apply text-white shadow-sm hover:shadow-md;
+  }
+  
+  .btn-primary:hover {
+    background-color: rgb(var(--color-primary-dark));
+  }
+  
+  .btn-primary:focus {
+    --tw-ring-color: rgb(var(--color-primary) / 0.5);
+  }
+  
+  .btn-secondary {
+    background-color: rgb(var(--color-secondary));
+    @apply text-white shadow-sm hover:shadow-md;
+  }
+  
+  .btn-secondary:hover {
+    background-color: rgb(var(--color-secondary) / 0.9);
+  }
+  
+  .btn-outline {
+    @apply bg-white border-2 shadow-sm hover:shadow;
+    color: rgb(var(--color-primary));
+    border-color: rgb(var(--color-primary));
+  }
+  
+  .btn-outline:hover {
+    background-color: rgb(var(--color-primary));
+    @apply text-white;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-100
+           hover:shadow-md transition-shadow duration-200;
+  }
+
+  /* Stats Cards */
+  .stats-card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6
+           hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .stats-card-primary {
+    background: linear-gradient(135deg, rgb(var(--color-primary) / 0.05), rgb(var(--color-primary) / 0.1));
+    border-color: rgb(var(--color-primary) / 0.2);
+  }
+  
+  .stats-card-secondary {
+    background: linear-gradient(135deg, rgb(var(--color-secondary) / 0.05), rgb(var(--color-secondary) / 0.1));
+    border-color: rgb(var(--color-secondary) / 0.2);
+  }
+  
+  .stats-card-accent {
+    background: linear-gradient(135deg, rgb(var(--color-accent) / 0.3), rgb(var(--color-accent) / 0.5));
+    border-color: rgb(var(--color-accent) / 0.6);
+  }
+
+  /* Forms */
+  .input {
+    @apply w-full px-4 py-2 rounded-lg border border-gray-300 
+           focus:outline-none focus:ring-2 focus:border-primary
+           placeholder-gray-400 transition-colors duration-200;
+  }
+  
+  .input:focus {
+    --tw-ring-color: rgb(var(--color-primary) / 0.3);
+    border-color: rgb(var(--color-primary));
+  }
+
+  /* Tables */
+  .table-container {
+    @apply overflow-x-auto rounded-lg border border-gray-100;
+  }
+  
+  .table {
+    @apply min-w-full divide-y divide-gray-200;
+  }
+  
+  .table th {
+    @apply px-6 py-3 text-left text-xs font-medium uppercase tracking-wider bg-gray-50;
+    color: rgb(var(--color-gray));
+  }
+  
+  .table td {
+    @apply px-6 py-4 whitespace-nowrap text-sm;
+    color: rgb(var(--color-gray-dark));
+  }
+  
+  .table tr {
+    @apply hover:bg-gray-50 transition-colors duration-150;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .badge-success {
+    background-color: rgb(var(--color-secondary) / 0.1);
+    color: rgb(var(--color-secondary));
+  }
+  
+  .badge-warning {
+    background-color: rgb(var(--color-accent) / 0.8);
+    color: rgb(var(--color-dark));
+  }
+  
+  .badge-error {
+    @apply bg-red-100 text-red-800;
+  }
+  
+  .badge-primary {
+    background-color: rgb(var(--color-primary) / 0.1);
+    color: rgb(var(--color-primary));
+  }
+}
+
+/* Transitions */
+.fade-enter-active,
+.fade-leave-active {
+  @apply transition-opacity duration-200;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  @apply opacity-0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--color-gray-light));
+  @apply rounded-full transition-colors;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--color-gray));
+}

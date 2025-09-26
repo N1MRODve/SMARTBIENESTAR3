@@ -51,8 +51,12 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   const logout = async () => {
+    // Limpiar localStorage
     localStorage.removeItem('mockUser');
+    // Resetear estado de autenticación
     user.value = null;
+    loading.value = false;
+    console.log('Usuario deslogueado correctamente');
   };
 
   const hasRole = (roles) => {

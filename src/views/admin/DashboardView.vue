@@ -285,6 +285,14 @@ const cargarDatos = async () => {
 
 const navegarACrearEncuesta = () => {
   router.push('/admin/crear-encuesta');
+  
+  // Feedback visual para confirmar navegación
+  toast.add({
+    severity: 'info',
+    summary: 'Navegando...',
+    detail: 'Redirigiendo a crear nueva encuesta',
+    life: 2000
+  });
 };
 
 const getEstadoClasses = (estado) => {

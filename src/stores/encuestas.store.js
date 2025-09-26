@@ -36,7 +36,7 @@ export const useEncuestasStore = defineStore('encuestas', () => {
           descripcion: 'Encuesta semanal sobre el bienestar de los empleados',
           fechaCreacion: '2024-01-15',
           estado: 'activa',
-          totalRespuestas: 45,
+          totalRespuestas: 0,
           totalEmpleados: 120,
           preguntas: 3
         },
@@ -46,7 +46,7 @@ export const useEncuestasStore = defineStore('encuestas', () => {
           descripcion: 'Evaluación mensual del ambiente de trabajo',
           fechaCreacion: '2024-01-10',
           estado: 'finalizada',
-          totalRespuestas: 98,
+          totalRespuestas: 0,
           totalEmpleados: 120,
           preguntas: 8
         },

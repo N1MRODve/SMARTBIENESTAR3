@@ -19,15 +19,12 @@ const loading = ref(false);
 const handleLogin = async () => {
   loading.value = true;
   try {
-    // 1. Llamamos a la acción de login y esperamos su respuesta
-    const redirectPath = await authStore.login(email.value, password.value);
+    const userType = await authStore.login(email.value, password.value);
     
     toast.add({ severity: 'success', summary: '¡Bienvenido!', detail: 'Has iniciado sesión correctamente.', life: 3000 });
 
-    // 2. Usamos la ruta devuelta para navegar.
-    // Usamos 'replace' en lugar de 'push' para que el usuario no pueda
-    // volver a la página de login con el botón "atrás" del navegador.
-    router.replace(redirectPath || '/');
+    // Por ahora redirigimos al login hasta crear las vistas del MVP
+    console.log('Usuario autenticado:', userType);
 
   } catch (error) {
     console.error("Error en el inicio de sesión:", error);
@@ -50,6 +47,15 @@ const handleLogin = async () => {
             SMART<span class="text-primary">Bienestar</span>
           </h1>
           <p class="text-gray-600">Plataforma de gestión del bienestar corporativo</p>
+        </div>
+
+        <!-- Credenciales de prueba -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <h3 class="text-sm font-medium text-blue-800 mb-2">Credenciales de Prueba</h3>
+          <div class="text-xs text-blue-700 space-y-1">
+            <p><strong>Admin:</strong> admin@empresa.com / password123</p>
+            <p><strong>Empleado:</strong> empleado@empresa.com / password123</p>
+          </div>
         </div>
 
         <form @submit.prevent="handleLogin" class="space-y-6">

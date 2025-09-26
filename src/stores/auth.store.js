@@ -1,7 +1,26 @@
 // src/stores/auth.store.js
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { supabase } from '@/services/supabase.js'; // <-- RUTA CORREGIDA
+
+// Mock data para el MVP
+const mockUsers = [
+  {
+    id: '1',
+    email: 'admin@empresa.com',
+    nombre: 'Admin',
+    apellido: 'Usuario',
+    tipo_usuario: 'administrador',
+    empresa_id: '1'
+  },
+  {
+    id: '2',
+    email: 'empleado@empresa.com',
+    nombre: 'Empleado',
+    apellido: 'Prueba',
+    tipo_usuario: 'empleado',
+    empresa_id: '1'
+  }
+];
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null);
@@ -14,14 +33,10 @@ export const useAuthStore = defineStore('auth', () => {
   const initialize = async () => {
     if (initializationDone.value) return;
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data: userData } = await supabase
-          .from('usuarios')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle();
-        user.value = userData ? { ...session.user, ...userData } : null;
+      // Simular verificación de sesión con localStorage
+      const savedUser = localStorage.getItem('mockUser');
+      if (savedUser) {
+        user.value = JSON.parse(savedUser);
       }
     } catch (e) {
       console.error('Error initializing auth:', e);
@@ -34,29 +49,27 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (email, password) => {
     loading.value = true;
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
+    
+    try {
+      // Simular autenticación con mock data
+      const mockUser = mockUsers.find(u => u.email === email);
+      
+      if (!mockUser || password !== 'password123') {
+        throw new Error('Credenciales incorrectas');
+      }
+      
+      user.value = mockUser;
+      localStorage.setItem('mockUser', JSON.stringify(mockUser));
+      loading.value = false;
+      return mockUser.tipo_usuario;
+    } catch (error) {
       loading.value = false;
       throw error;
     }
-    const { data: userData, error: userError } = await supabase
-      .from('usuarios')
-      .select('*')
-      .eq('id', data.user.id)
-      .maybeSingle();
-
-    if (userError) {
-      loading.value = false;
-      throw userError;
-    }
-    
-    user.value = { ...data.user, ...userData };
-    loading.value = false;
-    return userData.tipo_usuario;
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem('mockUser');
     user.value = null;
   };
 

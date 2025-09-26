@@ -133,6 +133,10 @@ export const useEncuestasStore = defineStore('encuestas', () => {
           fechaCreacion: '2024-01-05',
           estado: 'borrador',
           totalRespuestas: 0,
+        }
+      ]
+    }
+  }
   const enviarRespuestas = async (respuestas) => {
     isLoading.value = true;
     

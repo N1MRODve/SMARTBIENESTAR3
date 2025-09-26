@@ -92,7 +92,7 @@
       </div>
 
       <!-- Encuestas Grid -->
-      <div v-else-if="encuestas.length > 0" class="space-y-6">
+      <div v-else-if="encuestas && encuestas.length > 0" class="space-y-6">
         <h2 class="text-xl font-semibold text-gray-900">Mis Encuestas</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -236,6 +236,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
+import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Button from '@/components/ui/Button.vue';
 import Header from '@/components/common/Header.vue';
@@ -246,25 +247,25 @@ const toast = useToast();
 const encuestasStore = useEncuestasStore();
 
 // Estados reactivos
-const { encuestas, loading, error } = encuestasStore;
+const { encuestas, loading, error } = storeToRefs(encuestasStore);
 
 // Computed properties para estadísticas
 const encuestasActivas = computed(() => {
-  return encuestas.value.filter(e => e.estado === 'activa').length;
+  return (encuestas.value || []).filter(e => e.estado === 'activa').length;
 });
 
 const totalRespuestas = computed(() => {
-  return encuestas.value.reduce((total, encuesta) => total + encuesta.totalRespuestas, 0);
+  return (encuestas.value || []).reduce((total, encuesta) => total + encuesta.totalRespuestas, 0);
 });
 
 const tasaParticipacion = computed(() => {
-  if (encuestas.value.length === 0) return 0;
+  if (!encuestas.value || encuestas.value.length === 0) return 0;
   
-  const totalPosiblesRespuestas = encuestas.value.reduce((total, encuesta) => {
+  const totalPosiblesRespuestas = (encuestas.value || []).reduce((total, encuesta) => {
     return total + (encuesta.estado === 'activa' ? encuesta.totalEmpleados : 0);
   }, 0);
   
-  const totalRespuestasActivas = encuestas.value.reduce((total, encuesta) => {
+  const totalRespuestasActivas = (encuestas.value || []).reduce((total, encuesta) => {
     return total + (encuesta.estado === 'activa' ? encuesta.totalRespuestas : 0);
   }, 0);
   

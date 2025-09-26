@@ -1,4 +1,3 @@
-```vue
 <template>
   <button
     :class="[
@@ -67,4 +66,3 @@ const sizes = {
   lg: 'px-6 py-3 text-lg'
 };
 </script>
-```

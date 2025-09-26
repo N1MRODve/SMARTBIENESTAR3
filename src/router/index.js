@@ -18,14 +18,8 @@ const routes = [
   // Ruta raíz - redirige según autenticación
   { 
     path: '/', 
-    redirect: (to) => {
-      const authStore = useAuthStore();
-      if (authStore.isAuthenticated) {
-        // Redirigir según el rol del usuario
-        return authStore.userRole === 'administrador' ? '/admin/dashboard' : '/empleado/encuesta';
-      }
-      return '/login';
-    }
+    name: 'home',
+    redirect: '/login'
   },
   
   // Login - accesible sin autenticación

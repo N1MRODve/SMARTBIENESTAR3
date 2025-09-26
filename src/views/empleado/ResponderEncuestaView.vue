@@ -1,4 +1,45 @@
 <template>
+  <!-- Header con botón de logout -->
+  <div class="bg-white shadow-sm border-b border-gray-200 mb-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Logo y título -->
+        <div class="flex items-center">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold text-gray-900">
+                SMART<span class="text-primary">Bienestar</span>
+              </h1>
+              <p class="text-xs text-gray-500">Portal del Empleado</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón Cerrar Sesión -->
+        <button
+          @click="handleLogout"
+          :disabled="loggingOut"
+          class="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg v-if="loggingOut" class="animate-spin -ml-1 mr-2 h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          <span class="hidden sm:inline">{{ loggingOut ? 'Cerrando...' : 'Cerrar Sesión' }}</span>
+          <span class="sm:hidden">{{ loggingOut ? '...' : 'Salir' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="py-8">
       <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
@@ -179,8 +220,15 @@
 
 <script setup>
 import { onMounted, ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useToast } from 'primevue/usetoast';
 import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
+import { useAuthStore } from '@/stores/auth.store';
+
+const router = useRouter();
+const toast = useToast();
+const authStore = useAuthStore();
 
 // --- Lógica del Store ---
 const encuestasStore = useEncuestasStore();
@@ -191,6 +239,7 @@ const { fetchActiveSurvey, submitSurveyAnswers } = encuestasStore;
 // --- Estado local del componente ---
 const userAnswers = ref({});
 const surveySubmitted = ref(false);
+const loggingOut = ref(false);
 
 // --- Cargar datos al montar el componente ---
 onMounted(() => {
@@ -222,6 +271,37 @@ const limpiarRespuestas = () => {
 const resetearEncuesta = () => {
   limpiarRespuestas();
   surveySubmitted.value = false;
+};
+
+// --- Función para manejar el logout ---
+const handleLogout = async () => {
+  loggingOut.value = true;
+  
+  try {
+    // Llamar a la acción logout del store
+    await authStore.logout();
+    
+    // Mostrar mensaje de confirmación
+    toast.add({
+      severity: 'info',
+      summary: 'Sesión cerrada',
+      detail: 'Has cerrado sesión correctamente',
+      life: 3000
+    });
+    
+    // Redirigir a la página de login
+    router.push('/login');
+  } catch (error) {
+    console.error('Error durante el logout:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudo cerrar la sesión',
+      life: 4000
+    });
+  } finally {
+    loggingOut.value = false;
+  }
 };
 </script>
 

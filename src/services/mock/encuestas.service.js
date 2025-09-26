@@ -109,3 +109,55 @@ export const addSurvey = (nuevaEncuesta) => {
     }, 800);
   });
 };
+
+// Función para obtener una encuesta específica por ID
+export const getSurveyById = (id) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const survey = surveys.find(s => s.id === parseInt(id));
+      if (survey) {
+        // Simular algunas respuestas para demostración
+        const surveyWithResponses = {
+          ...survey,
+          respuestas: generateMockResponses(survey)
+        };
+        resolve(surveyWithResponses);
+      } else {
+        reject(new Error('Encuesta no encontrada'));
+      }
+    }, 300);
+  });
+};
+
+// Función auxiliar para generar respuestas simuladas
+const generateMockResponses = (survey) => {
+  const responses = [];
+  const numResponses = Math.floor(Math.random() * 15) + 5; // Entre 5 y 20 respuestas
+  
+  for (let i = 0; i < numResponses; i++) {
+    const respuesta = {
+      id: Date.now() + i,
+      fechaRespuesta: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+      respuestas: {}
+    };
+    
+    survey.preguntas.forEach(pregunta => {
+      switch (pregunta.tipo) {
+        case 'opcion_multiple':
+          const randomOption = pregunta.opciones[Math.floor(Math.random() * pregunta.opciones.length)];
+          respuesta.respuestas[pregunta.id] = randomOption;
+          break;
+        case 'si_no':
+          respuesta.respuestas[pregunta.id] = Math.random() > 0.5 ? 'Sí' : 'No';
+          break;
+        case 'escala_1_5':
+          respuesta.respuestas[pregunta.id] = Math.floor(Math.random() * 5) + 1;
+          break;
+      }
+    });
+    
+    responses.push(respuesta);
+  }
+  
+  return responses;
+};

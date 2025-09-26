@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { getActiveSurvey, getSurveys, addAnswer, addSurvey } from '@/services/mock/encuestas.service';
+import { getActiveSurvey, getSurveys, addAnswer, addSurvey, getSurveyById } from '@/services/mock/encuestas.service';
 
 export const useEncuestasStore = defineStore('encuestas', () => {
   const activeSurvey = ref(null);
   const encuestaActiva = ref(null);
   const encuestas = ref([]);
   const surveys = ref([]);
+  const selectedSurvey = ref(null);
   const isLoading = ref(false);
   const loading = ref(false);
   const error = ref(null);
@@ -186,12 +187,31 @@ export const useEncuestasStore = defineStore('encuestas', () => {
     }
   };
 
+  const fetchSurveyById = async (id) => {
+    console.log('Cargando encuesta por ID:', id);
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+      const survey = await getSurveyById(id);
+      selectedSurvey.value = survey;
+      console.log('Encuesta cargada:', survey);
+    } catch (err) {
+      error.value = err.message || 'Error al cargar la encuesta';
+      console.error('Error cargando encuesta por ID:', err);
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
   return {
     activeSurvey,
     isLoading,
     surveys,
+    selectedSurvey,
     fetchActiveSurvey,
     fetchAllSurveys,
+    fetchSurveyById,
     submitSurveyAnswers,
     encuestaActiva,
     encuestas,

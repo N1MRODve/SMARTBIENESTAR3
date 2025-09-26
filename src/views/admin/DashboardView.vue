@@ -141,13 +141,13 @@
             <!-- Card Footer - Actions -->
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 rounded-b-lg">
               <div class="flex justify-between items-center">
-                <button 
+                <router-link
+                  :to="`/admin/encuesta/${survey.id}/resultados`"
                   class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
-                  @click="verDetalles(survey.id)"
                 >
                   <Eye class="h-4 w-4 mr-1" />
                   Ver Detalles
-                </button>
+                </router-link>
                 
                 <div class="flex space-x-2">
                   <button 

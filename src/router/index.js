@@ -49,6 +49,15 @@ const routes = [
       roles: ['administrador'] 
     }
   },
+  {
+    path: '/admin/encuesta/:id/resultados',
+    name: 'admin-resultados-encuesta',
+    component: () => import('../views/admin/ResultadosEncuestaView.vue'),
+    meta: { 
+      requiresAuth: true, 
+      roles: ['administrador'] 
+    }
+  },
 
   // === RUTAS EMPLEADO ===
   {

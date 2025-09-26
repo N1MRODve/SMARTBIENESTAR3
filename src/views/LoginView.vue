@@ -53,8 +53,8 @@ const handleLogin = async () => {
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <h3 class="text-sm font-medium text-blue-800 mb-2">Credenciales de Prueba</h3>
           <div class="text-xs text-blue-700 space-y-1">
-            <p><strong>Admin:</strong> admin@empresa.com / password123</p>
-            <p><strong>Empleado:</strong> empleado@empresa.com / password123</p>
+            <p><strong>Admin:</strong> admin@demo.com / cualquier contraseña</p>
+            <p><strong>Empleado:</strong> empleado@demo.com / cualquier contraseña</p>
           </div>
         </div>
 

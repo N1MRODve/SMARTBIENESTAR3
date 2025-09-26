@@ -1,26 +1,7 @@
 // src/stores/auth.store.js
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-
-// Mock data para el MVP
-const mockUsers = [
-  {
-    id: '1',
-    email: 'admin@empresa.com',
-    nombre: 'Admin',
-    apellido: 'Usuario',
-    tipo_usuario: 'administrador',
-    empresa_id: '1'
-  },
-  {
-    id: '2',
-    email: 'empleado@empresa.com',
-    nombre: 'Empleado',
-    apellido: 'Prueba',
-    tipo_usuario: 'empleado',
-    empresa_id: '1'
-  }
-];
+import { login as mockLogin } from '@/services/mock/auth.service';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null);
@@ -28,12 +9,13 @@ export const useAuthStore = defineStore('auth', () => {
   const initializationDone = ref(false);
 
   const isAuthenticated = computed(() => !!user.value);
-  const userRole = computed(() => user.value?.tipo_usuario);
+  const userRole = computed(() => user.value?.role);
 
   const initialize = async () => {
     if (initializationDone.value) return;
+    
     try {
-      // Simular verificación de sesión con localStorage
+      // Verificar si hay una sesión guardada en localStorage
       const savedUser = localStorage.getItem('mockUser');
       if (savedUser) {
         user.value = JSON.parse(savedUser);
@@ -51,17 +33,17 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true;
     
     try {
-      // Simular autenticación con mock data
-      const mockUser = mockUsers.find(u => u.email === email);
+      // Usar el servicio mock para autenticación
+      const response = await mockLogin(email, password);
       
-      if (!mockUser || password !== 'password123') {
-        throw new Error('Credenciales incorrectas');
-      }
+      // Extraer el usuario de la respuesta
+      user.value = response.user;
       
-      user.value = mockUser;
-      localStorage.setItem('mockUser', JSON.stringify(mockUser));
+      // Guardar la sesión en localStorage
+      localStorage.setItem('mockUser', JSON.stringify(response.user));
+      
       loading.value = false;
-      return mockUser.tipo_usuario;
+      return response.user.role;
     } catch (error) {
       loading.value = false;
       throw error;

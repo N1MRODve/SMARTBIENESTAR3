@@ -83,3 +83,29 @@ export const addAnswer = (surveyId, respuestas) => {
     }, 500);
   });
 };
+
+// Función para añadir una nueva encuesta
+export const addSurvey = (nuevaEncuesta) => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const encuesta = {
+        id: Date.now(),
+        titulo: nuevaEncuesta.titulo,
+        descripcion: nuevaEncuesta.descripcion || '',
+        fechaCreacion: new Date().toISOString().split('T')[0],
+        estado: nuevaEncuesta.estado || 'activa',
+        respuestas: [],
+        preguntas: nuevaEncuesta.preguntas.map((p, index) => ({
+          id: Date.now() + index,
+          texto: p.texto,
+          tipo: p.tipo,
+          opciones: p.opciones || []
+        }))
+      };
+      
+      surveys.push(encuesta);
+      console.log('Nueva encuesta añadida:', encuesta);
+      resolve({ success: true, encuesta });
+    }, 800);
+  });
+};

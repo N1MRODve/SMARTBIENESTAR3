@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { getActiveSurvey, getSurveys, addAnswer } from '@/services/mock/encuestas.service';
+import { getActiveSurvey, getSurveys, addAnswer, addSurvey } from '@/services/mock/encuestas.service';
 
 export const useEncuestasStore = defineStore('encuestas', () => {
   const activeSurvey = ref(null);
@@ -162,6 +162,30 @@ export const useEncuestasStore = defineStore('encuestas', () => {
     }
   };
 
+  const createNewSurvey = async (nuevaEncuestaData) => {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      // Llamar al servicio mock para añadir la encuesta
+      const response = await addSurvey(nuevaEncuestaData);
+      
+      if (response.success) {
+        // Añadir la nueva encuesta al estado local
+        surveys.value.unshift(response.encuesta);
+        
+        console.log('Encuesta creada exitosamente:', response.encuesta);
+        return { success: true, encuesta: response.encuesta };
+      }
+    } catch (err) {
+      error.value = err.message || 'Error al crear la encuesta';
+      console.error('Error creando encuesta:', err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     activeSurvey,
     isLoading,
@@ -175,6 +199,7 @@ export const useEncuestasStore = defineStore('encuestas', () => {
     error,
     cargarEncuestaActiva,
     cargarEncuestas,
-    crearEncuesta
+    crearEncuesta,
+    createNewSurvey
   };
 });

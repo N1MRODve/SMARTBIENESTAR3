@@ -175,19 +175,7 @@ import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Header from '@/components/common/Header.vue';
-import { 
-  Plus, 
-  FileText, 
-  AlertCircle, 
-  RefreshCw, 
-  Calendar, 
-  MessageSquare, 
-  HelpCircle, 
-  Activity, 
-  Eye, 
-  BarChart3, 
-  Edit 
-} from 'lucide-vue-next';
+import { Plus, FileText, AlertCircle, RefreshCw, Calendar, MessageSquare, HelpCircle, Activity, Eye, BarChart3, CreditCard as Edit } from 'lucide-vue-next';
 
 // --- Lógica del Store ---
 const encuestasStore = useEncuestasStore();

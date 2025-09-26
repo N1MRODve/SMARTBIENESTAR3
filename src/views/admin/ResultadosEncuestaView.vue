@@ -38,6 +38,9 @@
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">
                   {{ selectedSurvey.titulo }}
                 </h1>
+                <p v-if="previousSurvey" class="text-sm text-gray-500 mb-2">
+                  Comparando: {{ formatearRangoFechas() }}
+                </p>
                 <p v-if="selectedSurvey.descripcion" class="text-lg text-gray-600 mb-4">
                   {{ selectedSurvey.descripcion }}
                 </p>
@@ -221,7 +224,7 @@ ChartJS.register(
 const route = useRoute();
 const router = useRouter();
 const encuestasStore = useEncuestasStore();
-const { selectedSurvey, isLoading, error } = storeToRefs(encuestasStore);
+const { selectedSurvey, previousSurvey, isLoading, error } = storeToRefs(encuestasStore);
 const { fetchSurveyById } = encuestasStore;
 
 // Chart options
@@ -316,6 +319,13 @@ const formatearFecha = (fecha) => {
   });
 };
 
+const formatearRangoFechas = () => {
+  if (!selectedSurvey.value || !previousSurvey.value) return '';
+  const fechaActual = new Date(selectedSurvey.value.fechaCreacion);
+  const fechaAnterior = new Date(previousSurvey.value.fechaCreacion);
+  return `${formatearFecha(fechaAnterior)} - ${formatearFecha(fechaActual)}`;
+};
+
 const getTipoLabel = (tipo) => {
   const labels = {
     'opcion_multiple': 'Opción Múltiple',
@@ -332,34 +342,50 @@ const getChartData = (pregunta) => {
     .map(r => r.respuestas[pregunta.id])
     .filter(r => r !== undefined);
 
+  // Obtener respuestas de la encuesta anterior si existe
+  let respuestasAnteriores = [];
+  let preguntaAnterior = null;
+  
+  if (previousSurvey.value?.respuestas) {
+    // Encontrar la pregunta correspondiente en la encuesta anterior
+    const indexPregunta = selectedSurvey.value.preguntas.findIndex(p => p.id === pregunta.id);
+    if (indexPregunta !== -1 && previousSurvey.value.preguntas[indexPregunta]) {
+      preguntaAnterior = previousSurvey.value.preguntas[indexPregunta];
+      respuestasAnteriores = previousSurvey.value.respuestas
+        .map(r => r.respuestas[preguntaAnterior.id])
+        .filter(r => r !== undefined);
+    }
+  }
   if (pregunta.tipo === 'opcion_multiple') {
     const counts = {};
+    const countsAnteriores = {};
+    
     pregunta.opciones.forEach(opcion => {
       counts[opcion] = respuestas.filter(r => r === opcion).length;
+      countsAnteriores[opcion] = respuestasAnteriores.filter(r => r === opcion).length;
     });
+
+    const datasets = [{
+      label: 'Semana Actual',
+      data: Object.values(counts),
+      backgroundColor: '#3B82F6',
+      borderColor: '#2563EB',
+      borderWidth: 1
+    }];
+
+    if (respuestasAnteriores.length > 0) {
+      datasets.push({
+        label: 'Semana Anterior',
+        data: Object.values(countsAnteriores),
+        backgroundColor: '#10B981',
+        borderColor: '#059669',
+        borderWidth: 1
+      });
+    }
 
     return {
       labels: Object.keys(counts),
-      datasets: [{
-        data: Object.values(counts),
-        backgroundColor: [
-          '#3B82F6',
-          '#10B981',
-          '#F59E0B',
-          '#EF4444',
-          '#8B5CF6',
-          '#06B6D4'
-        ],
-        borderColor: [
-          '#2563EB',
-          '#059669',
-          '#D97706',
-          '#DC2626',
-          '#7C3AED',
-          '#0891B2'
-        ],
-        borderWidth: 1
-      }]
+      datasets
     };
   }
 
@@ -367,33 +393,70 @@ const getChartData = (pregunta) => {
     const siCount = respuestas.filter(r => r === 'Sí').length;
     const noCount = respuestas.filter(r => r === 'No').length;
 
+    const datasets = [{
+      label: 'Semana Actual',
+      data: [siCount, noCount],
+      backgroundColor: ['#10B981', '#EF4444'],
+      borderColor: ['#059669', '#DC2626'],
+      borderWidth: 2
+    }];
+
+    if (respuestasAnteriores.length > 0) {
+      const siCountAnterior = respuestasAnteriores.filter(r => r === 'Sí').length;
+      const noCountAnterior = respuestasAnteriores.filter(r => r === 'No').length;
+      
+      datasets.push({
+        label: 'Semana Anterior',
+        data: [siCountAnterior, noCountAnterior],
+        backgroundColor: ['#34D399', '#F87171'],
+        borderColor: ['#10B981', '#EF4444'],
+        borderWidth: 2
+      });
+    }
+
     return {
       labels: ['Sí', 'No'],
-      datasets: [{
-        data: [siCount, noCount],
-        backgroundColor: ['#10B981', '#EF4444'],
-        borderColor: ['#059669', '#DC2626'],
-        borderWidth: 2
-      }]
+      datasets
     };
   }
 
   if (pregunta.tipo === 'escala_1_5') {
     const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    const countsAnteriores = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    
     respuestas.forEach(r => {
       if (counts[r] !== undefined) {
         counts[r]++;
       }
     });
 
+    respuestasAnteriores.forEach(r => {
+      if (countsAnteriores[r] !== undefined) {
+        countsAnteriores[r]++;
+      }
+    });
+
+    const datasets = [{
+      label: 'Semana Actual',
+      data: Object.values(counts),
+      backgroundColor: '#3B82F6',
+      borderColor: '#2563EB',
+      borderWidth: 1
+    }];
+
+    if (respuestasAnteriores.length > 0) {
+      datasets.push({
+        label: 'Semana Anterior',
+        data: Object.values(countsAnteriores),
+        backgroundColor: '#10B981',
+        borderColor: '#059669',
+        borderWidth: 1
+      });
+    }
+
     return {
       labels: ['1', '2', '3', '4', '5'],
-      datasets: [{
-        data: Object.values(counts),
-        backgroundColor: '#3B82F6',
-        borderColor: '#2563EB',
-        borderWidth: 1
-      }]
+      datasets
     };
   }
 
@@ -450,6 +513,113 @@ const getResponseRate = (pregunta) => {
   if (totalRespuestas === 0) return 0;
   
   return Math.round((respuestasAPregunta / totalRespuestas) * 100);
+};
+
+const getInsightClave = (pregunta) => {
+  if (!selectedSurvey.value?.respuestas || !previousSurvey.value?.respuestas) {
+    return 'Sin datos de comparación disponibles';
+  }
+
+  const indexPregunta = selectedSurvey.value.preguntas.findIndex(p => p.id === pregunta.id);
+  if (indexPregunta === -1 || !previousSurvey.value.preguntas[indexPregunta]) {
+    return 'Sin datos de comparación disponibles';
+  }
+
+  const preguntaAnterior = previousSurvey.value.preguntas[indexPregunta];
+  
+  if (pregunta.tipo === 'escala_1_5') {
+    // Calcular promedios
+    const respuestasActuales = selectedSurvey.value.respuestas
+      .map(r => r.respuestas[pregunta.id])
+      .filter(r => r !== undefined && typeof r === 'number');
+    
+    const respuestasAnteriores = previousSurvey.value.respuestas
+      .map(r => r.respuestas[preguntaAnterior.id])
+      .filter(r => r !== undefined && typeof r === 'number');
+    
+    if (respuestasActuales.length === 0 || respuestasAnteriores.length === 0) {
+      return 'Sin suficientes datos para comparar';
+    }
+    
+    const promedioActual = respuestasActuales.reduce((a, b) => a + b, 0) / respuestasActuales.length;
+    const promedioAnterior = respuestasAnteriores.reduce((a, b) => a + b, 0) / respuestasAnteriores.length;
+    
+    const diferencia = promedioActual - promedioAnterior;
+    const porcentajeCambio = Math.abs((diferencia / promedioAnterior) * 100);
+    
+    if (Math.abs(diferencia) < 0.1) {
+      return 'Se mantiene estable respecto a la semana anterior';
+    } else if (diferencia > 0) {
+      return `Ha mejorado un ${porcentajeCambio.toFixed(1)}% respecto a la semana anterior`;
+    } else {
+      return `Ha disminuido un ${porcentajeCambio.toFixed(1)}% respecto a la semana anterior`;
+    }
+  }
+  
+  if (pregunta.tipo === 'si_no') {
+    const siActual = selectedSurvey.value.respuestas.filter(r => r.respuestas[pregunta.id] === 'Sí').length;
+    const totalActual = selectedSurvey.value.respuestas.length;
+    const porcentajeSiActual = (siActual / totalActual) * 100;
+    
+    const siAnterior = previousSurvey.value.respuestas.filter(r => r.respuestas[preguntaAnterior.id] === 'Sí').length;
+    const totalAnterior = previousSurvey.value.respuestas.length;
+    const porcentajeSiAnterior = (siAnterior / totalAnterior) * 100;
+    
+    const diferencia = porcentajeSiActual - porcentajeSiAnterior;
+    
+    if (Math.abs(diferencia) < 2) {
+      return 'Se mantiene estable respecto a la semana anterior';
+    } else if (diferencia > 0) {
+      return `Las respuestas positivas aumentaron ${diferencia.toFixed(1)}% respecto a la semana anterior`;
+    } else {
+      return `Las respuestas positivas disminuyeron ${Math.abs(diferencia).toFixed(1)}% respecto a la semana anterior`;
+    }
+  }
+  
+  if (pregunta.tipo === 'opcion_multiple') {
+    // Para opción múltiple, comparar la opción más popular
+    const respuestasActuales = selectedSurvey.value.respuestas
+      .map(r => r.respuestas[pregunta.id])
+      .filter(r => r !== undefined);
+    
+    const respuestasAnteriores = previousSurvey.value.respuestas
+      .map(r => r.respuestas[preguntaAnterior.id])
+      .filter(r => r !== undefined);
+    
+    const countsActual = {};
+    const countsAnterior = {};
+    
+    pregunta.opciones.forEach(opcion => {
+      countsActual[opcion] = respuestasActuales.filter(r => r === opcion).length;
+      countsAnterior[opcion] = respuestasAnteriores.filter(r => r === opcion).length;
+    });
+    
+    const opcionMasPopularActual = Object.keys(countsActual).reduce((a, b) => 
+      countsActual[a] > countsActual[b] ? a : b
+    );
+    
+    const opcionMasPopularAnterior = Object.keys(countsAnterior).reduce((a, b) => 
+      countsAnterior[a] > countsAnterior[b] ? a : b
+    );
+    
+    if (opcionMasPopularActual === opcionMasPopularAnterior) {
+      const porcentajeActual = (countsActual[opcionMasPopularActual] / respuestasActuales.length) * 100;
+      const porcentajeAnterior = (countsAnterior[opcionMasPopularAnterior] / respuestasAnteriores.length) * 100;
+      const diferencia = porcentajeActual - porcentajeAnterior;
+      
+      if (Math.abs(diferencia) < 2) {
+        return `"${opcionMasPopularActual}" sigue siendo la respuesta más común`;
+      } else if (diferencia > 0) {
+        return `"${opcionMasPopularActual}" aumentó ${diferencia.toFixed(1)}% como respuesta más común`;
+      } else {
+        return `"${opcionMasPopularActual}" disminuyó ${Math.abs(diferencia).toFixed(1)}% como respuesta más común`;
+      }
+    } else {
+      return `La respuesta más común cambió de "${opcionMasPopularAnterior}" a "${opcionMasPopularActual}"`;
+    }
+  }
+  
+  return 'Sin análisis disponible para este tipo de pregunta';
 };
 
 const volverAlDashboard = () => {

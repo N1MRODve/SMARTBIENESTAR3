@@ -8,6 +8,7 @@ const getDefaultSurveys = () => {
     descripcion: 'Encuesta semanal sobre el bienestar de los empleados',
     fechaCreacion: '2024-01-15',
     estado: 'activa',
+    active: true,
     preguntas: [
       { id: 101, texto: '¿Cómo calificarías tu nivel de estrés esta semana?', tipo: 'opcion_multiple', opciones: ['Bajo', 'Medio', 'Alto'] },
       { id: 102, texto: '¿Sientes que tienes las herramientas adecuadas para hacer tu trabajo?', tipo: 'si_no', opciones: ['Sí', 'No'] },
@@ -35,29 +36,81 @@ const getDefaultSurveys = () => {
   }
   // --- FIN DE LA LÓGICA DE SIEMBRA ---
 
+  // Segunda encuesta (semana anterior) con las mismas preguntas
+  const segundaEncuesta = {
+    id: 2,
+    titulo: 'Pulso de Bienestar (Semana Anterior)',
+    descripcion: 'Encuesta de la semana anterior para comparación',
+    fechaCreacion: '2024-01-08',
+    estado: 'finalizada',
+    active: false,
+    preguntas: [
+      { id: 201, texto: '¿Cómo calificarías tu nivel de estrés esta semana?', tipo: 'opcion_multiple', opciones: ['Bajo', 'Medio', 'Alto'] },
+      { id: 202, texto: '¿Sientes que tienes las herramientas adecuadas para hacer tu trabajo?', tipo: 'si_no', opciones: ['Sí', 'No'] },
+      { id: 203, texto: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con el balance vida-trabajo?', tipo: 'escala_1_5', opciones: [1, 2, 3, 4, 5] }
+    ],
+    respuestas: []
+  };
+
+  // Generar respuestas para la segunda encuesta con tendencias ligeramente diferentes
+  for (let i = 0; i < TOTAL_RESPUESTAS_SIMULADAS; i++) {
+    const unaRespuestaCompleta = {
+      id: Date.now() + 1000 + i,
+      fechaRespuesta: new Date(Date.now() - (7 + Math.random() * 7) * 24 * 60 * 60 * 1000).toISOString(),
+      respuestas: {}
+    };
+    
+    segundaEncuesta.preguntas.forEach(pregunta => {
+      let opcionAleatoria;
+      
+      // Crear tendencias específicas para cada pregunta
+      if (pregunta.id === 201) { // Estrés - tendencia a más estrés en semana anterior
+        const rand = Math.random();
+        if (rand < 0.2) opcionAleatoria = 'Bajo';
+        else if (rand < 0.4) opcionAleatoria = 'Medio';
+        else opcionAleatoria = 'Alto';
+      } else if (pregunta.id === 202) { // Herramientas - menos herramientas en semana anterior
+        opcionAleatoria = Math.random() < 0.4 ? 'Sí' : 'No';
+      } else if (pregunta.id === 203) { // Balance - peor balance en semana anterior
+        const rand = Math.random();
+        if (rand < 0.3) opcionAleatoria = 1;
+        else if (rand < 0.5) opcionAleatoria = 2;
+        else if (rand < 0.7) opcionAleatoria = 3;
+        else if (rand < 0.85) opcionAleatoria = 4;
+        else opcionAleatoria = 5;
+      } else {
+        opcionAleatoria = pregunta.opciones[Math.floor(Math.random() * pregunta.opciones.length)];
+      }
+      
+      unaRespuestaCompleta.respuestas[pregunta.id] = opcionAleatoria;
+    });
+    
+    segundaEncuesta.respuestas.push(unaRespuestaCompleta);
+  }
   return [
     primeraEncuesta,
+    segundaEncuesta,
     {
-      id: 2,
+      id: 3,
       titulo: 'Evaluación de Clima Laboral',
       descripcion: 'Evaluación mensual del ambiente de trabajo',
       fechaCreacion: '2024-01-10',
       estado: 'finalizada',
       respuestas: [],
       preguntas: [
-        { id: 201, texto: '¿Cómo calificarías la comunicación en tu equipo?', tipo: 'escala_1_5', opciones: [1, 2, 3, 4, 5] },
-        { id: 202, texto: '¿Te sientes valorado en tu trabajo?', tipo: 'si_no', opciones: ['Sí', 'No'] }
+        { id: 301, texto: '¿Cómo calificarías la comunicación en tu equipo?', tipo: 'escala_1_5', opciones: [1, 2, 3, 4, 5] },
+        { id: 302, texto: '¿Te sientes valorado en tu trabajo?', tipo: 'si_no', opciones: ['Sí', 'No'] }
       ]
     },
     {
-      id: 3,
+      id: 4,
       titulo: 'Satisfacción con Beneficios',
       descripcion: 'Encuesta sobre los beneficios corporativos',
       fechaCreacion: '2024-01-05',
       estado: 'borrador',
       respuestas: [],
       preguntas: [
-        { id: 301, texto: '¿Estás satisfecho con los beneficios de salud?', tipo: 'opcion_multiple', opciones: ['Muy satisfecho', 'Satisfecho', 'Insatisfecho'] }
+        { id: 401, texto: '¿Estás satisfecho con los beneficios de salud?', tipo: 'opcion_multiple', opciones: ['Muy satisfecho', 'Satisfecho', 'Insatisfecho'] }
       ]
     }
   ];

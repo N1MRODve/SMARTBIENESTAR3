@@ -8,6 +8,7 @@ export const useEncuestasStore = defineStore('encuestas', () => {
   const encuestas = ref([]);
   const surveys = ref([]);
   const selectedSurvey = ref(null);
+  const previousSurvey = ref(null);
   const isLoading = ref(false);
   const loading = ref(false);
   const error = ref(null);
@@ -195,6 +196,18 @@ export const useEncuestasStore = defineStore('encuestas', () => {
     try {
       const survey = await getSurveyById(id);
       selectedSurvey.value = survey;
+      
+      // Buscar encuesta anterior para comparación
+      try {
+        const previousId = parseInt(id) + 1; // En nuestro mock, la anterior tiene ID + 1
+        const previousSurveyData = await getSurveyById(previousId);
+        previousSurvey.value = previousSurveyData;
+        console.log('Encuesta anterior cargada:', previousSurveyData);
+      } catch (prevError) {
+        console.log('No se encontró encuesta anterior para comparar');
+        previousSurvey.value = null;
+      }
+      
       console.log('Encuesta cargada:', survey);
     } catch (err) {
       error.value = err.message || 'Error al cargar la encuesta';
@@ -209,6 +222,7 @@ export const useEncuestasStore = defineStore('encuestas', () => {
     isLoading,
     surveys,
     selectedSurvey,
+    previousSurvey,
     fetchActiveSurvey,
     fetchAllSurveys,
     fetchSurveyById,

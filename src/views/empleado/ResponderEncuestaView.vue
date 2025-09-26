@@ -178,6 +178,24 @@
                   </div>
                 </div>
               </div>
+                <!-- Pregunta Texto Abierto -->
+                <div v-else-if="pregunta.tipo === 'texto_abierto'" class="space-y-4">
+                  <textarea
+                    :id="`pregunta_${pregunta.id}_texto`"
+                    v-model="userAnswers[pregunta.id]"
+                    :name="`pregunta_${pregunta.id}`"
+                    rows="4"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+                    placeholder="Comparte tus pensamientos, sugerencias o comentarios..."
+                    :disabled="loading"
+                  ></textarea>
+                  <div class="flex items-center text-sm text-green-600 bg-green-50 p-3 rounded-lg border border-green-200">
+                    <svg class="h-5 w-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.5-2a8.5 8.5 0 11-17 0 8.5 8.5 0 0117 0z"></path>
+                    </svg>
+                    <span class="font-medium">Tu respuesta a esta pregunta es 100% anónima</span>
+                  </div>
+                </div>
             </div>
 
             <!-- Submit Button -->

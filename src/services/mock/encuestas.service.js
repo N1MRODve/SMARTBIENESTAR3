@@ -12,11 +12,50 @@ const getDefaultSurveys = () => {
     preguntas: [
       { id: 101, texto: '¿Cómo calificarías tu nivel de estrés esta semana?', tipo: 'opcion_multiple', opciones: ['Bajo', 'Medio', 'Alto'] },
       { id: 102, texto: '¿Sientes que tienes las herramientas adecuadas para hacer tu trabajo?', tipo: 'si_no', opciones: ['Sí', 'No'] },
-      { id: 103, texto: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con el balance vida-trabajo?', tipo: 'escala_1_5', opciones: [1, 2, 3, 4, 5] }
+      { id: 103, texto: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con el balance vida-trabajo?', tipo: 'escala_1_5', opciones: [1, 2, 3, 4, 5] },
+      { id: 104, texto: '¿Hay algo más que te gustaría compartir con nosotros sobre tu experiencia laboral?', tipo: 'texto_abierto', opciones: [] }
     ],
     respuestas: [] // Empezamos con el array vacío
   };
 
+  // Comentarios de ejemplo para las preguntas de texto abierto
+  const comentariosEjemplo = [
+    "Me gustaría tener más flexibilidad en los horarios de trabajo.",
+    "El ambiente de trabajo es muy positivo, pero podríamos mejorar la comunicación entre equipos.",
+    "Sería genial tener más oportunidades de capacitación y desarrollo profesional.",
+    "La carga de trabajo a veces es abrumadora, especialmente los viernes.",
+    "Agradezco mucho el apoyo de mi supervisor y el equipo de recursos humanos.",
+    "Creo que necesitamos mejores herramientas tecnológicas para ser más eficientes.",
+    "Me encanta trabajar aquí, pero el espacio físico podría ser más cómodo.",
+    "Sería útil tener más reuniones de feedback para saber cómo estoy progresando.",
+    "El programa de beneficios es excelente, especialmente el seguro médico.",
+    "A veces siento que mi trabajo no es valorado lo suficiente.",
+    "Me gustaría participar más en la toma de decisiones que afectan mi trabajo.",
+    "El equilibrio vida-trabajo ha mejorado mucho desde que implementaron el trabajo remoto.",
+    "Creo que podríamos tener más actividades de team building.",
+    "La cafetería necesita más opciones saludables.",
+    "Me siento muy motivado trabajando en este equipo.",
+    "Sería genial tener un programa de mentoring más estructurado.",
+    "A veces las reuniones son demasiado largas y poco productivas.",
+    "Agradezco la transparencia de la gerencia en cuanto a los objetivos de la empresa.",
+    "Me gustaría tener más días de vacaciones al año.",
+    "El proceso de evaluación de desempeño podría ser más claro y frecuente.",
+    "Excelente cultura empresarial, me siento parte de algo importante.",
+    "Necesitamos mejor ventilación en la oficina.",
+    "Me encanta la diversidad del equipo y las diferentes perspectivas que aporta.",
+    "Sería útil tener más capacitación en nuevas tecnologías.",
+    "El estacionamiento es un problema constante.",
+    "Me siento muy apoyado por mi equipo cuando tengo dificultades.",
+    "Creo que deberíamos tener más flexibilidad para trabajar desde casa.",
+    "La comunicación interna ha mejorado mucho este año.",
+    "Me gustaría tener más oportunidades de crecimiento dentro de la empresa.",
+    "El ambiente de trabajo es muy colaborativo y positivo.",
+    "",  // Algunas respuestas vacías para simular realismo
+    "",
+    "Sin comentarios adicionales por ahora.",
+    "Todo bien en general.",
+    "Gracias por preguntar, significa mucho que se preocupen por nosotros."
+  ];
   // --- INICIO DE LA LÓGICA DE SIEMBRA ---
   const TOTAL_RESPUESTAS_SIMULADAS = 50;
   for (let i = 0; i < TOTAL_RESPUESTAS_SIMULADAS; i++) {
@@ -27,9 +66,14 @@ const getDefaultSurveys = () => {
     };
     
     primeraEncuesta.preguntas.forEach(pregunta => {
-      // Selecciona una opción aleatoria de las disponibles para cada pregunta
-      const opcionAleatoria = pregunta.opciones[Math.floor(Math.random() * pregunta.opciones.length)];
-      unaRespuestaCompleta.respuestas[pregunta.id] = opcionAleatoria;
+      if (pregunta.tipo === 'texto_abierto') {
+        // Para preguntas de texto abierto, usar comentarios de ejemplo
+        unaRespuestaCompleta.respuestas[pregunta.id] = comentariosEjemplo[Math.floor(Math.random() * comentariosEjemplo.length)];
+      } else {
+        // Para otros tipos, selecciona una opción aleatoria de las disponibles
+        const opcionAleatoria = pregunta.opciones[Math.floor(Math.random() * pregunta.opciones.length)];
+        unaRespuestaCompleta.respuestas[pregunta.id] = opcionAleatoria;
+      }
     });
     
     primeraEncuesta.respuestas.push(unaRespuestaCompleta);
@@ -47,11 +91,45 @@ const getDefaultSurveys = () => {
     preguntas: [
       { id: 201, texto: '¿Cómo calificarías tu nivel de estrés esta semana?', tipo: 'opcion_multiple', opciones: ['Bajo', 'Medio', 'Alto'] },
       { id: 202, texto: '¿Sientes que tienes las herramientas adecuadas para hacer tu trabajo?', tipo: 'si_no', opciones: ['Sí', 'No'] },
-      { id: 203, texto: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con el balance vida-trabajo?', tipo: 'escala_1_5', opciones: [1, 2, 3, 4, 5] }
+      { id: 203, texto: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con el balance vida-trabajo?', tipo: 'escala_1_5', opciones: [1, 2, 3, 4, 5] },
+      { id: 204, texto: '¿Hay algo más que te gustaría compartir con nosotros sobre tu experiencia laboral?', tipo: 'texto_abierto', opciones: [] }
     ],
     respuestas: []
   };
 
+  // Comentarios diferentes para la semana anterior
+  const comentariosAnteriores = [
+    "La semana pasada fue muy estresante por los plazos ajustados.",
+    "Necesitamos urgentemente mejores herramientas de comunicación.",
+    "El trabajo remoto no está funcionando bien para nuestro equipo.",
+    "Me siento desconectado del resto del equipo.",
+    "La carga de trabajo ha sido excesiva últimamente.",
+    "Agradezco el esfuerzo de la gerencia por mantenernos informados.",
+    "Creo que necesitamos más personal en nuestro departamento.",
+    "El nuevo sistema es confuso y ralentiza nuestro trabajo.",
+    "Me gustaría tener más claridad sobre mis responsabilidades.",
+    "El ambiente de trabajo se siente tenso últimamente.",
+    "Necesitamos mejor coordinación entre los diferentes equipos.",
+    "Me siento abrumado con tantos proyectos simultáneos.",
+    "La falta de feedback constante me genera incertidumbre.",
+    "Sería útil tener más reuniones de seguimiento.",
+    "El espacio de trabajo no es adecuado para la concentración.",
+    "Me preocupa la falta de oportunidades de crecimiento.",
+    "Las reuniones son demasiado frecuentes y poco efectivas.",
+    "Necesito más tiempo para completar mis tareas adecuadamente.",
+    "La comunicación con otros departamentos es deficiente.",
+    "Me gustaría tener más autonomía en mi trabajo.",
+    "El proceso de aprobación es muy lento y burocrático.",
+    "Siento que mi opinión no es tomada en cuenta.",
+    "Necesitamos mejores políticas de trabajo flexible.",
+    "La presión por cumplir objetivos está afectando la calidad.",
+    "Me gustaría tener más capacitación en las nuevas herramientas.",
+    "",
+    "",
+    "Sin comentarios específicos.",
+    "Espero que las cosas mejoren pronto.",
+    "Gracias por preguntar, aunque ha sido una semana difícil."
+  ];
   // Generar respuestas para la segunda encuesta con tendencias ligeramente diferentes
   for (let i = 0; i < TOTAL_RESPUESTAS_SIMULADAS; i++) {
     const unaRespuestaCompleta = {
@@ -63,23 +141,28 @@ const getDefaultSurveys = () => {
     segundaEncuesta.preguntas.forEach(pregunta => {
       let opcionAleatoria;
       
-      // Crear tendencias específicas para cada pregunta
-      if (pregunta.id === 201) { // Estrés - tendencia a más estrés en semana anterior
-        const rand = Math.random();
-        if (rand < 0.2) opcionAleatoria = 'Bajo';
-        else if (rand < 0.4) opcionAleatoria = 'Medio';
-        else opcionAleatoria = 'Alto';
-      } else if (pregunta.id === 202) { // Herramientas - menos herramientas en semana anterior
-        opcionAleatoria = Math.random() < 0.4 ? 'Sí' : 'No';
-      } else if (pregunta.id === 203) { // Balance - peor balance en semana anterior
-        const rand = Math.random();
-        if (rand < 0.3) opcionAleatoria = 1;
-        else if (rand < 0.5) opcionAleatoria = 2;
-        else if (rand < 0.7) opcionAleatoria = 3;
-        else if (rand < 0.85) opcionAleatoria = 4;
-        else opcionAleatoria = 5;
+      if (pregunta.tipo === 'texto_abierto') {
+        // Para preguntas de texto abierto, usar comentarios de la semana anterior
+        unaRespuestaCompleta.respuestas[pregunta.id] = comentariosAnteriores[Math.floor(Math.random() * comentariosAnteriores.length)];
       } else {
-        opcionAleatoria = pregunta.opciones[Math.floor(Math.random() * pregunta.opciones.length)];
+        // Crear tendencias específicas para cada pregunta
+        if (pregunta.id === 201) { // Estrés - tendencia a más estrés en semana anterior
+          const rand = Math.random();
+          if (rand < 0.2) opcionAleatoria = 'Bajo';
+          else if (rand < 0.4) opcionAleatoria = 'Medio';
+          else opcionAleatoria = 'Alto';
+        } else if (pregunta.id === 202) { // Herramientas - menos herramientas en semana anterior
+          opcionAleatoria = Math.random() < 0.4 ? 'Sí' : 'No';
+        } else if (pregunta.id === 203) { // Balance - peor balance en semana anterior
+          const rand = Math.random();
+          if (rand < 0.3) opcionAleatoria = 1;
+          else if (rand < 0.5) opcionAleatoria = 2;
+          else if (rand < 0.7) opcionAleatoria = 3;
+          else if (rand < 0.85) opcionAleatoria = 4;
+          else opcionAleatoria = 5;
+        } else {
+          opcionAleatoria = pregunta.opciones[Math.floor(Math.random() * pregunta.opciones.length)];
+        }
       }
       
       unaRespuestaCompleta.respuestas[pregunta.id] = opcionAleatoria;

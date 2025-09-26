@@ -147,6 +147,7 @@
                       <option value="opcion_multiple">Opción Múltiple</option>
                       <option value="si_no">Sí / No</option>
                       <option value="escala_1_5">Escala 1-5</option>
+                      <option value="texto_abierto">Texto Abierto (Anónimo)</option>
                     </select>
                   </div>
 
@@ -188,6 +189,23 @@
                     </div>
                   </div>
 
+                  <!-- Información para Texto Abierto -->
+                  <div v-if="pregunta.tipo === 'texto_abierto'" class="form-group">
+                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div class="flex items-start">
+                        <svg class="h-5 w-5 text-blue-500 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                          <h4 class="text-sm font-medium text-blue-800 mb-1">Pregunta de Texto Abierto</h4>
+                          <p class="text-sm text-blue-700">
+                            Los empleados podrán escribir respuestas libres y anónimas. 
+                            Ideal para recopilar feedback cualitativo y sugerencias.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <!-- Preview de la Pregunta -->
                   <div class="mt-6 p-4 bg-white border border-gray-200 rounded-lg">
                     <h4 class="text-sm font-medium text-gray-700 mb-3">Vista Previa:</h4>
@@ -232,6 +250,21 @@
                         </div>
                       </div>
                     </div>
+                      <!-- Preview Texto Abierto -->
+                      <div v-else-if="pregunta.tipo === 'texto_abierto'" class="space-y-3">
+                        <textarea 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md resize-none"
+                          rows="4"
+                          placeholder="Los empleados podrán escribir su respuesta aquí..."
+                          disabled
+                        ></textarea>
+                        <p class="text-xs text-green-600 flex items-center">
+                          <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          Tu respuesta a esta pregunta es 100% anónima
+                        </p>
+                      </div>
                   </div>
                 </div>
               </div>

@@ -105,12 +105,28 @@
             </div>
           </div>
 
+          <!-- Feedback Cualitativo Section -->
+          <div v-if="comentariosDeLaEncuesta.length > 0" class="mt-12">
+            <div class="mb-6">
+              <h2 class="text-2xl font-bold text-gray-900 mb-2">Feedback Cualitativo</h2>
+              <p class="text-gray-600">
+                Comentarios y sugerencias anónimas de los empleados
+              </p>
+            </div>
+            <ComentariosAnonimos 
+              :comentarios="comentariosDeLaEncuesta" 
+              :total-respuestas="selectedSurvey.respuestas?.length || 0"
+            />
+          </div>
           <!-- Questions Results -->
           <div class="space-y-8">
             <div 
               v-for="(pregunta, index) in selectedSurvey.preguntas" 
               :key="pregunta.id"
-              class="bg-white rounded-lg shadow-sm overflow-hidden"
+              :class="[
+                'bg-white rounded-lg shadow-sm overflow-hidden',
+                pregunta.tipo === 'texto_abierto' ? 'hidden' : ''
+              ]"
             >
               <!-- Question Header -->
               <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
@@ -218,6 +234,7 @@ import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
+import ComentariosAnonimos from '@/components/admin/results/ComentariosAnonimos.vue';
 import { 
   Bar, 
   Pie 
@@ -441,6 +458,28 @@ const tasaRespuesta = computed(() => {
   return Math.round((selectedSurvey.value.respuestas.length / totalEmpleados) * 100);
 });
 
+// Extraer comentarios de texto abierto
+const comentariosDeLaEncuesta = computed(() => {
+  if (!selectedSurvey.value?.respuestas || !selectedSurvey.value?.preguntas) return [];
+  
+  // Encontrar preguntas de tipo texto_abierto
+  const preguntasTextoAbierto = selectedSurvey.value.preguntas.filter(p => p.tipo === 'texto_abierto');
+  
+  if (preguntasTextoAbierto.length === 0) return [];
+  
+  // Extraer todas las respuestas de texto abierto
+  const comentarios = [];
+  selectedSurvey.value.respuestas.forEach(respuesta => {
+    preguntasTextoAbierto.forEach(pregunta => {
+      const comentario = respuesta.respuestas[pregunta.id];
+      if (comentario && typeof comentario === 'string') {
+        comentarios.push(comentario);
+      }
+    });
+  });
+  
+  return comentarios;
+});
 // Methods
 const formatearFecha = (fecha) => {
   return new Date(fecha).toLocaleDateString('es-ES', {
@@ -469,6 +508,10 @@ const getTipoLabel = (tipo) => {
 const getChartData = (pregunta) => {
   if (!selectedSurvey.value?.respuestas) return { labels: [], datasets: [] };
 
+  // Skip chart generation for text questions
+  if (pregunta.tipo === 'texto_abierto') {
+    return { labels: [], datasets: [] };
+  }
   const respuestas = selectedSurvey.value.respuestas
     .map(r => r.respuestas[pregunta.id])
     .filter(r => r !== undefined);

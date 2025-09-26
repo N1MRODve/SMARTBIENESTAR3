@@ -251,7 +251,7 @@
                       </div>
                     </div>
                      <!-- Preview Texto Abierto -->
-                     <div v-else-if="pregunta.tipo === 'texto_abierto'" class="space-y-3">
+                     <div v-else-if=pregunta.tipo === 'texto_abierto'" class="space-y-3">
                        <textarea 
                          class="w-full px-3 py-2 border border-gray-300 rounded-md resize-none"
                          rows="4"

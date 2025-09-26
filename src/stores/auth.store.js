@@ -60,6 +60,11 @@ export const useAuthStore = defineStore('auth', () => {
     return Array.isArray(roles) ? roles.includes(userRole.value) : userRole.value === roles;
   };
 
+  const hasRole = (roles) => {
+    if (!userRole.value) return false;
+    return Array.isArray(roles) ? roles.includes(userRole.value) : userRole.value === roles;
+  };
+
   return {
     user,
     loading,
@@ -69,6 +74,7 @@ export const useAuthStore = defineStore('auth', () => {
     initialize,
     login,
     logout,
+    hasRole
     hasRole
   };
 });

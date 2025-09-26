@@ -11,6 +11,7 @@ export const useEncuestasStore = defineStore('encuestas', () => {
   const error = ref(null);
 
   const fetchActiveSurvey = async () => {
+    console.log('2. Llamando a fetchActiveSurvey en el store...');
     isLoading.value = true;
     error.value = null;
     
@@ -18,11 +19,15 @@ export const useEncuestasStore = defineStore('encuestas', () => {
       const encuesta = await getActiveSurvey();
       activeSurvey.value = encuesta;
       encuestaActiva.value = encuesta;
+      console.log('2.1. Encuesta obtenida del mock service:', encuesta);
+      console.log('2.2. activeSurvey.value actualizado:', activeSurvey.value);
     } catch (err) {
+      console.error('2.3. Error en fetchActiveSurvey:', err);
       error.value = err.message || 'Error al cargar la encuesta';
       console.error('Error cargando encuesta:', err);
     } finally {
       isLoading.value = false;
+      console.log('2.4. fetchActiveSurvey completado. isLoading:', isLoading.value);
     }
   };
 

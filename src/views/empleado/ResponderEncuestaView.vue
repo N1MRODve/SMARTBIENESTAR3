@@ -250,8 +250,10 @@ const resetearEncuesta = () => {
 };
 
 // Lifecycle
-onMounted(() => {
-  encuestasStore.fetchActiveSurvey();
+onMounted(async () => {
+  console.log('1. Montando vista ResponderEncuestaView...');
+  await encuestasStore.fetchActiveSurvey();
+  console.log('3. Encuesta cargada en el store:', encuestasStore.activeSurvey);
 });
 </script>
 

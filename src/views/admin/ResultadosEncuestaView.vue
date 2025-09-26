@@ -132,11 +132,11 @@
                     :options="barChartOptions"
                   />
                   
-                  <!-- Pie Chart for Yes/No -->
-                  <Pie 
+                  <!-- Bar Chart for Yes/No -->
+                  <Bar 
                     v-else-if="pregunta.tipo === 'si_no'"
                     :data="getChartData(pregunta)"
-                    :options="pieChartOptions"
+                    :options="barChartOptions"
                   />
                   
                   <!-- Bar Chart for Scale 1-5 -->
@@ -145,6 +145,17 @@
                     :data="getChartData(pregunta)"
                     :options="scaleChartOptions"
                   />
+                </div>
+
+                <!-- Insight Clave -->
+                <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div class="flex items-start">
+                    <TrendingUp class="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <div>
+                      <h4 class="text-sm font-medium text-blue-800 mb-1">Insight Clave</h4>
+                      <p class="text-sm text-blue-700">{{ getInsightClave(pregunta) }}</p>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Summary Stats -->

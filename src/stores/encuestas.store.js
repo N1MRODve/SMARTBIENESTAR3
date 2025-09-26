@@ -11,6 +11,23 @@ export const useEncuestasStore = defineStore('encuestas', () => {
   const loading = ref(false);
   const error = ref(null);
 
+  const fetchAllSurveys = async () => {
+    console.log('Cargando todas las encuestas...');
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+      const allSurveys = await getSurveys();
+      surveys.value = allSurveys;
+      console.log('Encuestas cargadas:', allSurveys);
+    } catch (err) {
+      error.value = err.message || 'Error al cargar las encuestas';
+      console.error('Error cargando encuestas:', err);
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
   const fetchActiveSurvey = async () => {
     console.log('2. Llamando a fetchActiveSurvey en el store...');
     isLoading.value = true;

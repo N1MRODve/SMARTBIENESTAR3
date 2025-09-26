@@ -77,6 +77,12 @@
                   Activa
                 </span>
                 <span 
+                  v-else-if="survey.estado === 'finalizada'"
+                  class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium"
+                >
+                  Finalizada
+                </span>
+                <span 
                   v-else
                   class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium"
                 >
@@ -175,7 +181,83 @@ import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Header from '@/components/common/Header.vue';
-import { Plus, FileText, AlertCircle, RefreshCw, Calendar, MessageSquare, HelpCircle, Activity, Eye, BarChart3, CreditCard as Edit } from 'lucide-vue-next';
+import { 
+  Plus, 
+  FileText, 
+  AlertCircle, 
+  RefreshCw, 
+  Calendar, 
+  MessageSquare, 
+  HelpCircle, 
+  Activity, 
+  Eye, 
+  BarChart3, 
+  Edit 
+} from 'lucide-vue-next';
+
+// --- Lógica del Store ---
+const encuestasStore = useEncuestasStore();
+const { surveys, isLoading, error } = storeToRefs(encuestasStore);
+const { fetchAllSurveys } = encuestasStore;
+
+// --- Cargar datos al montar el componente ---
+onMounted(() => {
+  fetchAllSurveys();
+});
+
+// --- Funciones auxiliares ---
+const formatearFecha = (fecha) => {
+  return new Date(fecha).toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+const verDetalles = (surveyId) => {
+  console.log('Ver detalles de encuesta:', surveyId);
+  // TODO: Implementar navegación a detalles
+};
+
+const verResultados = (surveyId) => {
+  console.log('Ver resultados de encuesta:', surveyId);
+  // TODO: Implementar navegación a resultados
+};
+
+const editarEncuesta = (surveyId) => {
+  console.log('Editar encuesta:', surveyId);
+  // TODO: Implementar navegación a edición
+};
+</script>
+
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
+</template>
+
+<script setup>
+import { onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useEncuestasStore } from '@/stores/encuestas.store';
+import Header from '@/components/common/Header.vue';
+import { 
+  Plus, 
+  FileText, 
+  AlertCircle, 
+  RefreshCw, 
+  Calendar, 
+  MessageSquare, 
+  HelpCircle, 
+  Activity, 
+  Eye, 
+  BarChart3, 
+  Edit 
+} from 'lucide-vue-next';
 
 // --- Lógica del Store ---
 const encuestasStore = useEncuestasStore();

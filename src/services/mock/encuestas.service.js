@@ -8,12 +8,35 @@ const surveys = [
     descripcion: 'Encuesta semanal sobre el bienestar de los empleados',
     fechaCreacion: '2024-01-15',
     estado: 'activa',
+    respuestas: [], // Array para almacenar respuestas
     preguntas: [
       { id: 101, texto: '¿Cómo calificarías tu nivel de estrés esta semana?', tipo: 'opcion_multiple', opciones: ['Bajo', 'Medio', 'Alto'] },
       { id: 102, texto: '¿Sientes que tienes las herramientas adecuadas para hacer tu trabajo?', tipo: 'si_no' },
       { id: 103, texto: 'En una escala del 1 al 5, ¿qué tan satisfecho estás con el balance vida-trabajo?', tipo: 'escala_1_5' }
-    ],
-    respuestas: [] // Array para almacenar respuestas
+    ]
+  },
+  {
+    id: 2,
+    titulo: 'Evaluación de Clima Laboral',
+    descripcion: 'Evaluación mensual del ambiente de trabajo',
+    fechaCreacion: '2024-01-10',
+    estado: 'finalizada',
+    respuestas: [],
+    preguntas: [
+      { id: 201, texto: '¿Cómo calificarías la comunicación en tu equipo?', tipo: 'escala_1_5' },
+      { id: 202, texto: '¿Te sientes valorado en tu trabajo?', tipo: 'si_no' }
+    ]
+  },
+  {
+    id: 3,
+    titulo: 'Satisfacción con Beneficios',
+    descripcion: 'Encuesta sobre los beneficios corporativos',
+    fechaCreacion: '2024-01-05',
+    estado: 'borrador',
+    respuestas: [],
+    preguntas: [
+      { id: 301, texto: '¿Estás satisfecho con los beneficios de salud?', tipo: 'opcion_multiple', opciones: ['Muy satisfecho', 'Satisfecho', 'Insatisfecho'] }
+    ]
   }
 ];
 

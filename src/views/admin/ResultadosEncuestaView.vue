@@ -113,10 +113,10 @@
                 Comentarios y sugerencias anónimas de los empleados
               </p>
             </div>
-            <ComentariosAnonimos 
+            <!-- <ComentariosAnonimos 
               :comentarios="comentariosDeLaEncuesta" 
               :total-respuestas="selectedSurvey.respuestas?.length || 0"
-            />
+            /> -->
           </div>
           <!-- Questions Results -->
           <div class="space-y-8">

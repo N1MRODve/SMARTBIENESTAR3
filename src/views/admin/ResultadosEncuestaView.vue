@@ -124,6 +124,28 @@
 
               <!-- Chart Container -->
               <div class="p-6">
+                <!-- Chart Description -->
+                <div class="mb-4 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+                  <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                      <svg class="h-5 w-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm text-gray-700">
+                        <span class="font-medium">Cómo leer este gráfico:</span>
+                        <span v-if="previousSurvey">
+                          Las barras azules representan las respuestas de la semana actual, mientras que las barras verdes muestran las respuestas de la semana anterior. Compara las alturas para ver las tendencias.
+                        </span>
+                        <span v-else>
+                          Cada barra representa el número de empleados que seleccionó esa opción de respuesta.
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="h-80">
                   <!-- Bar Chart for Multiple Choice -->
                   <Bar 
@@ -160,22 +182,23 @@
 
                 <!-- Summary Stats -->
                 <div class="mt-6 pt-6 border-t border-gray-200">
+                  <h5 class="text-sm font-medium text-gray-900 mb-3">Estadísticas Detalladas</h5>
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="text-center">
                       <p class="text-2xl font-bold text-gray-900">{{ getResponseCount(pregunta) }}</p>
-                      <p class="text-sm text-gray-500">Respuestas</p>
+                      <p class="text-sm text-gray-500">Total Respuestas</p>
                     </div>
                     <div v-if="pregunta.tipo === 'escala_1_5'" class="text-center">
                       <p class="text-2xl font-bold text-gray-900">{{ getAverageScore(pregunta) }}</p>
-                      <p class="text-sm text-gray-500">Promedio</p>
+                      <p class="text-sm text-gray-500">Puntuación Promedio</p>
                     </div>
                     <div class="text-center">
                       <p class="text-2xl font-bold text-gray-900">{{ getMostPopularAnswer(pregunta) }}</p>
-                      <p class="text-sm text-gray-500">Más Popular</p>
+                      <p class="text-sm text-gray-500">Respuesta Más Común</p>
                     </div>
                     <div class="text-center">
                       <p class="text-2xl font-bold text-gray-900">{{ getResponseRate(pregunta) }}%</p>
-                      <p class="text-sm text-gray-500">Tasa Respuesta</p>
+                      <p class="text-sm text-gray-500">Tasa de Respuesta</p>
                     </div>
                   </div>
                 </div>
@@ -244,12 +267,36 @@ const barChartOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: false
+      display: true,
+      position: 'top',
+      labels: {
+        usePointStyle: true,
+        padding: 20,
+        font: {
+          size: 12,
+          weight: 'bold'
+        }
+      }
+    },
+    title: {
+      display: true,
+      text: 'Comparación de Respuestas',
+      font: {
+        size: 14,
+        weight: 'bold'
+      },
+      padding: {
+        bottom: 20
+      }
     },
     tooltip: {
       callbacks: {
         label: function(context) {
-          return `${context.label}: ${context.parsed.y} respuestas`;
+          const datasetLabel = context.dataset.label || '';
+          const value = context.parsed.y;
+          const total = context.dataset.data.reduce((a, b) => a + b, 0);
+          const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+          return `${datasetLabel}: ${value} respuestas (${percentage}%)`;
         }
       }
     }
@@ -257,8 +304,26 @@ const barChartOptions = {
   scales: {
     y: {
       beginAtZero: true,
+      title: {
+        display: true,
+        text: 'Número de Respuestas',
+        font: {
+          size: 12,
+          weight: 'bold'
+        }
+      },
       ticks: {
         stepSize: 1
+      }
+    },
+    x: {
+      title: {
+        display: true,
+        text: 'Opciones de Respuesta',
+        font: {
+          size: 12,
+          weight: 'bold'
+        }
       }
     }
   }
@@ -269,14 +334,33 @@ const pieChartOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: 'bottom'
+      position: 'bottom',
+      labels: {
+        usePointStyle: true,
+        padding: 15,
+        font: {
+          size: 12,
+          weight: 'bold'
+        }
+      }
+    },
+    title: {
+      display: true,
+      text: 'Distribución de Respuestas',
+      font: {
+        size: 14,
+        weight: 'bold'
+      },
+      padding: {
+        bottom: 20
+      }
     },
     tooltip: {
       callbacks: {
         label: function(context) {
           const total = context.dataset.data.reduce((a, b) => a + b, 0);
           const percentage = ((context.parsed / total) * 100).toFixed(1);
-          return `${context.label}: ${context.parsed} (${percentage}%)`;
+          return `${context.label}: ${context.parsed} respuestas (${percentage}%)`;
         }
       }
     }
@@ -288,12 +372,36 @@ const scaleChartOptions = {
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      display: false
+      display: true,
+      position: 'top',
+      labels: {
+        usePointStyle: true,
+        padding: 20,
+        font: {
+          size: 12,
+          weight: 'bold'
+        }
+      }
+    },
+    title: {
+      display: true,
+      text: 'Distribución por Puntuación',
+      font: {
+        size: 14,
+        weight: 'bold'
+      },
+      padding: {
+        bottom: 20
+      }
     },
     tooltip: {
       callbacks: {
         label: function(context) {
-          return `Puntuación ${context.label}: ${context.parsed.y} respuestas`;
+          const datasetLabel = context.dataset.label || '';
+          const value = context.parsed.y;
+          const total = context.dataset.data.reduce((a, b) => a + b, 0);
+          const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+          return `${datasetLabel} - Puntuación ${context.label}: ${value} respuestas (${percentage}%)`;
         }
       }
     }
@@ -301,6 +409,14 @@ const scaleChartOptions = {
   scales: {
     y: {
       beginAtZero: true,
+      title: {
+        display: true,
+        text: 'Número de Respuestas',
+        font: {
+          size: 12,
+          weight: 'bold'
+        }
+      },
       ticks: {
         stepSize: 1
       }
@@ -308,7 +424,11 @@ const scaleChartOptions = {
     x: {
       title: {
         display: true,
-        text: 'Puntuación (1 = Muy insatisfecho, 5 = Muy satisfecho)'
+        text: 'Puntuación (1 = Muy insatisfecho, 5 = Muy satisfecho)',
+        font: {
+          size: 12,
+          weight: 'bold'
+        }
       }
     }
   }

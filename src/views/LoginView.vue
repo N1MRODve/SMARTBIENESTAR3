@@ -23,8 +23,12 @@ const handleLogin = async () => {
     
     toast.add({ severity: 'success', summary: '¡Bienvenido!', detail: 'Has iniciado sesión correctamente.', life: 3000 });
 
-    // Por ahora redirigimos al login hasta crear las vistas del MVP
-    console.log('Usuario autenticado:', userType);
+    // Redirigir según el rol del usuario
+    if (userType === 'administrador') {
+      router.push('/admin/dashboard');
+    } else if (userType === 'empleado') {
+      router.push('/empleado/encuesta');
+    }
 
   } catch (error) {
     console.error("Error en el inicio de sesión:", error);

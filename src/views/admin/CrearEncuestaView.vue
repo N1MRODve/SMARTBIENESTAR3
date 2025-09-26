@@ -265,7 +265,6 @@
                          Tu respuesta a esta pregunta es 100% anónima
                        </p>
                      </div>
-                  </div>
                 </div>
               </div>
             </div>

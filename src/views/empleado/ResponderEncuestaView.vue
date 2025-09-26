@@ -178,83 +178,51 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useToast } from 'primevue/usetoast';
+import { onMounted, ref, computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
-import Button from '@/components/ui/Button.vue';
-import { 
-  AlertCircle, 
-  RefreshCw, 
-  Send, 
-  RotateCcw, 
-  CheckCircle 
-} from 'lucide-vue-next';
 
-const toast = useToast();
+// --- Lógica del Store ---
 const encuestasStore = useEncuestasStore();
+// 'storeToRefs' asegura que 'activeSurvey', 'isLoading', etc., sean reactivos.
+const { activeSurvey, isLoading, error } = storeToRefs(encuestasStore);
+const { fetchActiveSurvey, submitSurveyAnswers } = encuestasStore;
 
-// Estados reactivos del store
-const { activeSurvey, isLoading, error } = encuestasStore;
-
-// Estados locales del componente
+// --- Estado local del componente ---
 const userAnswers = ref({});
 const surveySubmitted = ref(false);
 
-// Computed properties
-const allQuestionsAnswered = computed(() => {
-  if (!activeSurvey || !activeSurvey.preguntas) return false;
-  
-  return activeSurvey.preguntas.every(pregunta => {
-    const respuesta = userAnswers.value[pregunta.id];
-    return respuesta !== undefined && respuesta !== null && respuesta !== '';
-  });
+// --- Cargar datos al montar el componente ---
+onMounted(() => {
+  if (!activeSurvey.value) {
+    fetchActiveSurvey();
+  }
 });
 
-// Métodos
+// --- Lógica de envío ---
 const handleSubmit = async () => {
-  try {
-    await encuestasStore.submitSurveyAnswers(userAnswers.value);
-    
-    surveySubmitted.value = true;
-    
-    toast.add({
-      severity: 'success',
-      summary: '¡Encuesta enviada!',
-      detail: 'Gracias por tu participación',
-      life: 5000
-    });
-  } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error al enviar',
-      detail: error.message || 'No se pudo enviar la encuesta',
-      life: 5000
-    });
-  }
+  if (!allQuestionsAnswered.value) return;
+  await submitSurveyAnswers(activeSurvey.value.id, userAnswers.value);
+  surveySubmitted.value = true;
 };
 
+// --- Propiedad computada para habilitar el botón de envío ---
+const allQuestionsAnswered = computed(() => {
+  if (!activeSurvey.value) return false;
+  const totalPreguntas = activeSurvey.value.preguntas.length;
+  const totalRespuestas = Object.keys(userAnswers.value).length;
+  return totalPreguntas === totalRespuestas;
+});
+
+// --- Funciones auxiliares (para los botones del template) ---
 const limpiarRespuestas = () => {
   userAnswers.value = {};
-  toast.add({
-    severity: 'info',
-    summary: 'Respuestas limpiadas',
-    detail: 'Puedes volver a responder la encuesta',
-    life: 3000
-  });
 };
 
 const resetearEncuesta = () => {
+  limpiarRespuestas();
   surveySubmitted.value = false;
-  userAnswers.value = {};
-  encuestasStore.fetchActiveSurvey();
 };
-
-// Lifecycle
-onMounted(async () => {
-  console.log('1. Montando vista ResponderEncuestaView...');
-  await encuestasStore.fetchActiveSurvey();
-  console.log('3. Encuesta cargada en el store:', encuestasStore.activeSurvey);
-});
 </script>
 
 <style scoped>

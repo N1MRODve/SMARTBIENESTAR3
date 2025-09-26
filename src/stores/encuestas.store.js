@@ -49,23 +49,6 @@ export const useEncuestasStore = defineStore('encuestas', () => {
     }
   };
 
-  const fetchAllSurveys = async () => {
-    console.log('Cargando todas las encuestas...');
-    isLoading.value = true;
-    error.value = null;
-    
-    try {
-      const allSurveys = await getSurveys();
-      surveys.value = allSurveys;
-      console.log('Encuestas cargadas:', allSurveys);
-    } catch (err) {
-      error.value = err.message || 'Error al cargar las encuestas';
-      console.error('Error cargando encuestas:', err);
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
   const submitSurveyAnswers = async (respuestas) => {
     isLoading.value = true;
     
@@ -133,24 +116,16 @@ export const useEncuestasStore = defineStore('encuestas', () => {
           fechaCreacion: '2024-01-05',
           estado: 'borrador',
           totalRespuestas: 0,
+          preguntas: 5
         }
-      ]
-    }
-  }
-  const enviarRespuestas = async (respuestas) => {
-    isLoading.value = true;
-    
-    try {
-      // Simular envío de respuestas
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      ];
       
-      console.log('Respuestas enviadas:', respuestas);
-      return { success: true, message: 'Respuestas enviadas correctamente' };
+      encuestas.value = encuestasData;
     } catch (err) {
-      error.value = err.message || 'Error al enviar respuestas';
-      throw err;
+      error.value = err.message || 'Error al cargar las encuestas';
+      console.error('Error cargando encuestas:', err);
     } finally {
-      isLoading.value = false;
+      loading.value = false;
     }
   };
 
@@ -200,7 +175,6 @@ export const useEncuestasStore = defineStore('encuestas', () => {
     error,
     cargarEncuestaActiva,
     cargarEncuestas,
-    enviarRespuestas,
     crearEncuesta
   };
 });

@@ -1,5 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-8">
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <Header subtitulo="Responder Encuesta de Bienestar" />
+    
+    <!-- Main Content -->
+    <div class="py-8">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Header -->
       <div class="text-center mb-8">
@@ -173,6 +178,7 @@
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup>
@@ -180,6 +186,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Button from '@/components/ui/Button.vue';
+import Header from '@/components/common/Header.vue';
 import { 
   AlertCircle, 
   RefreshCw, 

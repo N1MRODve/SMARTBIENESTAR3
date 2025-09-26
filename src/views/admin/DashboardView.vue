@@ -1,5 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-8">
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <Header subtitulo="Panel de Administración" />
+    
+    <!-- Main Content -->
+    <div class="py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Header -->
       <div class="mb-8">
@@ -224,6 +229,7 @@
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup>
@@ -232,6 +238,7 @@ import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Button from '@/components/ui/Button.vue';
+import Header from '@/components/common/Header.vue';
 import { Plus, FileText, CheckCircle, Users, TrendingUp, AlertCircle, RefreshCw, Calendar, MessageSquare, HelpCircle, BarChart3, Eye, CreditCard as Edit } from 'lucide-vue-next';
 
 const router = useRouter();

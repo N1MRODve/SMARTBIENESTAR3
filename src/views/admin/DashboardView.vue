@@ -153,7 +153,7 @@
                   <button 
                     v-if="survey.estado === 'activa'"
                     class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200"
-                    @click="verResultados(survey.id)"
+                    @click="$router.push(`/admin/encuesta/${survey.id}/resultados`)"
                   >
                     <BarChart3 class="h-4 w-4 mr-1" />
                     Resultados
@@ -200,16 +200,6 @@ const formatearFecha = (fecha) => {
     month: 'long',
     day: 'numeric'
   });
-};
-
-const verDetalles = (surveyId) => {
-  console.log('Ver detalles de encuesta:', surveyId);
-  // TODO: Implementar navegación a detalles
-};
-
-const verResultados = (surveyId) => {
-  console.log('Ver resultados de encuesta:', surveyId);
-  // TODO: Implementar navegación a resultados
 };
 
 const editarEncuesta = (surveyId) => {

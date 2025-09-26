@@ -5,125 +5,92 @@
     
     <!-- Main Content -->
     <div class="py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <!-- Header -->
-      <div class="mb-8">
-        <div class="flex justify-between items-center">
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900">Dashboard Administrador</h1>
-            <p class="mt-2 text-lg text-gray-600">Gestiona las encuestas de bienestar de tu empresa</p>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+          <div class="flex justify-between items-center">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">Panel de Encuestas</h1>
+              <p class="mt-2 text-lg text-gray-600">Gestiona las encuestas de bienestar de tu empresa</p>
+            </div>
+            <router-link 
+              to="/admin/crear-encuesta"
+              class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            >
+              <Plus class="h-5 w-5 mr-2" />
+              Crear Nueva Encuesta
+            </router-link>
           </div>
-          <Button 
-            @click="navegarACrearEncuesta"
-            class="bg-primary hover:bg-primary-dark"
+        </div>
+
+        <!-- Loading State -->
+        <div v-if="isLoading" class="bg-white rounded-lg shadow-sm p-8 text-center">
+          <div class="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4"></div>
+          <p class="text-gray-600">Cargando encuestas...</p>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <AlertCircle class="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 class="text-lg font-medium text-red-800 mb-2">Error al cargar las encuestas</h3>
+          <p class="text-red-600 mb-4">{{ error }}</p>
+          <button 
+            @click="fetchAllSurveys" 
+            class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+          >
+            <RefreshCw class="h-4 w-4 mr-2" />
+            Reintentar
+          </button>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else-if="surveys.length === 0" class="bg-white rounded-lg shadow-sm p-12 text-center">
+          <FileText class="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Aún no has creado ninguna encuesta</h3>
+          <p class="text-gray-500 mb-6">¡Crea la primera encuesta de bienestar para tus empleados!</p>
+          <router-link 
+            to="/admin/crear-encuesta"
+            class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
             <Plus class="h-5 w-5 mr-2" />
-            Nueva Encuesta
-          </Button>
-        </div>
-      </div>
-
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex items-center">
-            <div class="p-3 bg-blue-100 rounded-full">
-              <FileText class="h-6 w-6 text-blue-600" />
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">Total Encuestas</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ encuestas.length }}</p>
-            </div>
-          </div>
+            Crear Primera Encuesta
+          </router-link>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex items-center">
-            <div class="p-3 bg-green-100 rounded-full">
-              <CheckCircle class="h-6 w-6 text-green-600" />
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">Encuestas Activas</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ encuestasActivas }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex items-center">
-            <div class="p-3 bg-yellow-100 rounded-full">
-              <Users class="h-6 w-6 text-yellow-600" />
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">Total Respuestas</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ totalRespuestas }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <div class="flex items-center">
-            <div class="p-3 bg-purple-100 rounded-full">
-              <TrendingUp class="h-6 w-6 text-purple-600" />
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">Tasa Participación</p>
-              <p class="text-2xl font-semibold text-gray-900">{{ tasaParticipacion }}%</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Loading State -->
-      <div v-if="loading" class="bg-white rounded-lg shadow-sm p-8 text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4"></div>
-        <p class="text-gray-600">Cargando encuestas...</p>
-      </div>
-
-      <!-- Error State -->
-      <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-        <AlertCircle class="h-12 w-12 text-red-500 mx-auto mb-4" />
-        <h3 class="text-lg font-medium text-red-800 mb-2">Error al cargar las encuestas</h3>
-        <p class="text-red-600 mb-4">{{ error }}</p>
-        <Button @click="cargarDatos" variant="outline">
-          <RefreshCw class="h-4 w-4 mr-2" />
-          Reintentar
-        </Button>
-      </div>
-
-      <!-- Encuestas Grid -->
-      <div v-else-if="encuestas && encuestas.length > 0" class="space-y-6">
-        <h2 class="text-xl font-semibold text-gray-900">Mis Encuestas</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Encuestas Grid -->
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div 
-            v-for="encuesta in encuestas" 
-            :key="encuesta.id"
+            v-for="survey in surveys" 
+            :key="survey.id"
             class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200"
           >
             <!-- Card Header -->
             <div class="p-6 border-b border-gray-100">
               <div class="flex justify-between items-start mb-3">
                 <h3 class="text-lg font-semibold text-gray-900 line-clamp-2">
-                  {{ encuesta.titulo }}
+                  {{ survey.titulo }}
                 </h3>
                 <span 
-                  :class="[
-                    'px-2 py-1 rounded-full text-xs font-medium',
-                    getEstadoClasses(encuesta.estado)
-                  ]"
+                  v-if="survey.estado === 'activa'"
+                  class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium"
                 >
-                  {{ getEstadoTexto(encuesta.estado) }}
+                  Activa
+                </span>
+                <span 
+                  v-else
+                  class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium"
+                >
+                  {{ survey.estado }}
                 </span>
               </div>
               
-              <p class="text-sm text-gray-600 line-clamp-2 mb-4">
-                {{ encuesta.descripcion }}
+              <p v-if="survey.descripcion" class="text-sm text-gray-600 line-clamp-2 mb-4">
+                {{ survey.descripcion }}
               </p>
 
               <div class="flex items-center text-sm text-gray-500">
                 <Calendar class="h-4 w-4 mr-1" />
-                <span>Creada el {{ formatearFecha(encuesta.fechaCreacion) }}</span>
+                <span>Creada el {{ formatearFecha(survey.fechaCreacion) }}</span>
               </div>
             </div>
 
@@ -134,24 +101,11 @@
                 <div class="flex justify-between items-center">
                   <div class="flex items-center">
                     <MessageSquare class="h-4 w-4 text-gray-400 mr-2" />
-                    <span class="text-sm text-gray-600">Respuestas</span>
+                    <span class="text-sm text-gray-600">Respuestas recibidas</span>
                   </div>
-                  <div class="text-right">
-                    <span class="text-lg font-semibold text-gray-900">
-                      {{ encuesta.totalRespuestas }}
-                    </span>
-                    <span class="text-sm text-gray-500">
-                      / {{ encuesta.totalEmpleados }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Progress Bar -->
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    class="bg-primary h-2 rounded-full transition-all duration-300"
-                    :style="{ width: `${getProgreso(encuesta)}%` }"
-                  ></div>
+                  <span class="text-lg font-semibold text-gray-900">
+                    {{ survey.respuestas?.length || 0 }}
+                  </span>
                 </div>
 
                 <!-- Preguntas -->
@@ -161,18 +115,18 @@
                     <span class="text-sm text-gray-600">Preguntas</span>
                   </div>
                   <span class="text-sm font-medium text-gray-900">
-                    {{ encuesta.preguntas }}
+                    {{ survey.preguntas?.length || 0 }}
                   </span>
                 </div>
 
-                <!-- Tasa de Participación -->
+                <!-- Estado -->
                 <div class="flex justify-between items-center">
                   <div class="flex items-center">
-                    <BarChart3 class="h-4 w-4 text-gray-400 mr-2" />
-                    <span class="text-sm text-gray-600">Participación</span>
+                    <Activity class="h-4 w-4 text-gray-400 mr-2" />
+                    <span class="text-sm text-gray-600">Estado</span>
                   </div>
-                  <span class="text-sm font-medium text-gray-900">
-                    {{ getProgreso(encuesta) }}%
+                  <span class="text-sm font-medium text-gray-900 capitalize">
+                    {{ survey.estado }}
                   </span>
                 </div>
               </div>
@@ -181,134 +135,71 @@
             <!-- Card Footer - Actions -->
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 rounded-b-lg">
               <div class="flex justify-between items-center">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  @click="verDetalles(encuesta.id)"
+                <button 
+                  class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                  @click="verDetalles(survey.id)"
                 >
                   <Eye class="h-4 w-4 mr-1" />
                   Ver Detalles
-                </Button>
+                </button>
                 
                 <div class="flex space-x-2">
-                  <Button 
-                    v-if="encuesta.estado === 'borrador'"
-                    variant="outline" 
-                    size="sm"
-                    @click="editarEncuesta(encuesta.id)"
-                  >
-                    <Edit class="h-4 w-4 mr-1" />
-                    Editar
-                  </Button>
-                  
-                  <Button 
-                    v-if="encuesta.estado === 'activa'"
-                    variant="outline" 
-                    size="sm"
-                    @click="verResultados(encuesta.id)"
+                  <button 
+                    v-if="survey.estado === 'activa'"
+                    class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                    @click="verResultados(survey.id)"
                   >
                     <BarChart3 class="h-4 w-4 mr-1" />
                     Resultados
-                  </Button>
+                  </button>
+                  
+                  <button 
+                    class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                    @click="editarEncuesta(survey.id)"
+                  >
+                    <Edit class="h-4 w-4 mr-1" />
+                    Editar
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Empty State -->
-      <div v-else class="bg-white rounded-lg shadow-sm p-12 text-center">
-        <FileText class="h-16 w-16 text-gray-400 mx-auto mb-4" />
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No hay encuestas creadas</h3>
-        <p class="text-gray-500 mb-6">Comienza creando tu primera encuesta de bienestar</p>
-        <Button @click="navegarACrearEncuesta">
-          <Plus class="h-5 w-5 mr-2" />
-          Crear Primera Encuesta
-        </Button>
-      </div>
     </div>
-  </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
+import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
-import Button from '@/components/ui/Button.vue';
 import Header from '@/components/common/Header.vue';
-import { Plus, FileText, CheckCircle, Users, TrendingUp, AlertCircle, RefreshCw, Calendar, MessageSquare, HelpCircle, BarChart3, Eye, CreditCard as Edit } from 'lucide-vue-next';
+import { 
+  Plus, 
+  FileText, 
+  AlertCircle, 
+  RefreshCw, 
+  Calendar, 
+  MessageSquare, 
+  HelpCircle, 
+  Activity, 
+  Eye, 
+  BarChart3, 
+  Edit 
+} from 'lucide-vue-next';
 
-const router = useRouter();
-const toast = useToast();
+// --- Lógica del Store ---
 const encuestasStore = useEncuestasStore();
+const { surveys, isLoading, error } = storeToRefs(encuestasStore);
+const { fetchAllSurveys } = encuestasStore;
 
-// Estados reactivos
-const { encuestas, loading, error } = storeToRefs(encuestasStore);
-
-// Computed properties para estadísticas
-const encuestasActivas = computed(() => {
-  return (encuestas.value || []).filter(e => e.estado === 'activa').length;
+// --- Cargar datos al montar el componente ---
+onMounted(() => {
+  fetchAllSurveys();
 });
 
-const totalRespuestas = computed(() => {
-  return (encuestas.value || []).reduce((total, encuesta) => total + encuesta.totalRespuestas, 0);
-});
-
-const tasaParticipacion = computed(() => {
-  if (!encuestas.value || encuestas.value.length === 0) return 0;
-  
-  const totalPosiblesRespuestas = (encuestas.value || []).reduce((total, encuesta) => {
-    return total + (encuesta.estado === 'activa' ? encuesta.totalEmpleados : 0);
-  }, 0);
-  
-  const totalRespuestasActivas = (encuestas.value || []).reduce((total, encuesta) => {
-    return total + (encuesta.estado === 'activa' ? encuesta.totalRespuestas : 0);
-  }, 0);
-  
-  return totalPosiblesRespuestas > 0 ? Math.round((totalRespuestasActivas / totalPosiblesRespuestas) * 100) : 0;
-});
-
-// Métodos
-const cargarDatos = async () => {
-  await encuestasStore.cargarEncuestas();
-};
-
-const navegarACrearEncuesta = () => {
-  router.push('/admin/crear-encuesta');
-  
-  // Feedback visual para confirmar navegación
-  toast.add({
-    severity: 'info',
-    summary: 'Navegando...',
-    detail: 'Redirigiendo a crear nueva encuesta',
-    life: 2000
-  });
-};
-
-const getEstadoClasses = (estado) => {
-  const classes = {
-    'activa': 'bg-green-100 text-green-800',
-    'finalizada': 'bg-blue-100 text-blue-800',
-    'borrador': 'bg-yellow-100 text-yellow-800',
-    'pausada': 'bg-gray-100 text-gray-800'
-  };
-  return classes[estado] || 'bg-gray-100 text-gray-800';
-};
-
-const getEstadoTexto = (estado) => {
-  const textos = {
-    'activa': 'Activa',
-    'finalizada': 'Finalizada',
-    'borrador': 'Borrador',
-    'pausada': 'Pausada'
-  };
-  return textos[estado] || 'Desconocido';
-};
-
+// --- Funciones auxiliares ---
 const formatearFecha = (fecha) => {
   return new Date(fecha).toLocaleDateString('es-ES', {
     year: 'numeric',
@@ -317,42 +208,20 @@ const formatearFecha = (fecha) => {
   });
 };
 
-const getProgreso = (encuesta) => {
-  if (encuesta.totalEmpleados === 0) return 0;
-  return Math.round((encuesta.totalRespuestas / encuesta.totalEmpleados) * 100);
+const verDetalles = (surveyId) => {
+  console.log('Ver detalles de encuesta:', surveyId);
+  // TODO: Implementar navegación a detalles
 };
 
-const verDetalles = (encuestaId) => {
-  toast.add({
-    severity: 'info',
-    summary: 'Funcionalidad en desarrollo',
-    detail: `Ver detalles de encuesta ${encuestaId}`,
-    life: 3000
-  });
+const verResultados = (surveyId) => {
+  console.log('Ver resultados de encuesta:', surveyId);
+  // TODO: Implementar navegación a resultados
 };
 
-const editarEncuesta = (encuestaId) => {
-  toast.add({
-    severity: 'info',
-    summary: 'Funcionalidad en desarrollo',
-    detail: `Editar encuesta ${encuestaId}`,
-    life: 3000
-  });
+const editarEncuesta = (surveyId) => {
+  console.log('Editar encuesta:', surveyId);
+  // TODO: Implementar navegación a edición
 };
-
-const verResultados = (encuestaId) => {
-  toast.add({
-    severity: 'info',
-    summary: 'Funcionalidad en desarrollo',
-    detail: `Ver resultados de encuesta ${encuestaId}`,
-    life: 3000
-  });
-};
-
-// Lifecycle
-onMounted(() => {
-  cargarDatos();
-});
 </script>
 
 <style scoped>

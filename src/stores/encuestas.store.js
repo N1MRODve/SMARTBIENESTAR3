@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { getActiveSurvey } from '@/services/mock/encuestas.service';
+import { getActiveSurvey, getSurveys, addAnswer } from '@/services/mock/encuestas.service';
 
 export const useEncuestasStore = defineStore('encuestas', () => {
   const activeSurvey = ref(null);
   const encuestaActiva = ref(null);
   const encuestas = ref([]);
+  const surveys = ref([]);
   const isLoading = ref(false);
   const loading = ref(false);
   const error = ref(null);
@@ -31,12 +32,29 @@ export const useEncuestasStore = defineStore('encuestas', () => {
     }
   };
 
+  const fetchAllSurveys = async () => {
+    console.log('Cargando todas las encuestas...');
+    isLoading.value = true;
+    error.value = null;
+    
+    try {
+      const allSurveys = await getSurveys();
+      surveys.value = allSurveys;
+      console.log('Encuestas cargadas:', allSurveys);
+    } catch (err) {
+      error.value = err.message || 'Error al cargar las encuestas';
+      console.error('Error cargando encuestas:', err);
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
   const submitSurveyAnswers = async (respuestas) => {
     isLoading.value = true;
     
     try {
-      // Simular envío de respuestas
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Enviar respuestas usando el mock service
+      await addAnswer(activeSurvey.value.id, respuestas);
       
       console.log('Respuestas enviadas:', respuestas);
       return { success: true, message: 'Respuestas enviadas correctamente' };
@@ -168,7 +186,9 @@ export const useEncuestasStore = defineStore('encuestas', () => {
   return {
     activeSurvey,
     isLoading,
+    surveys,
     fetchActiveSurvey,
+    fetchAllSurveys,
     submitSurveyAnswers,
     encuestaActiva,
     encuestas,

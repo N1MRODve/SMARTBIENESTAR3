@@ -232,21 +232,7 @@ import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Button from '@/components/ui/Button.vue';
-import { 
-  Plus, 
-  FileText, 
-  CheckCircle, 
-  Users, 
-  TrendingUp,
-  AlertCircle, 
-  RefreshCw,
-  Calendar,
-  MessageSquare,
-  HelpCircle,
-  BarChart3,
-  Eye,
-  Edit
-} from 'lucide-vue-next';
+import { Plus, FileText, CheckCircle, Users, TrendingUp, AlertCircle, RefreshCw, Calendar, MessageSquare, HelpCircle, BarChart3, Eye, CreditCard as Edit } from 'lucide-vue-next';
 
 const router = useRouter();
 const toast = useToast();

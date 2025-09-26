@@ -91,6 +91,39 @@ export const useEncuestasStore = defineStore('encuestas', () => {
     }
   };
 
+  const crearEncuesta = async (datosEncuesta) => {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      // Simular creación de encuesta
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const nuevaEncuesta = {
+        id: Date.now(),
+        titulo: datosEncuesta.titulo,
+        descripcion: datosEncuesta.descripcion || '',
+        fechaCreacion: new Date().toISOString().split('T')[0],
+        estado: datosEncuesta.estado || 'activa',
+        totalRespuestas: 0,
+        totalEmpleados: 120,
+        preguntas: datosEncuesta.preguntas.length,
+        preguntasDetalle: datosEncuesta.preguntas
+      };
+      
+      // Agregar la nueva encuesta al estado
+      encuestas.value.unshift(nuevaEncuesta);
+      
+      console.log('Nueva encuesta creada:', nuevaEncuesta);
+      return { success: true, encuesta: nuevaEncuesta };
+    } catch (err) {
+      error.value = err.message || 'Error al crear la encuesta';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     encuestaActiva,
     encuestas,
@@ -98,6 +131,7 @@ export const useEncuestasStore = defineStore('encuestas', () => {
     error,
     cargarEncuestaActiva,
     cargarEncuestas,
-    enviarRespuestas
+    enviarRespuestas,
+    crearEncuesta
   };
 });

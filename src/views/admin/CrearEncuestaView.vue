@@ -268,6 +268,7 @@
                 </div>
               </div>
             </div>
+          </div>
 
             <!-- Botones de Acción -->
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">

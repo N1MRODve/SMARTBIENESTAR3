@@ -133,23 +133,6 @@ export const useEncuestasStore = defineStore('encuestas', () => {
           fechaCreacion: '2024-01-05',
           estado: 'borrador',
           totalRespuestas: 0,
-          totalEmpleados: 120,
-          preguntas: 5
-        }
-      ];
-      
-      // Simular delay de red
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      encuestas.value = encuestasData;
-    } catch (err) {
-      error.value = err.message || 'Error al cargar las encuestas';
-      console.error('Error cargando encuestas:', err);
-    } finally {
-      loading.value = false;
-    }
-  };
-
   const enviarRespuestas = async (respuestas) => {
     isLoading.value = true;
     

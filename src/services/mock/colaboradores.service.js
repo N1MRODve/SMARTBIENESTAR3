@@ -346,3 +346,38 @@ export const resetColaboradores = () => {
   console.log('Colaboradores reseteados al estado inicial');
   return colaboradores;
 };
+
+/**
+ * Genera y devuelve una lista de huecos de disponibilidad para un colaborador.
+ * @param {string} colaboradorId - El ID del colaborador.
+ * @returns {Promise<Array>} Una promesa que resuelve con la lista de huecos.
+ */
+export const getDisponibilidad = async (colaboradorId) => {
+  console.log(`Buscando disponibilidad para el colaborador: ${colaboradorId}`);
+  const disponibilidad = [];
+  const hoy = new Date();
+
+  // Generar huecos para los próximos 7 días
+  for (let i = 1; i < 8; i++) {
+    const dia = new Date(hoy);
+    dia.setDate(hoy.getDate() + i);
+
+    // Solo generar huecos en días laborables
+    if (dia.getDay() > 0 && dia.getDay() < 6) {
+      // Generar huecos de 9 a 17h
+      for (let hora = 9; hora < 17; hora++) {
+        // Añadir algo de aleatoriedad para que no todos los huecos estén disponibles
+        if (Math.random() > 0.4) { 
+          disponibilidad.push({
+            id: `slot-${colaboradorId}-${dia.toISOString().slice(0,10)}-${hora}`,
+            fecha: dia.toISOString().slice(0, 10),
+            hora: `${hora}:00`,
+            disponible: true
+          });
+        }
+      }
+    }
+  }
+
+  return new Promise(resolve => setTimeout(() => resolve(disponibilidad), 400));
+};

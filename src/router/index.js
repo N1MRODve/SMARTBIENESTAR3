@@ -59,6 +59,15 @@ const routes = [
     }
   },
   {
+    path: '/admin/servicios',
+    name: 'admin-gestion-servicios',
+    component: () => import('../views/admin/GestionServiciosView.vue'),
+    meta: { 
+      requiresAuth: true, 
+      roles: ['administrador'] 
+    }
+  },
+  {
     path: '/admin/servicios/:id',
     name: 'admin-servicio-detalle',
     component: () => import('../views/admin/ServicioDetalleView.vue'),
@@ -78,6 +87,15 @@ const routes = [
   },
 
   // === RUTAS EMPLEADO ===
+  {
+    path: '/empleado/actividades',
+    name: 'empleado-actividades',
+    component: () => import('../views/empleado/ActividadesView.vue'),
+    meta: { 
+      requiresAuth: true, 
+      roles: ['empleado'] 
+    }
+  },
   {
     path: '/empleado/encuesta',
     name: 'empleado-encuesta',

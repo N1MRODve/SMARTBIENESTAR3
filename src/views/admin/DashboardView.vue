@@ -15,6 +15,13 @@
             </div>
             <div class="flex space-x-4">
               <router-link 
+                to="/admin/servicios"
+                class="inline-flex items-center px-4 py-2 bg-accent text-gray-900 rounded-lg hover:bg-accent/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+              >
+                <Calendar class="h-5 w-5 mr-2" />
+                Gestionar Servicios
+              </router-link>
+              <router-link 
                 to="/admin/comunicados"
                 class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
               >

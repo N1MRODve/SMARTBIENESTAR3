@@ -142,7 +142,7 @@
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 rounded-b-lg">
               <div class="flex justify-between items-center">
                 <router-link
-                  :to="`/admin/encuesta/${survey.id}/resultados`"
+                  :to="{ name: 'admin-resultados-encuesta', params: { id: survey.id } }"
                   class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200"
                 >
                   <Eye class="h-4 w-4 mr-1" />
@@ -153,7 +153,7 @@
                   <button 
                     v-if="survey.estado === 'activa'"
                     class="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200"
-                    @click="$router.push(`/admin/encuesta/${survey.id}/resultados`)"
+                    @click="() => $router.push(`/admin/encuesta/${survey.id}/resultados`)"
                   >
                     <BarChart3 class="h-4 w-4 mr-1" />
                     Resultados

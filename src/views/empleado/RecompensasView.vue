@@ -161,136 +161,35 @@
           </div>
         </div>
       </div>
+       <Card>
+        <div class="p-4 text-center">
+          <p class="text-sm text-on-surface-variant">Mi Saldo</p>
+          <p class="text-3xl font-bold text-primary">{{ puntos || 0 }} Puntos</p>
+        </div>
+      </Card>
+    </header>
+
+    <div v-if="isLoading" class="text-center py-10">
+      <p>Cargando recompensas...</p>
+    </div>
+
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Card v-for="recompensa in recompensas" :key="recompensa.id">
+        <template #header>
+          <h2 class="text-xl font-semibold text-on-surface">{{ recompensa.titulo }}</h2>
+        </template>
+        
+        <p class="text-on-surface-variant">{{ recompensa.descripcion }}</p>
+
+        <template #footer>
+          <div class="flex justify-between items-center">
+            <span class="text-lg font-bold text-primary">{{ recompensa.coste }} Puntos</span>
+            <Button @click="handleCanjear(recompensa)" :disabled="(puntos || 0) < recompensa.coste">
+              Canjear
+            </Button>
+          </div>
+        </template>
+      </Card>
+    </div>
+  </div>
 </template>
-
-<script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
-import { storeToRefs } from 'pinia';
-import { useRecompensasStore } from '@/stores/recompensas.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useGamificacionStore } from '@/stores/gamificacion.store';
-import Button from '@/components/common/Button.vue';
-import { 
-  Gift,
-  LogOut,
-  AlertCircle,
-  RefreshCw,
-  Tag,
-  Star,
-  X,
-  Lock,
-  ShoppingCart,
-  Info
-} from 'lucide-vue-next';
-
-const router = useRouter();
-const toast = useToast();
-const recompensasStore = useRecompensasStore();
-const authStore = useAuthStore();
-const gamificacionStore = useGamificacionStore();
-
-// Store state
-const { recompensas, loading, error } = storeToRefs(recompensasStore);
-const { puntosUsuario } = storeToRefs(gamificacionStore);
-const { cargarRecompensas, realizarCanje } = recompensasStore;
-const { cargarPuntos } = gamificacionStore;
-
-// Local state
-const canjeandoId = ref(null);
-const loggingOut = ref(false);
-
-// Computed properties
-const empleadoActual = computed(() => ({
-  id: authStore.user?.id || 'user-empleado-01',
-  nombre: authStore.user?.name || 'Empleado Demo',
-  email: authStore.user?.email || 'empleado@demo.com'
-}));
-
-// Methods
-const canjearRecompensa = async (recompensaId) => {
-  const recompensa = recompensas.value.find(r => r.id === recompensaId);
-  if (!recompensa) return;
-
-  // Verificación adicional de puntos
-  if (puntosUsuario.value < recompensa.coste) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Puntos insuficientes',
-      detail: `Necesitas ${recompensa.coste} puntos para canjear "${recompensa.titulo}"`,
-      life: 4000
-    });
-    return;
-  }
-
-  canjeandoId.value = recompensaId;
-  
-  try {
-    const resultado = await realizarCanje(empleadoActual.value.id, recompensaId);
-    
-    if (resultado.success) {
-      // Actualizar puntos del usuario
-      await cargarPuntos(empleadoActual.value.id);
-      
-      toast.add({
-        severity: 'success',
-        summary: '¡Recompensa canjeada!',
-        detail: resultado.mensaje,
-        life: 5000
-      });
-    }
-    
-  } catch (error) {
-    console.error('Error al canjear recompensa:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error en el canje',
-      detail: error.message || 'No se pudo procesar el canje',
-      life: 5000
-    });
-  } finally {
-    canjeandoId.value = null;
-  }
-};
-
-const handleLogout = async () => {
-  loggingOut.value = true;
-  
-  try {
-    await authStore.logout();
-    
-    toast.add({
-      severity: 'info',
-      summary: 'Sesión cerrada',
-      detail: 'Has cerrado sesión correctamente',
-      life: 3000
-    });
-    
-    router.push('/login');
-  } catch (error) {
-    console.error('Error durante el logout:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'No se pudo cerrar la sesión',
-      life: 4000
-    });
-  } finally {
-    loggingOut.value = false;
-  }
-};
-
-// Load data on mount
-onMounted(() => {
-  cargarRecompensas();
-  cargarPuntos(empleadoActual.value.id);
-});
-</script>
-
-<style scoped>
-/* Estilos específicos para el catálogo de recompensas */
-.fill-current {
-  fill: currentColor;
-}
-</style>

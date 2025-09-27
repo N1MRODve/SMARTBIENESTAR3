@@ -213,7 +213,7 @@ import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
-import { Plus, FileText, BarChart, Edit, Trash2 } from 'lucide-vue-next';
+import { Plus, FileText, BarChart, CreditCard as Edit, Trash2 } from 'lucide-vue-next';
 
 const router = useRouter();
 const toast = useToast();

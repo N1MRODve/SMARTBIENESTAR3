@@ -21,6 +21,9 @@ export const calculateWellnessScore = async () => {
     // Calcular puntuación general
     const overallScore = calculateOverallScore(dimensionScores);
     
+    // Crear array de sub-scores para el dashboard
+    const subScores = createSubScoresArray(dimensionScores);
+    
     // Identificar fortalezas y debilidades
     const insights = generateInsights(dimensionScores);
     
@@ -29,6 +32,7 @@ export const calculateWellnessScore = async () => {
     
     return {
       overallScore: Math.round(overallScore * 10) / 10,
+      subScores,
       dimensionScores,
       insights,
       trends,
@@ -40,6 +44,31 @@ export const calculateWellnessScore = async () => {
     console.error('Error calculating wellness score:', error);
     return getDefaultScores();
   }
+};
+
+// Crear array de sub-scores para el dashboard
+const createSubScoresArray = (dimensionScores) => {
+  const iconMap = {
+    mentalHealth: '🧠',
+    workLifeBalance: '⚖️',
+    workEnvironment: '🏢',
+    communication: '💬'
+  };
+
+  const descriptionMap = {
+    mentalHealth: 'Nivel de estrés y bienestar psicológico',
+    workLifeBalance: 'Equilibrio entre vida personal y laboral',
+    workEnvironment: 'Calidad del ambiente y herramientas de trabajo',
+    communication: 'Efectividad de la comunicación interna'
+  };
+
+  return Object.entries(dimensionScores).map(([key, data]) => ({
+    titulo: data.name,
+    puntuacion: Math.round(data.score * 10) / 10,
+    descripcion: descriptionMap[key] || '',
+    icono: iconMap[key] || '📊',
+    tendencia: Math.random() * 2 - 1 // Simulamos tendencia aleatoria por ahora
+  }));
 };
 
 // Calcular puntuaciones por dimensión basado en las preguntas
@@ -197,6 +226,12 @@ const calculateTrends = async () => {
 // Valores por defecto si no hay datos
 const getDefaultScores = () => ({
   overallScore: 6.5,
+  subScores: [
+    { titulo: 'Salud Mental', puntuacion: 6.2, descripcion: 'Nivel de estrés y bienestar psicológico', icono: '🧠', tendencia: -0.3 },
+    { titulo: 'Balance Vida-Trabajo', puntuacion: 5.8, descripcion: 'Equilibrio entre vida personal y laboral', icono: '⚖️', tendencia: -0.5 },
+    { titulo: 'Ambiente Laboral', puntuacion: 7.1, descripcion: 'Calidad del ambiente y herramientas de trabajo', icono: '🏢', tendencia: 0.4 },
+    { titulo: 'Comunicación', puntuacion: 6.9, descripcion: 'Efectividad de la comunicación interna', icono: '💬', tendencia: 0.2 }
+  ],
   dimensionScores: {
     mentalHealth: { name: 'Salud Mental', score: 6.2, count: 0, icon: '🧠' },
     workLifeBalance: { name: 'Balance Vida-Trabajo', score: 5.8, count: 0, icon: '⚖️' },

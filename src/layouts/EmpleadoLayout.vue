@@ -1,5 +1,16 @@
 <script setup>
-// Lógica del componente (si la hay)
+import { useAuthStore } from '@/stores/auth.store.js';
+import { useRouter } from 'vue-router';
+
+const authStore = useAuthStore();
+const router = useRouter();
+
+const handleLogout = async () => {
+  // Llama a la acción de logout del store (que ya debería existir)
+  await authStore.logout();
+  // Redirige al usuario a la página de login
+  router.push('/login');
+};
 </script>
 
 <template>
@@ -38,7 +49,7 @@
       <header class="bg-surface border-b border-surface-variant p-4 shadow-sm flex justify-between items-center">
          <h2 class="text-xl font-semibold text-on-surface">Bienvenido</h2>
         <div>
-           <button class="font-semibold text-primary hover:underline">Cerrar Sesión</button>
+           <button @click="handleLogout" class="font-semibold text-primary hover:underline">Cerrar Sesión</button>
         </div>
       </header>
 

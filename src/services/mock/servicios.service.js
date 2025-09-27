@@ -119,10 +119,10 @@ const getModalidadPorServicio = (id) => {
 
 const getPrecioPorServicio = (id) => {
   const precioMap = {
-    'serv-01': 'Desde $150 por sesión grupal',
-    'serv-02': 'Desde $80 por evaluación',
-    'serv-03': 'Desde $200 por taller',
-    'serv-04': 'Desde $120 por clase'
+    'serv-01': 'Desde 150€ por sesión grupal',
+    'serv-02': 'Desde 80€ por evaluación',
+    'serv-03': 'Desde 200€ por taller',
+    'serv-04': 'Desde 120€ por clase'
   };
   return precioMap[id] || 'Cotización personalizada';
 };

@@ -120,6 +120,12 @@
           >
             <!-- Header de la Recompensa -->
             <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-6 text-center">
+          <router-link 
+            to="/empleado/apoyo-personal"
+            class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+          >
+            Apoyo Personal
+          </router-link>
               <div class="text-4xl mb-3">{{ recompensa.icono }}</div>
               <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ recompensa.titulo }}</h3>
               <p class="text-sm text-gray-600">{{ recompensa.descripcion }}</p>

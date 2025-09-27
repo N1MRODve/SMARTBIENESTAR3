@@ -124,6 +124,15 @@ const routes = [
     }
   },
   {
+    path: '/empleado/apoyo-personal',
+    name: 'empleado-apoyo-personal',
+    component: () => import('../views/empleado/ApoyoPersonalView.vue'),
+    meta: { 
+      requiresAuth: true, 
+      roles: ['empleado'] 
+    }
+  },
+  {
     path: '/empleado/encuesta',
     name: 'empleado-encuesta',
     component: ResponderEncuestaView,

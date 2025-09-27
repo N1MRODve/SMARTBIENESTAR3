@@ -1,5 +1,6 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
+import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth.store.js';
 import empleadoRoutes from './routes/empleado.routes.js';
 import adminRoutes from './routes/admin.routes.js';

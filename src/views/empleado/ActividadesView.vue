@@ -1,336 +1,82 @@
-<template>
-  <div class="space-y-8">
-        <!-- Header -->
-        <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 mb-2">Actividades de Bienestar</h1>
-          <p class="text-lg text-gray-600">Reserva tu plaza en las sesiones programadas</p>
-        </div>
-
-        <!-- Loading State -->
-        <div v-if="loading" class="bg-white rounded-lg shadow-sm p-8 text-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p class="text-gray-600">Cargando actividades...</p>
-        </div>
-
-        <!-- Error State -->
-        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <AlertCircle class="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 class="text-lg font-medium text-red-800 mb-2">Error al cargar las actividades</h3>
-          <p class="text-red-600 mb-4">{{ error }}</p>
-          <Button @click="cargarSesiones" variant="outline">
-            <RefreshCw class="h-4 w-4 mr-2" />
-            Reintentar
-          </Button>
-        </div>
-
-        <!-- Empty State -->
-        <div v-else-if="sesiones.length === 0" class="bg-white rounded-lg shadow-sm p-12 text-center">
-          <Calendar class="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 class="text-lg font-medium text-gray-900 mb-2">No hay actividades programadas</h3>
-          <p class="text-gray-500">Las actividades aparecerán aquí cuando sean programadas por el administrador</p>
-        </div>
-
-        <!-- Sesiones Grid -->
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div 
-            v-for="sesion in sesiones" 
-            :key="sesion.id"
-            class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 overflow-hidden"
-          >
-            <!-- Header de la Sesión -->
-            <div class="bg-gradient-to-r from-primary to-primary-dark text-white p-6">
-              <h3 class="text-lg font-semibold mb-2">{{ sesion.titulo }}</h3>
-              <div class="flex items-center text-primary-light text-sm">
-                <Calendar class="h-4 w-4 mr-1" />
-                <span>{{ formatearFecha(sesion.fecha) }}</span>
-                <Clock class="h-4 w-4 ml-4 mr-1" />
-                <span>{{ sesion.hora }}</span>
-              </div>
-            </div>
-
-            <!-- Contenido de la Sesión -->
-            <div class="p-6">
-              <p v-if="sesion.descripcion" class="text-gray-600 mb-4 text-sm">
-                {{ sesion.descripcion }}
-              </p>
-
-              <!-- Información de la Sesión -->
-              <div class="space-y-3 mb-6">
-                <div class="flex items-center justify-between text-sm">
-                  <div class="flex items-center text-gray-500">
-                    <Clock class="h-4 w-4 mr-2" />
-                    <span>Duración</span>
-                  </div>
-                  <span class="font-medium text-gray-900">{{ sesion.duracion }} min</span>
-                </div>
-
-                <div class="flex items-center justify-between text-sm">
-                  <div class="flex items-center text-gray-500">
-                    <MapPin class="h-4 w-4 mr-2" />
-                    <span>Modalidad</span>
-                  </div>
-                  <span class="font-medium text-gray-900 capitalize">{{ sesion.modalidad }}</span>
-                </div>
-
-                <div v-if="sesion.ubicacion" class="flex items-center justify-between text-sm">
-                  <div class="flex items-center text-gray-500">
-                    <Building class="h-4 w-4 mr-2" />
-                    <span>Ubicación</span>
-                  </div>
-                  <span class="font-medium text-gray-900">{{ sesion.ubicacion }}</span>
-                </div>
-
-                <div v-if="sesion.instructor" class="flex items-center justify-between text-sm">
-                  <div class="flex items-center text-gray-500">
-                    <User class="h-4 w-4 mr-2" />
-                    <span>Instructor</span>
-                  </div>
-                  <span class="font-medium text-gray-900">{{ sesion.instructor }}</span>
-                </div>
-              </div>
-
-              <!-- Plazas Disponibles -->
-              <div class="mb-6">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm font-medium text-gray-700">Plazas disponibles</span>
-                  <span class="text-lg font-bold text-gray-900">
-                    {{ getPlazasDisponibles(sesion) }}/{{ sesion.plazasTotales }}
-                  </span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    class="bg-primary h-2 rounded-full transition-all duration-300"
-                    :style="{ width: `${getProgresoPorcentaje(sesion)}%` }"
-                  ></div>
-                </div>
-              </div>
-
-              <!-- Estado de Reserva y Botón -->
-              <div class="space-y-3">
-                <!-- Si ya está reservado -->
-                <div v-if="estaReservado(sesion)" class="text-center">
-                  <div class="flex items-center justify-center p-3 bg-green-50 rounded-lg border border-green-200 mb-3">
-                    <CheckCircle class="h-5 w-5 text-green-600 mr-2" />
-                    <span class="text-green-800 font-medium">¡Plaza Reservada!</span>
-                  </div>
-                  <Button 
-                    @click="cancelarReserva(sesion.id)"
-                    variant="outline"
-                    :loading="procesandoReserva === sesion.id"
-                    class="w-full text-red-600 border-red-300 hover:bg-red-50"
-                  >
-                    <X class="h-4 w-4 mr-2" />
-                    Cancelar Reserva
-                  </Button>
-                </div>
-
-                <!-- Si no está reservado -->
-                <div v-else>
-                  <Button 
-                    @click="reservarPlaza(sesion.id)"
-                    :loading="procesandoReserva === sesion.id"
-                    :disabled="getPlazasDisponibles(sesion) === 0 || esSesionPasada(sesion)"
-                    class="w-full"
-                  >
-                    <template v-if="getPlazasDisponibles(sesion) === 0">
-                      <UserX class="h-4 w-4 mr-2" />
-                      Sin Plazas Disponibles
-                    </template>
-                    <template v-else-if="esSesionPasada(sesion)">
-                      <Clock class="h-4 w-4 mr-2" />
-                      Sesión Finalizada
-                    </template>
-                    <template v-else>
-                      <UserPlus class="h-4 w-4 mr-2" />
-                      Reservar Plaza
-                    </template>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-</template>
-
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
-import { storeToRefs } from 'pinia';
-import { useSesionesStore } from '@/stores/sesiones.store';
-import { useAuthStore } from '@/stores/auth.store';
-import { useGamificacionStore } from '@/stores/gamificacion.store';
-import Button from '@/components/common/Button.vue';
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Building,
-  User,
-  CheckCircle,
-  X,
-  UserPlus,
-  UserX,
-  AlertCircle,
-  RefreshCw,
-  LogOut
-} from 'lucide-vue-next';
+import { ref, onMounted, computed } from 'vue';
+import Card from '@/components/ui/Card.vue';
+import Button from '@/components/ui/Button.vue';
+// Asumimos que estos servicios y stores ya existen y funcionan
+import { useReservasStore } from '@/stores/reservas.store.js';
+import { getSesiones } from '@/services/mock/sesiones.service.js';
+import { useAuthStore } from '@/stores/auth.store.js';
 
-const router = useRouter();
-const toast = useToast();
-const sesionesStore = useSesionesStore();
+// --- Inicialización ---
+const reservasStore = useReservasStore();
 const authStore = useAuthStore();
-const gamificacionStore = useGamificacionStore();
 
-// Store state
-const { sesiones, loading, error } = storeToRefs(sesionesStore);
-const { puntosUsuario } = storeToRefs(gamificacionStore);
-const { cargarSesiones, reservarPlazaSesion, cancelarReservaSesion } = sesionesStore;
-const { otorgarPuntosReserva, cargarPuntos } = gamificacionStore;
+// --- Estado Reactivo ---
+const sesionesDisponibles = ref([]);
+const isLoading = ref(true);
 
-// Local state
-const procesandoReserva = ref(null);
-const loggingOut = ref(false);
-
-// Computed properties
-const empleadoActual = computed(() => ({
-  id: authStore.user?.id || 'user-empleado-01',
-  nombre: authStore.user?.name || 'Empleado Demo',
-  email: authStore.user?.email || 'empleado@demo.com'
-}));
-
-// Methods
-const formatearFecha = (fecha) => {
-  return new Date(fecha).toLocaleDateString('es-ES', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-};
-
-const getPlazasDisponibles = (sesion) => {
-  return sesion.plazasTotales - sesion.participantes.length;
-};
-
-const getProgresoPorcentaje = (sesion) => {
-  return (sesion.participantes.length / sesion.plazasTotales) * 100;
-};
-
-const estaReservado = (sesion) => {
-  return sesion.participantes.some(p => p.id === empleadoActual.value.id);
-};
-
-const esSesionPasada = (sesion) => {
-  const fechaSesion = new Date(`${sesion.fecha}T${sesion.hora}`);
-  return fechaSesion < new Date();
-};
-
-const reservarPlaza = async (sesionId) => {
-  procesandoReserva.value = sesionId;
-  
+// --- Carga de Datos ---
+onMounted(async () => {
+  isLoading.value = true;
   try {
-    await reservarPlazaSesion(sesionId, empleadoActual.value);
-    
-    // Otorgar puntos por reservar la sesión
-    try {
-      const sesion = sesiones.value.find(s => s.id === sesionId);
-      await otorgarPuntosReserva(empleadoActual.value.id, sesion?.titulo || 'Sesión');
-      
-      toast.add({
-        severity: 'success',
-        summary: '¡Plaza reservada y puntos ganados!',
-        detail: 'Tu plaza ha sido reservada (+25 puntos)',
-        life: 4000
-      });
-    } catch (puntosError) {
-      console.error('Error al otorgar puntos:', puntosError);
-      // Mostrar mensaje de éxito de reserva aunque fallen los puntos
-      toast.add({
-        severity: 'success',
-        summary: '¡Plaza reservada!',
-        detail: 'Tu plaza ha sido reservada exitosamente',
-        life: 4000
-      });
-    }
-    
+    // Obtenemos todas las sesiones y las filtramos para el futuro
+    const todasLasSesiones = await getSesiones();
+    sesionesDisponibles.value = todasLasSesiones.filter(s => new Date(s.fecha) >= new Date());
   } catch (error) {
-    console.error('Error al reservar plaza:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error al reservar',
-      detail: error.message || 'No se pudo reservar la plaza',
-      life: 5000
-    });
+    console.error("Error al cargar las actividades:", error);
   } finally {
-    procesandoReserva.value = null;
+    isLoading.value = false;
   }
-};
-
-const cancelarReserva = async (sesionId) => {
-  procesandoReserva.value = sesionId;
-  
-  try {
-    await cancelarReservaSesion(sesionId, empleadoActual.value.id);
-    
-    toast.add({
-      severity: 'info',
-      summary: 'Reserva cancelada',
-      detail: 'Tu reserva ha sido cancelada correctamente',
-      life: 4000
-    });
-    
-  } catch (error) {
-    console.error('Error al cancelar reserva:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error al cancelar',
-      detail: error.message || 'No se pudo cancelar la reserva',
-      life: 5000
-    });
-  } finally {
-    procesandoReserva.value = null;
-  }
-};
-
-const handleLogout = async () => {
-  loggingOut.value = true;
-  
-  try {
-    await authStore.logout();
-    
-    toast.add({
-      severity: 'info',
-      summary: 'Sesión cerrada',
-      detail: 'Has cerrado sesión correctamente',
-      life: 3000
-    });
-    
-    router.push('/login');
-  } catch (error) {
-    console.error('Error durante el logout:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'No se pudo cerrar la sesión',
-      life: 4000
-    });
-  } finally {
-    loggingOut.value = false;
-  }
-};
-
-// Load data on mount
-onMounted(() => {
-  cargarSesiones();
-  // Cargar puntos del usuario
-  cargarPuntos(empleadoActual.value.id);
 });
+
+// --- Lógica de Reserva ---
+const handleReservar = async (sesion) => {
+  const userId = authStore.user?.id;
+  if (!userId) return;
+
+  const confirmacion = confirm(`¿Confirmas tu reserva para "${sesion.titulo}" el ${sesion.fecha}?`);
+  if (confirmacion) {
+    await reservasStore.crearReserva(userId, sesion);
+    alert('¡Reserva confirmada con éxito!');
+    // Idealmente, aquí se actualiza el estado de la sesión para mostrar que ya está reservada
+  }
+};
 </script>
 
-<style scoped>
-.text-primary-light {
-  color: rgba(255, 255, 255, 0.8);
-}
-</style>
+<template>
+  <div class="space-y-6">
+    <header>
+      <h1 class="text-3xl font-bold text-on-background">Actividades de Bienestar</h1>
+      <p class="text-on-surface-variant">Explora y reserva tu plaza en nuestras próximas sesiones.</p>
+    </header>
+
+    <div v-if="isLoading" class="text-center py-10">
+      <p>Cargando actividades...</p>
+    </div>
+
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <Card v-for="sesion in sesionesDisponibles" :key="sesion.id">
+        <template #header>
+          <h2 class="text-xl font-semibold text-on-surface">{{ sesion.titulo }}</h2>
+        </template>
+        
+        <div class="space-y-2 text-on-surface-variant">
+          <p><strong>Fecha:</strong> {{ sesion.fecha }}</p>
+          <p><strong>Hora:</strong> {{ sesion.hora }}</p>
+          <p><strong>Plazas disponibles:</strong> {{ sesion.plazasTotales - (sesion.participantes?.length || 0) }}</p>
+        </div>
+
+        <template #footer>
+          <div class="text-right">
+            <Button @click="handleReservar(sesion)" variant="primary">
+              Reservar Plaza
+            </Button>
+          </div>
+        </template>
+      </Card>
+    </div>
+     <div v-if="!isLoading && sesionesDisponibles.length === 0" class="text-center py-10">
+        <p class="text-on-surface-variant">No hay actividades programadas próximamente.</p>
+    </div>
+  </div>
+</template>

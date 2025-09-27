@@ -63,7 +63,7 @@ const handleReservarClick = async (slot) => {
 </script>
 
 <template>
-  <div class="p-4 md:p-8">
+  <div class="space-y-8">
     <div v-if="isLoading" class="text-center py-12">
       <p>Cargando disponibilidad...</p>
     </div>
@@ -103,5 +103,4 @@ const handleReservarClick = async (slot) => {
          </div>
       </div>
     </div>
-  </div>
 </template>

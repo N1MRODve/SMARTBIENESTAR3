@@ -1,6 +1,7 @@
 // src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store.js';
+import empleadoRoutes from './routes/empleado.routes.js';
 
 // Importar vistas del MVP
 import LoginView from '../views/LoginView.vue';
@@ -104,56 +105,14 @@ const routes = [
     }
   },
 
-  // === RUTAS EMPLEADO ===
-  {
-    path: '/empleado/actividades',
-    name: 'empleado-actividades',
-    component: () => import('../views/empleado/ActividadesView.vue'),
-    meta: { 
-      requiresAuth: true, 
-      roles: ['empleado'] 
-    }
-  },
-  {
-    path: '/empleado/recompensas',
-    name: 'empleado-recompensas',
-    component: () => import('../views/empleado/RecompensasView.vue'),
-    meta: { 
-      requiresAuth: true, 
-      roles: ['empleado'] 
-    }
-  },
-  {
-    path: '/empleado/apoyo-personal',
-    name: 'empleado-apoyo-personal',
-    component: () => import('../views/empleado/ApoyoPersonalView.vue'),
-    meta: { 
-      requiresAuth: true, 
-      roles: ['empleado'] 
-    }
-  },
-  {
-    path: '/empleado/apoyo-personal/:colaboradorId/reservar',
-    name: 'empleado-reservar-sesion',
-    component: () => import('../views/empleado/ReservarSesionView.vue'),
-    meta: { 
-      requiresAuth: true, 
-      roles: ['empleado'] 
-    }
-  },
+  // === RUTAS EMPLEADO (ANIDADAS) ===
+  ...empleadoRoutes,
+  
+  // === RUTA EMPLEADO LEGACY (MANTENER TEMPORALMENTE) ===
   {
     path: '/empleado/encuesta',
     name: 'empleado-encuesta',
     component: ResponderEncuestaView,
-    meta: { 
-      requiresAuth: true, 
-      roles: ['empleado'] 
-    }
-  },
-  {
-    path: '/empleado/dashboard',
-    name: 'empleado-dashboard',
-    component: () => import('../views/empleado/DashboardView.vue'),
     meta: { 
       requiresAuth: true, 
       roles: ['empleado'] 

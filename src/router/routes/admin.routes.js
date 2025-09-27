@@ -17,34 +17,21 @@ const adminRoutes = [
         component: () => import('@/views/admin/EmpleadosView.vue'),
       },
       {
-        path: 'crear-encuesta',
-        name: 'admin-crear-encuesta',
-        component: () => import('@/views/admin/CrearEncuestaView.vue'),
-      },
-      {
-        path: 'encuesta/:id/resultados',
-        name: 'admin-resultados-encuesta',
-        component: () => import('@/views/admin/ResultadosEncuestaView.vue'),
-      },
-      {
-        path: 'servicios',
-        name: 'admin-gestion-servicios',
-        component: () => import('@/views/admin/GestionServiciosView.vue'),
-      },
-      {
-        path: 'servicios/:id',
-        name: 'admin-servicio-detalle',
-        component: () => import('@/views/admin/ServicioDetalleView.vue'),
+        path: 'encuestas',
+        name: 'admin-encuestas',
+        // Asegúrate de que esta vista exista o crea un placeholder
+        component: () => import('@/views/admin/GestionEncuestasView.vue'), 
       },
       {
         path: 'recompensas',
-        name: 'admin-gestion-recompensas',
+        name: 'admin-recompensas',
         component: () => import('@/views/admin/GestionRecompensasView.vue'),
       },
       {
         path: 'comunicados',
-        name: 'admin-crear-comunicado',
-        component: () => import('@/views/admin/CrearComunicadoView.vue'),
+        name: 'admin-comunicados',
+         // Asegúrate de que esta vista exista o crea un placeholder
+        component: () => import('@/views/admin/GestionComunicadosView.vue'),
       },
       // Redirección por defecto al dashboard si solo se entra a /admin
       {

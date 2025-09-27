@@ -101,8 +101,10 @@
                   <!-- Gráfico -->
                   <div>
                     <h4 class="text-md font-medium text-gray-900 mb-4">Distribución de Respuestas</h4>
-                    <div class="bg-gray-50 rounded-lg p-6 h-64 flex items-center justify-center">
-                      <canvas :id="`chart-${pregunta.id}`" class="max-w-full max-h-full"></canvas>
+                    <div class="bg-gray-50 rounded-lg p-6">
+                      <div class="relative h-64 w-full">
+                        <canvas :id="`chart-${pregunta.id}`" class="w-full h-full"></canvas>
+                      </div>
                     </div>
                   </div>
 
@@ -263,66 +265,78 @@ const crearGraficos = () => {
   
   encuesta.value.preguntas.forEach(pregunta => {
     if (pregunta.resultados) {
-      const canvas = document.getElementById(`chart-${pregunta.id}`);
-      if (canvas) {
-        // Destruir gráfico existente si existe
-        if (charts.value[pregunta.id]) {
-          charts.value[pregunta.id].destroy();
-        }
-        
-        const ctx = canvas.getContext('2d');
-        
-        // Configurar colores dinámicos
-        const colors = [
-          'rgba(59, 130, 246, 0.8)',   // Blue
-          'rgba(16, 185, 129, 0.8)',   // Green
-          'rgba(245, 158, 11, 0.8)',   // Yellow
-          'rgba(239, 68, 68, 0.8)',    // Red
-          'rgba(139, 92, 246, 0.8)',   // Purple
-        ];
-        
-        charts.value[pregunta.id] = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            labels: pregunta.resultados.labels,
-            datasets: [{
-              data: pregunta.resultados.data,
-              backgroundColor: colors.slice(0, pregunta.resultados.labels.length),
-              borderColor: colors.slice(0, pregunta.resultados.labels.length).map(color => 
-                color.replace('0.8', '1')
-              ),
-              borderWidth: 2,
-              hoverOffset: 4
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: {
-                  padding: 20,
-                  usePointStyle: true,
-                  font: {
-                    size: 12
+      // Usar setTimeout para asegurar que el DOM esté listo
+      setTimeout(() => {
+        const canvas = document.getElementById(`chart-${pregunta.id}`);
+        if (canvas) {
+          // Destruir gráfico existente si existe
+          if (charts.value[pregunta.id]) {
+            charts.value[pregunta.id].destroy();
+          }
+          
+          const ctx = canvas.getContext('2d');
+          
+          // Configurar colores dinámicos
+          const colors = [
+            '#3B82F6',   // Blue
+            '#10B981',   // Green
+            '#F59E0B',   // Yellow
+            '#EF4444',   // Red
+            '#8B5CF6',   // Purple
+          ];
+          
+          charts.value[pregunta.id] = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+              labels: pregunta.resultados.labels,
+              datasets: [{
+                data: pregunta.resultados.data,
+                backgroundColor: colors.slice(0, pregunta.resultados.labels.length),
+                borderColor: '#ffffff',
+                borderWidth: 3,
+                hoverOffset: 8
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: {
+                    padding: 20,
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    font: {
+                      size: 13,
+                      weight: '500'
+                    }
+                  }
+                },
+                tooltip: {
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  titleColor: '#ffffff',
+                  bodyColor: '#ffffff',
+                  borderColor: '#ffffff',
+                  borderWidth: 1,
+                  callbacks: {
+                    label: function(context) {
+                      const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                      const percentage = Math.round((context.parsed / total) * 100);
+                      return `${context.label}: ${context.parsed} respuestas (${percentage}%)`;
+                    }
                   }
                 }
               },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                    const percentage = Math.round((context.parsed / total) * 100);
-                    return `${context.label}: ${context.parsed} (${percentage}%)`;
-                  }
-                }
+              cutout: '65%',
+              animation: {
+                animateRotate: true,
+                duration: 1000
               }
-            },
-            cutout: '60%'
-          }
-        });
-      }
+            }
+          });
+        }
+      }, 100);
     }
   });
 };

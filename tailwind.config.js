@@ -8,12 +8,37 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: 'rgb(var(--color-primary))',
-          dark: 'rgb(var(--color-primary-dark))',
+          DEFAULT: '#006A6A', // Verde azulado principal
+          light: '#53D6D5',
+          dark: '#003737',
         },
-        secondary: 'rgb(var(--color-secondary))',
-        accent: 'rgb(var(--color-accent))',
-        background: 'rgb(var(--color-background))',
+        secondary: {
+          DEFAULT: '#4A6363', // Tono neutro
+          light: '#D2E8E7',
+          dark: '#1D3534',
+        },
+        tertiary: {
+          DEFAULT: '#4A607B', // Acento sutil
+          light: '#D2E4FF',
+          dark: '#1C314A',
+        },
+        background: '#F4FAFA', // Fondo general (casi blanco)
+        surface: '#FDFDFB',   // Fondo de las tarjetas (blanco puro)
+        'on-primary': '#FFFFFF', // Texto sobre color primario
+        'on-secondary': '#FFFFFF', // Texto sobre color secundario
+        'on-tertiary': '#FFFFFF', // Texto sobre color terciario
+        'on-background': '#161D1D',// Texto principal
+        'on-surface': '#161D1D',  // Texto sobre tarjetas
+        'surface-variant': '#DAE5E4', // Borde o fondo sutil
+        'on-surface-variant': '#3F4948', // Texto secundario
+        outline: '#6F7978',
+        error: '#BA1A1A',
+        'on-error': '#FFFFFF',
+      },
+      borderRadius: {
+        'lg': '12px',
+        'xl': '16px',
+        '2xl': '24px',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

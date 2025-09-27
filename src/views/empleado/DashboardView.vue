@@ -487,7 +487,6 @@ import { useSesionesStore } from '@/stores/sesiones.store';
 import { useGamificacionStore } from '@/stores/gamificacion.store';
 import { useReservasStore } from '@/stores/reservas.store.js';
 import { useAuthStore } from '@/stores/auth.store';
-import { storeToRefs } from 'pinia';
 import Button from '@/components/common/Button.vue';
 import { 
   BarChart3,

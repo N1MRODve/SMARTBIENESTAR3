@@ -74,3 +74,25 @@ export const getResultadosEncuestaById = async (encuestaId) => {
     }, 300);
   });
 };
+
+/**
+ * Simula el proceso de enviar respuestas a una encuesta.
+ * @param {string} encuestaId - El ID de la encuesta.
+ * @param {Object} respuestas - Las respuestas del usuario.
+ */
+export const addAnswer = async (encuestaId, respuestas) => {
+  const encuesta = encuestasDb.value.find(e => e.id === encuestaId);
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (encuesta && encuesta.estado === 'Activa') {
+        // Simular incremento de participantes
+        encuesta.totalParticipantes += 1;
+        resolve({ success: true, message: 'Respuestas enviadas correctamente' });
+      } else if (!encuesta) {
+        reject(new Error('Encuesta no encontrada'));
+      } else {
+        reject(new Error('La encuesta no está activa'));
+      }
+    }, 300);
+  });
+};

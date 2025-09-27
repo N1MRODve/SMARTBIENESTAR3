@@ -33,6 +33,31 @@ const adminRoutes = [
          // Asegúrate de que esta vista exista o crea un placeholder
         component: () => import('@/views/admin/GestionComunicadosView.vue'),
       },
+      {
+        path: 'crear-encuesta',
+        name: 'admin-crear-encuesta',
+        component: () => import('@/views/admin/CrearEncuestaView.vue'),
+      },
+      {
+        path: 'encuesta/:id/resultados',
+        name: 'admin-resultados-encuesta',
+        component: () => import('@/views/admin/ResultadosEncuestaView.vue'),
+      },
+      {
+        path: 'crear-comunicado',
+        name: 'admin-crear-comunicado',
+        component: () => import('@/views/admin/CrearComunicadoView.vue'),
+      },
+      {
+        path: 'servicios',
+        name: 'admin-servicios',
+        component: () => import('@/views/admin/GestionServiciosView.vue'),
+      },
+      {
+        path: 'servicio/:id',
+        name: 'admin-servicio-detalle',
+        component: () => import('@/views/admin/ServicioDetalleView.vue'),
+      },
       // Redirección por defecto al dashboard si solo se entra a /admin
       {
         path: '',

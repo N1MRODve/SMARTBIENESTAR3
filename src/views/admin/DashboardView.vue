@@ -1,13 +1,24 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
-import SubScoreCard from '@/components/admin/SubScoreCard.vue'; // Importamos el nuevo componente
-import { getAnalyticsSummary } from '@/services/mock/analytics.service.js'; // Importamos el nuevo servicio
+import SubScoreCard from '@/components/admin/SubScoreCard.vue';
+import { getAnalyticsSummary } from '@/services/mock/analytics.service.js';
 
-// --- Estado Reactivo ---
+// --- Inicialización ---
+const router = useRouter();
 const summary = ref(null);
 const isLoading = ref(true);
+
+// --- Simulación de Recomendaciones ---
+const recomendaciones = ref([
+  { 
+    id: 'serv-01', 
+    titulo: 'Taller de Mindfulness y Gestión del Estrés', 
+    descripcion: 'Recomendado para abordar la puntuación de Salud Mental.' 
+  }
+]);
 
 // --- Carga de Datos ---
 onMounted(async () => {
@@ -48,7 +59,7 @@ onMounted(async () => {
             <p>{{ insight.text }}</p>
           </div>
           <div class="text-right pt-4">
-            <Button variant="outline">Ver Análisis Completo</Button>
+            <Button @click="router.push('/admin/encuestas')" variant="outline">Ver Análisis Completo</Button>
           </div>
         </div>
       </Card>
@@ -56,7 +67,7 @@ onMounted(async () => {
 
     <Card>
       <template #header>
-        <h2 class="text-xl font-semibold text-on-surface">Desglose del Índice por Dimensión</h2>
+        <h2 class="text-xl font-semibold text-on-surface">Desglose del Índice</h2>
       </template>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <SubScoreCard 
@@ -67,29 +78,34 @@ onMounted(async () => {
         />
       </div>
     </Card>
+
+    <Card>
+        <template #header>
+            <h2 class="text-xl font-semibold text-on-surface">Recomendaciones Accionables</h2>
+        </template>
+        <div v-for="rec in recomendaciones" :key="rec.id" class="p-4 bg-primary/10 rounded-lg">
+            <h3 class="font-bold text-primary-dark">{{ rec.titulo }}</h3>
+            <p class="text-sm text-on-surface-variant my-2">{{ rec.descripcion }}</p>
+            <div class="text-right">
+                <Button @click="router.push('/admin/servicios')" variant="primary">Ver Servicio</Button>
+            </div>
+        </div>
+    </Card>
+
+    <Card>
+      <template #header>
+        <h2 class="text-xl font-semibold text-on-surface">Acciones Rápidas</h2>
+      </template>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Button @click="router.push('/admin/encuestas/crear')" variant="outline" class="w-full h-full">Crear Encuesta</Button>
+        <Button @click="router.push('/admin/empleados')" variant="outline" class="w-full h-full">Gestionar Empleados</Button>
+        <Button @click="router.push('/admin/recompensas')" variant="outline" class="w-full h-full">Gestionar Recompensas</Button>
+        <Button @click="router.push('/admin/comunicados/crear')" variant="outline" class="w-full h-full">Crear Comunicado</Button>
+      </div>
+    </Card>
   </div>
 
-  <Card>
-    <template #header>
-      <h2 class="text-xl font-semibold text-on-surface">Acciones Rápidas</h2>
-    </template>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <router-link to="/admin/encuestas/crear">
-        <Button variant="outline" class="w-full h-full">Crear Encuesta</Button>
-      </router-link>
-      <router-link to="/admin/empleados">
-        <Button variant="outline" class="w-full h-full">Gestionar Empleados</Button>
-      </router-link>
-      <router-link to="/admin/recompensas">
-        <Button variant="outline" class="w-full h-full">Gestionar Recompensas</Button>
-      </router-link>
-      <router-link to="/admin/comunicados/crear">
-        <Button variant="outline" class="w-full h-full">Crear Comunicado</Button>
-      </router-link>
-    </div>
-  </Card>
-
-  <div v-if="!isLoading && !summary" class="text-center py-12">
+  <div v-else class="text-center py-12">
     <p class="text-on-surface-variant">No hay suficientes datos para generar un análisis.</p>
   </div>
 </template>

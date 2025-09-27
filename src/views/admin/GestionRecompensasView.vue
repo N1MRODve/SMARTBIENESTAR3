@@ -190,7 +190,7 @@
                         <Edit class="h-4 w-4" />
                       </Button>
                       <Button 
-                        @click="eliminarRecompensa(recompensa.id, recompensa.titulo)"
+                        @click="handleEliminarRecompensa(recompensa.id, recompensa.titulo)"
                         variant="outline"
                         class="text-red-600 hover:text-red-700"
                       >
@@ -225,7 +225,7 @@ import { useRecompensasStore } from '@/stores/recompensas.store';
 import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
 import RecompensaFormModal from '@/components/admin/RecompensaFormModal.vue';
-import { ArrowLeft, Plus, AlertCircle, RefreshCw, Gift, CreditCard as Edit, Trash2, Star } from 'lucide-vue-next';
+import { ArrowLeft, Plus, AlertCircle, RefreshCw, Gift, Edit, Trash2, Star } from 'lucide-vue-next';
 
 const router = useRouter();
 const toast = useToast();
@@ -233,7 +233,7 @@ const recompensasStore = useRecompensasStore();
 
 // Store state
 const { recompensas, loading, error } = storeToRefs(recompensasStore);
-const { cargarRecompensas, crearRecompensa, actualizarRecompensa, eliminarRecompensa } = recompensasStore;
+const { cargarRecompensas, crearRecompensa, actualizarRecompensa, eliminarRecompensa: eliminarRecompensaStore } = recompensasStore;
 
 // Local state
 const mostrarModal = ref(false);
@@ -307,7 +307,7 @@ const handleGuardarRecompensa = async (datosRecompensa) => {
   }
 };
 
-const eliminarRecompensa = async (recompensaId, titulo) => {
+const handleEliminarRecompensa = async (recompensaId, titulo) => {
   const confirmacion = confirm(
     `¿Estás seguro de que quieres eliminar "${titulo}" del catálogo?\n\nEsta acción no se puede deshacer.`
   );
@@ -315,7 +315,7 @@ const eliminarRecompensa = async (recompensaId, titulo) => {
   if (!confirmacion) return;
   
   try {
-    await eliminarRecompensa(recompensaId);
+    await eliminarRecompensaStore(recompensaId);
     
     toast.add({
       severity: 'info',

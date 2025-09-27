@@ -5,7 +5,8 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': '/src'
+      '@': '/src',
+      'ws': '/src/shims/ws.js'
     }
   }
 });

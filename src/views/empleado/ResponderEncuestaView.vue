@@ -233,6 +233,41 @@
             Responder otra vez
           </Button>
         </div>
+
+        <!-- Sección de Comunicados -->
+        <div v-if="comunicados.length > 0" class="mt-12">
+          <div class="mb-6">
+            <div class="flex items-center">
+              <Megaphone class="h-6 w-6 text-primary mr-3" />
+              <h2 class="text-2xl font-bold text-gray-900">Últimos Comunicados</h2>
+            </div>
+            <p class="mt-2 text-gray-600">
+              Mantente informado sobre las mejoras implementadas en base a tu feedback
+            </p>
+          </div>
+
+          <!-- Loading State para Comunicados -->
+          <div v-if="comunicadosLoading" class="bg-white rounded-lg shadow-sm p-8 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mx-auto mb-4"></div>
+            <p class="text-gray-600">Cargando comunicados...</p>
+          </div>
+
+          <!-- Lista de Comunicados -->
+          <div v-else class="space-y-6">
+            <ComunicadoCard 
+              v-for="comunicado in comunicados.slice(0, 3)" 
+              :key="comunicado.id"
+              :comunicado="comunicado"
+            />
+            
+            <!-- Mostrar mensaje si hay más comunicados -->
+            <div v-if="comunicados.length > 3" class="text-center">
+              <p class="text-sm text-gray-500">
+                Y {{ comunicados.length - 3 }} comunicado{{ comunicados.length - 3 !== 1 ? 's' : '' }} más...
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
   </div>
 </template>
@@ -243,7 +278,10 @@ import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
+import { useComunicadosStore } from '@/stores/comunicados.store';
 import { useAuthStore } from '@/stores/auth.store';
+import ComunicadoCard from '@/components/empleado/ComunicadoCard.vue';
+import { Megaphone } from 'lucide-vue-next';
 
 const router = useRouter();
 const toast = useToast();
@@ -251,9 +289,12 @@ const authStore = useAuthStore();
 
 // --- Lógica del Store ---
 const encuestasStore = useEncuestasStore();
+const comunicadosStore = useComunicadosStore();
 // 'storeToRefs' asegura que 'activeSurvey', 'isLoading', etc., sean reactivos.
 const { activeSurvey, isLoading, error } = storeToRefs(encuestasStore);
+const { comunicados, loading: comunicadosLoading } = storeToRefs(comunicadosStore);
 const { fetchActiveSurvey, submitSurveyAnswers } = encuestasStore;
+const { cargarComunicados } = comunicadosStore;
 
 // --- Estado local del componente ---
 const userAnswers = ref({});
@@ -265,6 +306,8 @@ onMounted(() => {
   if (!activeSurvey.value) {
     fetchActiveSurvey();
   }
+  // Cargar comunicados
+  cargarComunicados();
 });
 
 // --- Lógica de envío ---

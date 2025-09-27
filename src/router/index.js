@@ -67,6 +67,15 @@ const routes = [
       roles: ['administrador'] 
     }
   },
+  {
+    path: '/admin/comunicados',
+    name: 'admin-crear-comunicado',
+    component: () => import('../views/admin/CrearComunicadoView.vue'),
+    meta: { 
+      requiresAuth: true, 
+      roles: ['administrador'] 
+    }
+  },
 
   // === RUTAS EMPLEADO ===
   {

@@ -13,13 +13,22 @@
               <h1 class="text-3xl font-bold text-gray-900">Panel de Encuestas</h1>
               <p class="mt-2 text-lg text-gray-600">Gestiona las encuestas de bienestar de tu empresa</p>
             </div>
-            <router-link 
-              to="/admin/crear-encuesta"
-              class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            >
-              <Plus class="h-5 w-5 mr-2" />
-              Crear Nueva Encuesta
-            </router-link>
+            <div class="flex space-x-4">
+              <router-link 
+                to="/admin/comunicados"
+                class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
+              >
+                <Megaphone class="h-5 w-5 mr-2" />
+                Crear Comunicado
+              </router-link>
+              <router-link 
+                to="/admin/crear-encuesta"
+                class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              >
+                <Plus class="h-5 w-5 mr-2" />
+                Crear Nueva Encuesta
+              </router-link>
+            </div>
           </div>
         </div>
 
@@ -181,7 +190,7 @@ import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Header from '@/components/common/Header.vue';
-import { Plus, FileText, AlertCircle, RefreshCw, Calendar, MessageSquare, HelpCircle, Activity, Eye, BarChart3, CreditCard as Edit } from 'lucide-vue-next';
+import { Plus, FileText, AlertCircle, RefreshCw, Calendar, MessageSquare, HelpCircle, Activity, Eye, BarChart3, CreditCard as Edit, Megaphone } from 'lucide-vue-next';
 
 // --- Lógica del Store ---
 const encuestasStore = useEncuestasStore();

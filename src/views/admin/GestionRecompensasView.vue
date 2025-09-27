@@ -233,7 +233,12 @@ const recompensasStore = useRecompensasStore();
 
 // Store state
 const { recompensas, loading, error } = storeToRefs(recompensasStore);
-const { cargarRecompensas, crearRecompensa, actualizarRecompensa, eliminarRecompensa: eliminarRecompensaStore } = recompensasStore;
+const { 
+  cargarRecompensas, 
+  crearRecompensa, 
+  actualizarRecompensa, 
+  eliminarRecompensa: eliminarRecompensaStore 
+} = recompensasStore;
 
 // Local state
 const mostrarModal = ref(false);

@@ -261,9 +261,13 @@ export const addRecompensa = (nuevaRecompensa) => {
 export const updateRecompensa = (recompensaActualizada) => {
   return new Promise(resolve => {
     setTimeout(() => {
+      console.log('Actualizando recompensa con ID:', recompensaActualizada.id);
+      console.log('Datos recibidos:', recompensaActualizada);
+      
       const index = catalogo.findIndex(r => r.id === recompensaActualizada.id);
       
       if (index === -1) {
+        console.error('Recompensa no encontrada para actualizar');
         resolve({ success: false, error: 'Recompensa no encontrada' });
         return;
       }
@@ -281,7 +285,8 @@ export const updateRecompensa = (recompensaActualizada) => {
         fechaActualizacion: new Date().toISOString()
       };
       
-      console.log('Recompensa actualizada:', catalogo[index]);
+      console.log('Recompensa actualizada exitosamente:', catalogo[index]);
+      console.log('Catálogo actualizado, total recompensas:', catalogo.length);
       resolve({ success: true, recompensa: catalogo[index] });
     }, 600);
   });
@@ -291,9 +296,12 @@ export const updateRecompensa = (recompensaActualizada) => {
 export const deleteRecompensa = (recompensaId) => {
   return new Promise(resolve => {
     setTimeout(() => {
+      console.log('Eliminando recompensa con ID:', recompensaId);
+      
       const index = catalogo.findIndex(r => r.id === recompensaId);
       
       if (index === -1) {
+        console.error('Recompensa no encontrada para eliminar');
         resolve({ success: false, error: 'Recompensa no encontrada' });
         return;
       }
@@ -301,7 +309,8 @@ export const deleteRecompensa = (recompensaId) => {
       const recompensaEliminada = catalogo[index];
       catalogo.splice(index, 1);
       
-      console.log('Recompensa eliminada:', recompensaEliminada);
+      console.log('Recompensa eliminada exitosamente:', recompensaEliminada.titulo);
+      console.log('Catálogo actualizado, total recompensas:', catalogo.length);
       resolve({ success: true, recompensaEliminada });
     }, 400);
   });

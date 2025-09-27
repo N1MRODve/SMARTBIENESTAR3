@@ -58,6 +58,8 @@ export const getEncuestas = async () => {
   return new Promise(resolve => setTimeout(() => resolve(encuestasConMetadatos), 300));
 };
 
+// Alias para compatibilidad con otros módulos
+export const getSurveys = getEncuestas;
 /**
  * Devuelve los detalles y resultados de una sola encuesta por su ID.
  * @param {string} encuestaId - El ID de la encuesta a buscar.
@@ -75,6 +77,43 @@ export const getResultadosEncuestaById = async (encuestaId) => {
   });
 };
 
+// Alias para compatibilidad con otros módulos
+/**
+ * Devuelve la encuesta activa actual.
+ */
+export const getActiveSurvey = async () => {
+  const encuestaActiva = encuestasDb.value.find(e => e.estado === 'Activa');
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (encuestaActiva) {
+        resolve(encuestaActiva);
+      } else {
+        reject(new Error('No hay encuesta activa'));
+      }
+    }, 300);
+  });
+};
+
+/**
+ * Simula agregar una nueva encuesta a la base de datos.
+ * @param {Object} nuevaEncuesta - Los datos de la nueva encuesta.
+ */
+export const addSurvey = async (nuevaEncuesta) => {
+  const encuestaConId = {
+    ...nuevaEncuesta,
+    id: `enc-${Date.now()}`,
+    totalParticipantes: 0,
+    estado: 'Borrador'
+  };
+  
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      encuestasDb.value.push(encuestaConId);
+      resolve(encuestaConId);
+    }, 300);
+  });
+};
+export const getSurveyById = getResultadosEncuestaById;
 /**
  * Simula el proceso de enviar respuestas a una encuesta.
  * @param {string} encuestaId - El ID de la encuesta.

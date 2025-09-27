@@ -122,3 +122,4 @@ export const PUNTOS_ACTIVIDADES = {
 // Función auxiliar para obtener puntos por tipo de actividad
 export const getPuntosPorActividad = (tipoActividad) => {
   return PUNTOS_ACTIVIDADES[tipoActividad] || 0;
+}

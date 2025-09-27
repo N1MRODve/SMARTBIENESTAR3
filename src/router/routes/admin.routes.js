@@ -57,6 +57,16 @@ const adminRoutes = [
         name: 'admin-servicio-detalle',
         component: () => import('@/views/admin/ServicioDetalleView.vue'),
       },
+      {
+        path: 'encuestas/crear',
+        name: 'admin-crear-encuesta',
+        component: () => import('@/views/admin/CrearEncuestaView.vue'),
+      },
+      {
+        path: 'comunicados/crear',
+        name: 'admin-crear-comunicado',
+        component: () => import('@/views/admin/CrearComunicadoView.vue'),
+      },
       // Redirección por defecto al dashboard si solo se entra a /admin
       {
         path: '',

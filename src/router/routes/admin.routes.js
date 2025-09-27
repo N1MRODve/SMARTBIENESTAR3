@@ -38,6 +38,26 @@ const adminRoutes = [
         component: () => import('@/views/admin/GestionComunicadosView.vue'),
       },
       {
+        path: 'encuestas/crear',
+        name: 'admin-crear-encuesta',
+        component: () => import('@/views/admin/CrearEncuestaView.vue'),
+      },
+      {
+        path: 'comunicados/crear',
+        name: 'admin-crear-comunicado',
+        component: () => import('@/views/admin/CrearComunicadoView.vue'),
+      },
+      {
+        path: 'servicios',
+        name: 'admin-servicios',
+        component: () => import('@/views/admin/GestionServiciosView.vue'),
+      },
+      {
+        path: 'servicio/:id',
+        name: 'admin-servicio-detalle',
+        component: () => import('@/views/admin/ServicioDetalleView.vue'),
+      },
+      {
         path: 'crear-encuesta',
         name: 'admin-crear-encuesta',
         component: () => import('@/views/admin/CrearEncuestaView.vue'),

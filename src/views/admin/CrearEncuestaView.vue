@@ -267,6 +267,141 @@
                     </div>
                 </div>
               </div>
+
+              <!-- Configuración de Recurrencia -->
+              <div class="form-group">
+                <div class="flex items-center space-x-3 mb-4">
+                  <input
+                    id="es-recurrente"
+                    v-model="nuevaEncuesta.esRecurrente"
+                    type="checkbox"
+                    class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                  />
+                  <label for="es-recurrente" class="text-sm font-medium text-gray-700">
+                    Hacer esta encuesta recurrente
+                  </label>
+                </div>
+
+                <!-- Opciones de Recurrencia -->
+                <div v-if="nuevaEncuesta.esRecurrente" class="ml-7 space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 class="text-sm font-medium text-blue-800 mb-3">Configuración de Recurrencia</h4>
+                  
+                  <!-- Frecuencia -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label for="frecuencia" class="block text-sm font-medium text-gray-700 mb-1">
+                        Frecuencia *
+                      </label>
+                      <select
+                        id="frecuencia"
+                        v-model="nuevaEncuesta.recurrencia.frecuencia"
+                        class="input"
+                        required
+                      >
+                        <option value="">Selecciona frecuencia</option>
+                        <option value="semanal">Semanal</option>
+                        <option value="quincenal">Quincenal</option>
+                        <option value="mensual">Mensual</option>
+                        <option value="trimestral">Trimestral</option>
+                      </select>
+                    </div>
+
+                    <!-- Día de la semana (solo para semanal/quincenal) -->
+                    <div v-if="nuevaEncuesta.recurrencia.frecuencia === 'semanal' || nuevaEncuesta.recurrencia.frecuencia === 'quincenal'">
+                      <label for="dia-semana" class="block text-sm font-medium text-gray-700 mb-1">
+                        Día de la semana *
+                      </label>
+                      <select
+                        id="dia-semana"
+                        v-model="nuevaEncuesta.recurrencia.diaSemana"
+                        class="input"
+                        required
+                      >
+                        <option value="">Selecciona día</option>
+                        <option value="lunes">Lunes</option>
+                        <option value="martes">Martes</option>
+                        <option value="miercoles">Miércoles</option>
+                        <option value="jueves">Jueves</option>
+                        <option value="viernes">Viernes</option>
+                      </select>
+                    </div>
+
+                    <!-- Día del mes (solo para mensual/trimestral) -->
+                    <div v-if="nuevaEncuesta.recurrencia.frecuencia === 'mensual' || nuevaEncuesta.recurrencia.frecuencia === 'trimestral'">
+                      <label for="dia-mes" class="block text-sm font-medium text-gray-700 mb-1">
+                        Día del mes *
+                      </label>
+                      <select
+                        id="dia-mes"
+                        v-model="nuevaEncuesta.recurrencia.diaMes"
+                        class="input"
+                        required
+                      >
+                        <option value="">Selecciona día</option>
+                        <option v-for="dia in 28" :key="dia" :value="dia">
+                          {{ dia }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Hora de envío -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label for="hora-envio" class="block text-sm font-medium text-gray-700 mb-1">
+                        Hora de envío *
+                      </label>
+                      <input
+                        id="hora-envio"
+                        v-model="nuevaEncuesta.recurrencia.horaEnvio"
+                        type="time"
+                        class="input"
+                        required
+                      />
+                    </div>
+
+                    <!-- Duración activa -->
+                    <div>
+                      <label for="duracion-activa" class="block text-sm font-medium text-gray-700 mb-1">
+                        Días activa *
+                      </label>
+                      <select
+                        id="duracion-activa"
+                        v-model="nuevaEncuesta.recurrencia.duracionActiva"
+                        class="input"
+                        required
+                      >
+                        <option value="">Selecciona duración</option>
+                        <option value="1">1 día</option>
+                        <option value="3">3 días</option>
+                        <option value="7">7 días</option>
+                        <option value="14">14 días</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Fecha de inicio -->
+                  <div>
+                    <label for="fecha-inicio" class="block text-sm font-medium text-gray-700 mb-1">
+                      Fecha de inicio *
+                    </label>
+                    <input
+                      id="fecha-inicio"
+                      v-model="nuevaEncuesta.recurrencia.fechaInicio"
+                      type="date"
+                      class="input"
+                      :min="fechaMinima"
+                      required
+                    />
+                  </div>
+
+                  <!-- Preview de la recurrencia -->
+                  <div v-if="previewRecurrencia" class="mt-4 p-3 bg-white border border-blue-300 rounded-lg">
+                    <h5 class="text-sm font-medium text-blue-800 mb-2">Vista previa del cronograma:</h5>
+                    <p class="text-sm text-blue-700">{{ previewRecurrencia }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -337,18 +472,83 @@ const loading = ref(false);
 const nuevaEncuesta = ref({
   titulo: '',
   descripcion: '',
-  preguntas: []
+  preguntas: [],
+  esRecurrente: false,
+  recurrencia: {
+    frecuencia: '',
+    diaSemana: '',
+    diaMes: '',
+    horaEnvio: '09:00',
+    duracionActiva: '7',
+    fechaInicio: ''
+  }
 });
 
 // Computed properties
 const puedeSerLanzada = computed(() => {
-  return nuevaEncuesta.value.titulo.trim() && 
+  const basico = nuevaEncuesta.value.titulo.trim() && 
          nuevaEncuesta.value.preguntas.length > 0 &&
          nuevaEncuesta.value.preguntas.every(p => 
            p.texto.trim() && 
            p.tipo && 
            (p.tipo !== 'opcion_multiple' || (p.opciones && p.opciones.every(o => o.trim())))
          );
+  
+  if (!basico) return false;
+  
+  // Si es recurrente, validar configuración de recurrencia
+  if (nuevaEncuesta.value.esRecurrente) {
+    const rec = nuevaEncuesta.value.recurrencia;
+    return rec.frecuencia && 
+           rec.horaEnvio && 
+           rec.duracionActiva && 
+           rec.fechaInicio &&
+           (
+             (rec.frecuencia === 'semanal' || rec.frecuencia === 'quincenal') ? rec.diaSemana :
+             (rec.frecuencia === 'mensual' || rec.frecuencia === 'trimestral') ? rec.diaMes :
+             true
+           );
+  }
+  
+  return true;
+});
+
+const fechaMinima = computed(() => {
+  return new Date().toISOString().split('T')[0];
+});
+
+const previewRecurrencia = computed(() => {
+  if (!nuevaEncuesta.value.esRecurrente || !nuevaEncuesta.value.recurrencia.frecuencia) {
+    return null;
+  }
+  
+  const rec = nuevaEncuesta.value.recurrencia;
+  let texto = '';
+  
+  switch (rec.frecuencia) {
+    case 'semanal':
+      texto = `Cada ${rec.diaSemana || '[día]'} a las ${rec.horaEnvio || '[hora]'}`;
+      break;
+    case 'quincenal':
+      texto = `Cada dos semanas los ${rec.diaSemana || '[día]'} a las ${rec.horaEnvio || '[hora]'}`;
+      break;
+    case 'mensual':
+      texto = `El día ${rec.diaMes || '[día]'} de cada mes a las ${rec.horaEnvio || '[hora]'}`;
+      break;
+    case 'trimestral':
+      texto = `El día ${rec.diaMes || '[día]'} cada 3 meses a las ${rec.horaEnvio || '[hora]'}`;
+      break;
+  }
+  
+  if (rec.duracionActiva) {
+    texto += `. Estará activa por ${rec.duracionActiva} día${rec.duracionActiva !== '1' ? 's' : ''}.`;
+  }
+  
+  if (rec.fechaInicio) {
+    texto += ` Comenzará el ${new Date(rec.fechaInicio).toLocaleDateString('es-ES')}.`;
+  }
+  
+  return texto;
 });
 
 // Métodos para gestionar preguntas
@@ -410,7 +610,9 @@ const guardarBorrador = async () => {
   try {
     await encuestasStore.createNewSurvey({
       ...nuevaEncuesta.value,
-      estado: 'borrador'
+      estado: 'borrador',
+      esRecurrente: nuevaEncuesta.value.esRecurrente,
+      recurrencia: nuevaEncuesta.value.esRecurrente ? nuevaEncuesta.value.recurrencia : null
     });
     
     toast.add({
@@ -510,13 +712,16 @@ const handleLanzarEncuesta = async () => {
     // Llamar a la acción del store
     await encuestasStore.createNewSurvey({
       ...nuevaEncuesta.value,
-      estado: 'activa'
+      estado: 'activa',
+      esRecurrente: nuevaEncuesta.value.esRecurrente,
+      recurrencia: nuevaEncuesta.value.esRecurrente ? nuevaEncuesta.value.recurrencia : null
     });
     
+    const tipoEncuesta = nuevaEncuesta.value.esRecurrente ? 'recurrente' : 'única';
     toast.add({
       severity: 'success',
       summary: '¡Encuesta lanzada!',
-      detail: 'La encuesta está ahora disponible para los empleados',
+      detail: `La encuesta ${tipoEncuesta} está ahora ${nuevaEncuesta.value.esRecurrente ? 'programada' : 'disponible'} para los empleados`,
       life: 5000
     });
     

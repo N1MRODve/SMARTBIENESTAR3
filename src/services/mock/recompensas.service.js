@@ -106,8 +106,40 @@ const catalogo = [
   }
 ];
 
-// Historial de canjes por usuario
-let historialCanjes = {};
+// Historial global de canjes para administrador
+const historialCanjes = ref([
+  // Algunos canjes de ejemplo para demostración
+  {
+    id: 1,
+    usuarioId: 'emp-01',
+    recompensaId: 'rec-02',
+    recompensaTitulo: 'Almuerzo Premium',
+    coste: 150,
+    fecha: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // Hace 3 días
+    estado: 'completado'
+  },
+  {
+    id: 2,
+    usuarioId: 'emp-15',
+    recompensaId: 'rec-05',
+    recompensaTitulo: 'Entrada al Cine',
+    coste: 100,
+    fecha: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // Hace 7 días
+    estado: 'completado'
+  },
+  {
+    id: 3,
+    usuarioId: 'emp-25',
+    recompensaId: 'rec-01',
+    recompensaTitulo: 'Día Libre Adicional',
+    coste: 500,
+    fecha: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // Hace 10 días
+    estado: 'procesando'
+  }
+]);
+
+// Historial de canjes por usuario (para vista individual)
+let historialCanjesUsuario = {};
 
 // Función para obtener todas las recompensas
 export const getRecompensas = () => {
@@ -173,10 +205,14 @@ export const canjearRecompensa = async (usuarioId, recompensaId) => {
           estado: 'procesando' // procesando, completado, cancelado
         };
 
-        if (!historialCanjes[usuarioId]) {
-          historialCanjes[usuarioId] = [];
+        // Añadir al historial global (para admin)
+        historialCanjes.value.unshift(canje);
+
+        // Añadir al historial del usuario (para vista individual)
+        if (!historialCanjesUsuario[usuarioId]) {
+          historialCanjesUsuario[usuarioId] = [];
         }
-        historialCanjes[usuarioId].unshift(canje);
+        historialCanjesUsuario[usuarioId].unshift(canje);
 
         console.log(`Canje exitoso: ${recompensa.titulo} por ${recompensa.coste} puntos`);
         
@@ -199,9 +235,22 @@ export const canjearRecompensa = async (usuarioId, recompensaId) => {
 export const getHistorialCanjes = (usuarioId) => {
   return new Promise(resolve => {
     setTimeout(() => {
-      const historial = historialCanjes[usuarioId] || [];
+      const historial = historialCanjesUsuario[usuarioId] || [];
       resolve(historial);
     }, 200);
+  });
+};
+
+// Función para obtener el historial completo de canjes (para administrador)
+export const getHistorialCanjesCompleto = () => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      // Ordenar por fecha descendente (más recientes primero)
+      const historialOrdenado = [...historialCanjes.value].sort((a, b) => 
+        new Date(b.fecha) - new Date(a.fecha)
+      );
+      resolve(historialOrdenado);
+    }, 300);
   });
 };
 
@@ -209,7 +258,7 @@ export const getHistorialCanjes = (usuarioId) => {
 export const getEstadisticasCanjes = (usuarioId) => {
   return new Promise(resolve => {
     setTimeout(() => {
-      const historial = historialCanjes[usuarioId] || [];
+      const historial = historialCanjesUsuario[usuarioId] || [];
       const totalCanjes = historial.length;
       const puntosGastados = historial.reduce((total, canje) => total + canje.coste, 0);
       const categoriasFavoritas = {};
@@ -318,9 +367,10 @@ export const deleteRecompensa = (recompensaId) => {
 
 // Función para resetear canjes (útil para la demo)
 export const resetCanjes = () => {
-  historialCanjes = {};
+  historialCanjesUsuario = {};
+  historialCanjes.value = [];
   console.log('Historial de canjes reseteado');
-  return historialCanjes;
+  return historialCanjesUsuario;
 };
 
 // Constantes para categorías

@@ -22,6 +22,14 @@
                 Volver al Dashboard
               </Button>
               <Button 
+                @click="verHistorialCanjes"
+                variant="outline"
+                class="text-blue-600 border-blue-300 hover:bg-blue-50"
+              >
+                <BarChart3 class="h-5 w-5 mr-2" />
+                Ver Historial de Canjes
+              </Button>
+              <Button 
                 @click="abrirModalCrear"
               >
                 <Plus class="h-5 w-5 mr-2" />
@@ -225,7 +233,7 @@ import { useRecompensasStore } from '@/stores/recompensas.store';
 import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
 import RecompensaFormModal from '@/components/admin/RecompensaFormModal.vue';
-import { ArrowLeft, Plus, AlertCircle, RefreshCw, Gift, CreditCard as Edit, Trash2, Star } from 'lucide-vue-next';
+import { ArrowLeft, Plus, AlertCircle, RefreshCw, Gift, CreditCard as Edit, Trash2, Star, BarChart3 } from 'lucide-vue-next';
 
 const router = useRouter();
 const toast = useToast();
@@ -255,6 +263,10 @@ const recompensasFiltradas = computed(() => {
 // Methods
 const volverAlDashboard = () => {
   router.push('/admin/dashboard');
+};
+
+const verHistorialCanjes = () => {
+  router.push('/admin/recompensas/historial');
 };
 
 const abrirModalCrear = () => {

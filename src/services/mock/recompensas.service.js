@@ -1,5 +1,6 @@
 // /src/services/mock/recompensas.service.js
 
+import { ref } from 'vue';
 import { getPuntos, addPuntos } from './gamificacion.service.js';
 
 // Catálogo de recompensas disponibles

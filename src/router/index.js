@@ -2,6 +2,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store.js';
 import empleadoRoutes from './routes/empleado.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 
 // Importar vistas del MVP
 import LoginView from '../views/LoginView.vue';
@@ -40,71 +41,9 @@ const routes = [
       requiresAuth: true, 
       roles: ['administrador'] 
     }
-  },
-  {
-    path: '/admin/crear-encuesta',
-    name: 'admin-crear-encuesta',
-    component: CrearEncuestaView,
-    meta: { 
-      requiresAuth: true, 
-      roles: ['administrador'] 
-    }
-  },
-  {
-    path: '/admin/encuesta/:id/resultados',
-    name: 'admin-resultados-encuesta',
-    component: () => import('../views/admin/ResultadosEncuestaView.vue'),
-    meta: { 
-      requiresAuth: true, 
-      roles: ['administrador'] 
-    }
-  },
-  {
-    path: '/admin/servicios',
-    name: 'admin-gestion-servicios',
-    component: () => import('../views/admin/GestionServiciosView.vue'),
-    meta: { 
-      requiresAuth: true, 
-      roles: ['administrador'] 
-    }
-  },
-  {
-    path: '/admin/servicios/:id',
-    name: 'admin-servicio-detalle',
-    component: () => import('../views/admin/ServicioDetalleView.vue'),
-    meta: { 
-      requiresAuth: true, 
-      roles: ['administrador'] 
-    }
-  },
-  {
-    path: '/admin/recompensas',
-    name: 'admin-gestion-recompensas',
-    component: () => import('../views/admin/GestionRecompensasView.vue'),
-    meta: { 
-      requiresAuth: true, 
-      roles: ['administrador'] 
-    }
-  },
-  {
-    path: '/admin/comunicados',
-    name: 'admin-crear-comunicado',
-    component: () => import('../views/admin/CrearComunicadoView.vue'),
-    meta: { 
-      requiresAuth: true, 
-      roles: ['administrador'] 
-    }
-  },
-  {
-    path: '/admin/empleados',
-    name: 'admin-empleados',
-    component: () => import('../views/admin/EmpleadosView.vue'),
-    meta: { 
-      requiresAuth: true, 
-      roles: ['administrador'] 
-    }
-  },
 
+  // === RUTAS ADMIN (ANIDADAS) ===
+  ...adminRoutes,
   // === RUTAS EMPLEADO (ANIDADAS) ===
   ...empleadoRoutes,
   

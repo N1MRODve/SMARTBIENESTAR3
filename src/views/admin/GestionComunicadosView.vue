@@ -130,16 +130,7 @@ import { storeToRefs } from 'pinia';
 import { useComunicadosStore } from '@/stores/comunicados.store';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
-import { 
-  Plus, 
-  AlertCircle, 
-  RefreshCw, 
-  Megaphone, 
-  Calendar, 
-  Clock,
-  Edit,
-  Trash2
-} from 'lucide-vue-next';
+import { Plus, AlertCircle, RefreshCw, Megaphone, Calendar, Clock, CreditCard as Edit, Trash2 } from 'lucide-vue-next';
 
 const router = useRouter();
 const toast = useToast();

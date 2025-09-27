@@ -69,6 +69,26 @@ onMounted(async () => {
     </Card>
   </div>
 
+  <Card>
+    <template #header>
+      <h2 class="text-xl font-semibold text-on-surface">Acciones Rápidas</h2>
+    </template>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <router-link to="/admin/encuestas/crear">
+        <Button variant="outline" class="w-full h-full">Crear Encuesta</Button>
+      </router-link>
+      <router-link to="/admin/empleados">
+        <Button variant="outline" class="w-full h-full">Gestionar Empleados</Button>
+      </router-link>
+      <router-link to="/admin/recompensas">
+        <Button variant="outline" class="w-full h-full">Gestionar Recompensas</Button>
+      </router-link>
+      <router-link to="/admin/comunicados/crear">
+        <Button variant="outline" class="w-full h-full">Crear Comunicado</Button>
+      </router-link>
+    </div>
+  </Card>
+
   <div v-else class="text-center py-12">
     <p class="text-on-surface-variant">No hay suficientes datos para generar un análisis.</p>
   </div>

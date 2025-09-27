@@ -1,60 +1,75 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
+import SubScoreCard from '@/components/admin/SubScoreCard.vue'; // Importamos el nuevo componente
+import { getAnalyticsSummary } from '@/services/mock/analytics.service.js'; // Importamos el nuevo servicio
 
-// --- Simulación de datos que vendrían de un servicio de analítica ---
-const wellnessScore = ref(7.8);
-const subScores = ref([
-  { titulo: 'Salud Mental', puntuacion: 6.5 },
-  { titulo: 'Carga Laboral', puntuacion: 7.1 },
-  { titulo: 'Comunicación', puntuacion: 8.9 },
-]);
-const recomendaciones = ref([
-  { 
-    id: 'serv-01', 
-    titulo: 'Taller de Mindfulness y Gestión del Estrés', 
-    descripcion: 'Debido a la puntuación en Salud Mental, recomendamos esta sesión para dar herramientas al equipo.' 
+// --- Estado Reactivo ---
+const summary = ref(null);
+const isLoading = ref(true);
+
+// --- Carga de Datos ---
+onMounted(async () => {
+  isLoading.value = true;
+  try {
+    summary.value = await getAnalyticsSummary();
+  } catch (error) {
+    console.error("Error al cargar el resumen de analítica:", error);
+  } finally {
+    isLoading.value = false;
   }
-]);
+});
 </script>
 
 <template>
-  <div class="space-y-8">
-    <Card>
+  <div v-if="isLoading" class="text-center py-12">
+    <p>Calculando métricas de bienestar...</p>
+  </div>
+
+  <div v-else-if="summary" class="space-y-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <Card class="lg:col-span-1 h-full text-center flex flex-col justify-center">
         <template #header>
-            <h2 class="text-xl font-semibold text-on-surface">Índice de Bienestar General</h2>
+          <h2 class="text-xl font-semibold text-on-surface">Índice de Bienestar General</h2>
         </template>
-        <div class="flex flex-col md:flex-row items-center justify-center gap-8 p-4">
-            <div class="text-center">
-                <p class="text-7xl font-bold text-primary">{{ wellnessScore }}</p>
-                <p class="text-on-surface-variant">sobre 10</p>
-            </div>
-            <div class="flex-grow space-y-4">
-                <div v-for="score in subScores" :key="score.titulo" class="p-3 bg-background rounded-lg">
-                    <div class="flex justify-between items-center">
-                        <p class="font-semibold text-on-background">{{ score.titulo }}</p>
-                        <p class="text-xl font-bold text-secondary-dark">{{ score.puntuacion }}</p>
-                    </div>
-                </div>
-            </div>
+        <p class="text-7xl font-bold text-primary my-4">{{ summary.wellnessScore }}</p>
+        <p class="text-on-surface-variant">sobre 10</p>
+      </Card>
+      
+      <Card class="lg:col-span-2 h-full">
+        <template #header>
+          <h2 class="text-xl font-semibold text-on-surface">Insights Clave</h2>
+        </template>
+        <div class="space-y-4">
+          <div v-for="insight in summary.insights" :key="insight.text" 
+               class="p-3 rounded-lg text-sm" 
+               :class="insight.type === 'strength' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+            <p>{{ insight.text }}</p>
+          </div>
+          <div class="text-right pt-4">
+            <Button variant="outline">Ver Análisis Completo</Button>
+          </div>
         </div>
-    </Card>
+      </Card>
+    </div>
 
     <Card>
-        <template #header>
-            <h2 class="text-xl font-semibold text-on-surface">Recomendaciones Accionables</h2>
-        </template>
-        <div v-if="recomendaciones.length > 0" class="space-y-4">
-            <div v-for="rec in recomendaciones" :key="rec.id" class="p-4 bg-primary/10 rounded-lg">
-                <h3 class="font-bold text-primary-dark">{{ rec.titulo }}</h3>
-                <p class="text-sm text-on-surface-variant my-2">{{ rec.descripcion }}</p>
-                <div class="text-right">
-                    <Button variant="primary">Ver Servicio</Button>
-                </div>
-            </div>
-        </div>
-        <p v-else class="text-on-surface-variant">No hay recomendaciones por el momento. ¡Buen trabajo!</p>
+      <template #header>
+        <h2 class="text-xl font-semibold text-on-surface">Desglose del Índice por Dimensión</h2>
+      </template>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <SubScoreCard 
+          v-for="score in summary.subScores" 
+          :key="score.titulo"
+          :titulo="score.titulo"
+          :puntuacion="score.puntuacion"
+        />
+      </div>
     </Card>
+  </div>
+
+  <div v-else class="text-center py-12">
+    <p class="text-on-surface-variant">No hay suficientes datos para generar un análisis.</p>
   </div>
 </template>

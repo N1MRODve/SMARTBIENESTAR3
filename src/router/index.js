@@ -41,6 +41,7 @@ const routes = [
       requiresAuth: true, 
       roles: ['administrador'] 
     }
+  }
 
   // === RUTAS ADMIN (ANIDADAS) ===
   ...adminRoutes,

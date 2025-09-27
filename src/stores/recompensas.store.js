@@ -101,6 +101,81 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     }
   };
 
+  const crearRecompensa = async (nuevaRecompensa) => {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      const resultado = await addRecompensa(nuevaRecompensa);
+      
+      if (resultado.success) {
+        // Añadir la nueva recompensa al estado local
+        recompensas.value.push(resultado.recompensa);
+        
+        console.log('Recompensa creada exitosamente:', resultado.recompensa);
+        return resultado;
+      }
+    } catch (err) {
+      error.value = err.message || 'Error al crear la recompensa';
+      console.error('Error creando recompensa:', err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const actualizarRecompensa = async (recompensaActualizada) => {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      const resultado = await updateRecompensa(recompensaActualizada);
+      
+      if (resultado.success) {
+        // Actualizar la recompensa en el estado local
+        const index = recompensas.value.findIndex(r => r.id === recompensaActualizada.id);
+        if (index !== -1) {
+          recompensas.value[index] = resultado.recompensa;
+        }
+        
+        console.log('Recompensa actualizada exitosamente:', resultado.recompensa);
+        return resultado;
+      }
+    } catch (err) {
+      error.value = err.message || 'Error al actualizar la recompensa';
+      console.error('Error actualizando recompensa:', err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const eliminarRecompensa = async (recompensaId) => {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      const resultado = await deleteRecompensa(recompensaId);
+      
+      if (resultado.success) {
+        // Eliminar la recompensa del estado local
+        const index = recompensas.value.findIndex(r => r.id === recompensaId);
+        if (index !== -1) {
+          recompensas.value.splice(index, 1);
+        }
+        
+        console.log('Recompensa eliminada exitosamente');
+        return resultado;
+      }
+    } catch (err) {
+      error.value = err.message || 'Error al eliminar la recompensa';
+      console.error('Error eliminando recompensa:', err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     recompensas,
     historialCanjes,
@@ -111,6 +186,9 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     cargarRecompensasPorCategoria,
     realizarCanje,
     cargarHistorial,
-    cargarEstadisticas
+    cargarEstadisticas,
+    crearRecompensa,
+    actualizarRecompensa,
+    eliminarRecompensa
   };
 });

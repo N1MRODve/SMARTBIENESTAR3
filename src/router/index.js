@@ -77,6 +77,15 @@ const routes = [
     }
   },
   {
+    path: '/admin/recompensas',
+    name: 'admin-gestion-recompensas',
+    component: () => import('../views/admin/GestionRecompensasView.vue'),
+    meta: { 
+      requiresAuth: true, 
+      roles: ['administrador'] 
+    }
+  },
+  {
     path: '/admin/comunicados',
     name: 'admin-crear-comunicado',
     component: () => import('../views/admin/CrearComunicadoView.vue'),

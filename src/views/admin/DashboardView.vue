@@ -277,6 +277,7 @@ import {
   Plus, 
   Calendar, 
   Megaphone,
+  Gift,
   Clock,
   Users,
   TrendingUp,

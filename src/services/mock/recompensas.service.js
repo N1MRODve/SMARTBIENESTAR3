@@ -231,6 +231,81 @@ export const getEstadisticasCanjes = (usuarioId) => {
   });
 };
 
+// === FUNCIONES DE GESTIÓN PARA ADMINISTRADOR ===
+
+// Función para añadir una nueva recompensa
+export const addRecompensa = (nuevaRecompensa) => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const recompensa = {
+        id: `rec-${Date.now()}`,
+        titulo: nuevaRecompensa.titulo,
+        descripcion: nuevaRecompensa.descripcion || '',
+        coste: parseInt(nuevaRecompensa.coste),
+        categoria: nuevaRecompensa.categoria || 'general',
+        icono: nuevaRecompensa.icono || '🎁',
+        disponible: nuevaRecompensa.disponible !== false,
+        popularidad: nuevaRecompensa.popularidad || 3,
+        fechaCreacion: new Date().toISOString()
+      };
+      
+      catalogo.push(recompensa);
+      console.log('Nueva recompensa añadida:', recompensa);
+      resolve({ success: true, recompensa });
+    }, 500);
+  });
+};
+
+// Función para actualizar una recompensa existente
+export const updateRecompensa = (recompensaActualizada) => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const index = catalogo.findIndex(r => r.id === recompensaActualizada.id);
+      
+      if (index === -1) {
+        resolve({ success: false, error: 'Recompensa no encontrada' });
+        return;
+      }
+      
+      // Actualizar la recompensa manteniendo algunos campos originales
+      catalogo[index] = {
+        ...catalogo[index],
+        titulo: recompensaActualizada.titulo,
+        descripcion: recompensaActualizada.descripcion,
+        coste: parseInt(recompensaActualizada.coste),
+        categoria: recompensaActualizada.categoria,
+        icono: recompensaActualizada.icono,
+        disponible: recompensaActualizada.disponible,
+        popularidad: recompensaActualizada.popularidad || catalogo[index].popularidad,
+        fechaActualizacion: new Date().toISOString()
+      };
+      
+      console.log('Recompensa actualizada:', catalogo[index]);
+      resolve({ success: true, recompensa: catalogo[index] });
+    }, 600);
+  });
+};
+
+// Función para eliminar una recompensa
+export const deleteRecompensa = (recompensaId) => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const index = catalogo.findIndex(r => r.id === recompensaId);
+      
+      if (index === -1) {
+        resolve({ success: false, error: 'Recompensa no encontrada' });
+        return;
+      }
+      
+      const recompensaEliminada = catalogo[index];
+      catalogo.splice(index, 1);
+      
+      console.log('Recompensa eliminada:', recompensaEliminada);
+      resolve({ success: true, recompensaEliminada });
+    }, 400);
+  });
+};
+
 // Función para resetear canjes (útil para la demo)
 export const resetCanjes = () => {
   historialCanjes = {};

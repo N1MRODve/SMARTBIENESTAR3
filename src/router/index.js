@@ -94,6 +94,15 @@ const routes = [
       roles: ['administrador'] 
     }
   },
+  {
+    path: '/admin/empleados',
+    name: 'admin-empleados',
+    component: () => import('../views/admin/EmpleadosView.vue'),
+    meta: { 
+      requiresAuth: true, 
+      roles: ['administrador'] 
+    }
+  },
 
   // === RUTAS EMPLEADO ===
   {

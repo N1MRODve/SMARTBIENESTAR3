@@ -136,7 +136,7 @@
                             </div>
                           </div>
                           <Button 
-                            @click="solicitarServicio(pregunta.recomendacion.id)"
+                            @click="handleSolicitarServicio(pregunta.recomendacion.id)"
                             class="ml-4 flex-shrink-0"
                           >
                             <Send class="h-4 w-4 mr-2" />
@@ -345,8 +345,8 @@ const volverAtras = () => {
   router.push('/admin/encuestas');
 };
 
-const solicitarServicio = (servicioId) => {
-  router.push(`/admin/servicio/${servicioId}`);
+const handleSolicitarServicio = (servicioId) => {
+  router.push({ name: 'admin-servicio-detalle', params: { id: servicioId } });
 };
 
 const exportarResultados = () => {

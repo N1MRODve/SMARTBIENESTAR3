@@ -53,7 +53,7 @@ const adminRoutes = [
         component: () => import('@/views/admin/GestionServiciosView.vue'),
       },
       {
-        path: 'servicio/:id',
+        path: 'servicios/:id',
         name: 'admin-servicio-detalle',
         component: () => import('@/views/admin/ServicioDetalleView.vue'),
       },
@@ -66,16 +66,6 @@ const adminRoutes = [
         path: 'crear-comunicado',
         name: 'admin-crear-comunicado',
         component: () => import('@/views/admin/CrearComunicadoView.vue'),
-      },
-      {
-        path: 'servicios',
-        name: 'admin-servicios',
-        component: () => import('@/views/admin/GestionServiciosView.vue'),
-      },
-      {
-        path: 'servicio/:id',
-        name: 'admin-servicio-detalle',
-        component: () => import('@/views/admin/ServicioDetalleView.vue'),
       },
       // Redirección por defecto al dashboard si solo se entra a /admin
       {

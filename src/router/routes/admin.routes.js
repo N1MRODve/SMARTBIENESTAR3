@@ -19,7 +19,7 @@ const adminRoutes = [
       {
         path: 'encuestas',
         name: 'admin-encuestas',
-        component: () => import('@/views/admin/GestionEncuestasView.vue'), 
+        component: () => import('@/views/admin/EncuestasView.vue'),
       },
       // --- RUTA AÑADIDA Y CORREGIDA ---
       {
@@ -28,9 +28,9 @@ const adminRoutes = [
         component: () => import('@/views/admin/ResultadosEncuestaView.vue'),
       },
       {
-        path: 'recompensas',
-        name: 'admin-recompensas',
-        component: () => import('@/views/admin/GestionRecompensasView.vue'),
+        path: 'encuestas/crear',
+        name: 'admin-crear-encuesta',
+        component: () => import('@/views/admin/CrearEncuestaView.vue'),
       },
       {
         path: 'recompensas',
@@ -48,11 +48,6 @@ const adminRoutes = [
         component: () => import('@/views/admin/GestionComunicadosView.vue'),
       },
       {
-        path: 'encuestas/crear',
-        name: 'admin-crear-encuesta',
-        component: () => import('@/views/admin/CrearEncuestaView.vue'),
-      },
-      {
         path: 'comunicados/crear',
         name: 'admin-crear-comunicado',
         component: () => import('@/views/admin/CrearComunicadoView.vue'),
@@ -66,16 +61,6 @@ const adminRoutes = [
         path: 'servicios/:id',
         name: 'admin-servicio-detalle',
         component: () => import('@/views/admin/ServicioDetalleView.vue'),
-      },
-      {
-        path: 'encuestas/crear',
-        name: 'admin-crear-encuesta',
-        component: () => import('@/views/admin/CrearEncuestaView.vue'),
-      },
-      {
-        path: 'comunicados/crear',
-        name: 'admin-crear-comunicado',
-        component: () => import('@/views/admin/CrearComunicadoView.vue'),
       },
       // Redirección por defecto al dashboard si solo se entra a /admin
       {

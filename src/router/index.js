@@ -97,6 +97,15 @@ const routes = [
     }
   },
   {
+    path: '/empleado/recompensas',
+    name: 'empleado-recompensas',
+    component: () => import('../views/empleado/RecompensasView.vue'),
+    meta: { 
+      requiresAuth: true, 
+      roles: ['empleado'] 
+    }
+  },
+  {
     path: '/empleado/encuesta',
     name: 'empleado-encuesta',
     component: ResponderEncuestaView,

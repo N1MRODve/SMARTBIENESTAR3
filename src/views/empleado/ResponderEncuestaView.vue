@@ -283,6 +283,12 @@
               :key="comunicado.id"
               :comunicado="comunicado"
             />
+            <router-link 
+              to="/empleado/recompensas"
+              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+            >
+              Recompensas
+            </router-link>
             
             <!-- Mostrar mensaje si hay más comunicados -->
             <div v-if="comunicados.length > 3" class="text-center">

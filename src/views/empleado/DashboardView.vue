@@ -754,7 +754,8 @@ const cargarDatosDashboard = async () => {
       fetchActiveSurvey(),
       cargarComunicados(),
       cargarSesiones(),
-      cargarPuntos(empleadoActual.value.id)
+      cargarPuntos(empleadoActual.value.id),
+      fetchMisReservas(usuarioIdDemo)
     ]);
   } catch (error) {
     console.error('Error cargando datos del dashboard:', error);

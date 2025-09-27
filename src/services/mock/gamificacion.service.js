@@ -1,5 +1,20 @@
 // /src/services/mock/gamificacion.service.js
 
+import { ref } from 'vue';
+
+// Catálogo de logros disponibles en la plataforma
+const catalogoLogros = [
+  { id: 'logro-01', titulo: 'Primeros Pasos', descripcion: 'Completa tu primera encuesta de bienestar.', icono: '👣' },
+  { id: 'logro-02', titulo: 'Participante Activo', descripcion: 'Asiste a tu primera actividad de bienestar.', icono: '🧘' },
+  { id: 'logro-03', titulo: 'Comprador Inteligente', descripcion: 'Canjea tu primera recompensa.', icono: '🎁' },
+  { id: 'logro-04', titulo: 'Campeón del Bienestar', descripcion: 'Acumula 1000 Puntos de Bienestar.', icono: '🏆' },
+];
+
+// Simula una tabla en la BD que guarda los logros de cada usuario
+const logrosUsuarios = ref({
+  'user-empleado-01': ['logro-01'], // El empleado demo ya tiene un logro
+});
+
 // Base de datos simulada de puntos por usuario
 let puntosUsuarios = {
   'user-empleado-01': 50,
@@ -107,4 +122,3 @@ export const PUNTOS_ACTIVIDADES = {
 // Función auxiliar para obtener puntos por tipo de actividad
 export const getPuntosPorActividad = (tipoActividad) => {
   return PUNTOS_ACTIVIDADES[tipoActividad] || 0;
-};

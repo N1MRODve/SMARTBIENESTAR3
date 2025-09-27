@@ -186,3 +186,4 @@ watch(() => props.score, () => {
 .ease-out {
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
+</style>

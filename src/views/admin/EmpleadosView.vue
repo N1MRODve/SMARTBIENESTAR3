@@ -2,7 +2,7 @@
   <div class="p-4 md:p-8">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-gray-800">Gestión de Empleados</h1>
-      <button class="bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition-colors">
+      <button @click="isModalVisible = true" class="bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition-colors">
         Invitar Empleados
       </button>
     </div>
@@ -40,19 +40,26 @@
         </tbody>
       </table>
     </div>
+
+    <InvitarEmpleadosModal
+      v-if="isModalVisible"
+      @close="isModalVisible = false"
+      @submit="handleInvitar"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getEmpleados } from '@/services/mock/empleados.service.js';
-// Importa el componente de tabla si ya tienes uno genérico
-// import DataTable from '@/components/ui/DataTable.vue'; 
+import { getEmpleados, invitarEmpleados } from '@/services/mock/empleados.service.js';
+import InvitarEmpleadosModal from '@/components/admin/InvitarEmpleadosModal.vue';
 
 const empleados = ref([]);
 const isLoading = ref(true);
+const isModalVisible = ref(false); // Variable para controlar la visibilidad del modal
 
-onMounted(async () => {
+// Función para cargar los empleados
+const cargarEmpleados = async () => {
   isLoading.value = true;
   try {
     empleados.value = await getEmpleados();
@@ -61,5 +68,14 @@ onMounted(async () => {
   } finally {
     isLoading.value = false;
   }
-});
+};
+
+onMounted(cargarEmpleados);
+
+// Función para manejar el envío de invitaciones desde el modal
+const handleInvitar = async (emails) => {
+  await invitarEmpleados(emails);
+  isModalVisible.value = false; // Cierra el modal
+  await cargarEmpleados(); // Recarga la lista para mostrar los nuevos invitados
+};
 </script>

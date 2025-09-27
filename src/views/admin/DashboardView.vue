@@ -89,7 +89,7 @@ onMounted(async () => {
     </div>
   </Card>
 
-  <div v-else class="text-center py-12">
+  <div v-if="!isLoading && !summary" class="text-center py-12">
     <p class="text-on-surface-variant">No hay suficientes datos para generar un análisis.</p>
   </div>
 </template>

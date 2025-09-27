@@ -1,5 +1,14 @@
 <script setup>
-// Lógica del layout del administrador
+import { useAuthStore } from '@/stores/auth.store.js';
+import { useRouter } from 'vue-router';
+
+const authStore = useAuthStore();
+const router = useRouter();
+
+const handleLogout = async () => {
+  await authStore.logout();
+  router.push('/login');
+};
 </script>
 
 <template>
@@ -18,22 +27,22 @@
           </li>
           <li>
             <router-link to="/admin/empleados" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <span class="ml-3">Empleados</span>
+              <span class="ml-3">Gestionar Empleados</span>
             </router-link>
           </li>
           <li>
             <router-link to="/admin/encuestas" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <span class="ml-3">Encuestas</span>
+              <span class="ml-3">Gestionar Encuestas</span>
             </router-link>
           </li>
           <li>
             <router-link to="/admin/recompensas" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <span class="ml-3">Recompensas</span>
+              <span class="ml-3">Gestionar Recompensas</span>
             </router-link>
           </li>
           <li>
             <router-link to="/admin/comunicados" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <span class="ml-3">Comunicados</span>
+              <span class="ml-3">Gestionar Comunicados</span>
             </router-link>
           </li>
         </ul>
@@ -44,7 +53,7 @@
       <header class="bg-surface border-b border-surface-variant p-4 shadow-sm flex justify-between items-center">
          <h2 class="text-xl font-semibold text-on-surface">Panel de Administración</h2>
         <div>
-           <button class="font-semibold text-primary hover:underline">Cerrar Sesión</button>
+           <button @click="handleLogout" class="font-semibold text-primary hover:underline">Cerrar Sesión</button>
         </div>
       </header>
 

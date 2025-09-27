@@ -103,4 +103,5 @@ const handleReservarClick = async (slot) => {
          </div>
       </div>
     </div>
+  </div>
 </template>

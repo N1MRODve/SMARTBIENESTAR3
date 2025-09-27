@@ -41,6 +41,11 @@ const handleLogout = async () => {
               <span class="ml-3">Recompensas</span>
             </router-link>
           </li>
+          <li>
+            <router-link to="/empleado/reservas" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
+              <span class="ml-3">Mis Reservas</span>
+            </router-link>
+          </li>
         </ul>
       </nav>
     </aside>

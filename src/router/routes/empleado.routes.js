@@ -31,6 +31,11 @@ const empleadoRoutes = [
         name: 'empleado-recompensas',
         component: () => import('@/views/empleado/RecompensasView.vue'),
       },
+      {
+        path: 'reservas',
+        name: 'empleado-reservas',
+        component: () => import('@/views/empleado/ReservasView.vue'),
+      },
       // Redirección por defecto al dashboard si solo se entra a /empleado
       {
         path: '',

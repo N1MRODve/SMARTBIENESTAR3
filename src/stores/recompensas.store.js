@@ -6,7 +6,10 @@ import {
   canjearRecompensa, 
   getHistorialCanjes,
   getEstadisticasCanjes,
-  getRecompensasPorCategoria 
+  getRecompensasPorCategoria,
+  addRecompensa,
+  updateRecompensa,
+  deleteRecompensa
 } from '@/services/mock/recompensas.service';
 
 export const useRecompensasStore = defineStore('recompensas', () => {

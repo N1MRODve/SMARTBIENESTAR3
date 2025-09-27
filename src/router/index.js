@@ -141,6 +141,15 @@ const routes = [
       roles: ['empleado'] 
     }
   },
+  {
+    path: '/empleado/dashboard',
+    name: 'empleado-dashboard',
+    component: () => import('../views/empleado/DashboardView.vue'),
+    meta: { 
+      requiresAuth: true, 
+      roles: ['empleado'] 
+    }
+  },
 
   // === RUTAS DE ERROR ===
   { 
@@ -174,7 +183,7 @@ router.beforeEach(async (to, from) => {
   
   // Si la ruta es login y el usuario ya está autenticado, redirigir al dashboard correspondiente
   if (to.name === 'login' && authStore.isAuthenticated) {
-    const redirectPath = authStore.userRole === 'administrador' ? '/admin/dashboard' : '/empleado/encuesta';
+    const redirectPath = authStore.userRole === 'administrador' ? '/admin/dashboard' : '/empleado/dashboard';
     return redirectPath;
   }
   

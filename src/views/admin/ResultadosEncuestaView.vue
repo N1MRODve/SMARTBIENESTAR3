@@ -105,6 +105,60 @@
             </div>
           </div>
 
+          <!-- Recomendaciones Accionables -->
+          <div v-if="recomendaciones.length > 0" class="mt-12">
+            <div class="mb-6">
+              <h2 class="text-2xl font-bold text-gray-900 mb-2">Recomendaciones Accionables</h2>
+              <p class="text-gray-600">
+                Basado en los resultados de la encuesta, estos servicios podrían ayudar a mejorar el bienestar de tu equipo
+              </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div 
+                v-for="servicio in recomendaciones" 
+                :key="servicio.id" 
+                class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-primary hover:shadow-md transition-shadow duration-200"
+              >
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex-1">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">{{ servicio.titulo }}</h4>
+                    <p class="text-gray-600 leading-relaxed">{{ servicio.descripcion }}</p>
+                  </div>
+                  <div class="ml-4 flex-shrink-0">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                      <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <div class="flex items-center text-sm text-gray-500">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Recomendado para tu equipo</span>
+                  </div>
+                  <Button variant="outline" class="text-sm">
+                    Ver más detalles
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Call to Action -->
+            <div class="mt-8 p-6 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-lg border border-primary/20">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-lg font-semibold text-gray-900 mb-2">¿Listo para implementar estas mejoras?</h4>
+                  <p class="text-gray-600">Contacta con nuestro equipo para programar estos servicios para tu empresa.</p>
+                </div>
+                <Button class="ml-6">
+                  Contactar Equipo
+                </Button>
+              </div>
+            </div>
+          </div>
           <!-- Feedback Cualitativo Section -->
           <div v-if="comentariosDeLaEncuesta.length > 0" class="mt-12">
             <div class="mb-6">
@@ -232,6 +286,7 @@ import { onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
+import { getServicios } from '@/services/mock/servicios.service.js';
 import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
 import ComentariosAnonimos from '@/components/admin/results/ComentariosAnonimos.vue';
@@ -277,6 +332,9 @@ const router = useRouter();
 const encuestasStore = useEncuestasStore();
 const { selectedSurvey, previousSurvey, isLoading, error } = storeToRefs(encuestasStore);
 const { fetchSurveyById } = encuestasStore;
+
+// Obtener lista de servicios disponibles
+const todosLosServicios = getServicios();
 
 // Chart options
 const barChartOptions = {
@@ -480,6 +538,61 @@ const comentariosDeLaEncuesta = computed(() => {
   
   return comentarios;
 });
+
+// Sistema de recomendaciones
+const recomendaciones = computed(() => {
+  if (!selectedSurvey.value) {
+    return []; // No hay encuesta, no hay recomendaciones
+  }
+
+  const serviciosRecomendados = [];
+
+  // Lógica para el estrés
+  const preguntaEstres = selectedSurvey.value.preguntas.find(p => p.texto.toLowerCase().includes('estrés'));
+  if (preguntaEstres) {
+    const totalRespuestas = selectedSurvey.value.respuestas.length;
+    const respuestasAltas = selectedSurvey.value.respuestas.filter(r => r.respuestas[preguntaEstres.id] === 'Alto').length;
+
+    // Si más del 30% reporta estrés alto, recomienda un servicio
+    if ((respuestasAltas / totalRespuestas) > 0.3) {
+      const servicioParaEstres = todosLosServicios.filter(s => s.palabraClave === 'estrés');
+      serviciosRecomendados.push(...servicioParaEstres);
+    }
+  }
+
+  // Lógica para herramientas de trabajo
+  const preguntaHerramientas = selectedSurvey.value.preguntas.find(p => p.texto.toLowerCase().includes('herramientas'));
+  if (preguntaHerramientas) {
+    const totalRespuestas = selectedSurvey.value.respuestas.length;
+    const respuestasNo = selectedSurvey.value.respuestas.filter(r => r.respuestas[preguntaHerramientas.id] === 'No').length;
+
+    // Si más del 40% dice que no tiene herramientas adecuadas, recomienda ergonomía
+    if ((respuestasNo / totalRespuestas) > 0.4) {
+      const servicioParaErgonomia = todosLosServicios.filter(s => s.palabraClave === 'ergonomía');
+      serviciosRecomendados.push(...servicioParaErgonomia);
+    }
+  }
+
+  // Lógica para balance vida-trabajo (escala baja)
+  const preguntaBalance = selectedSurvey.value.preguntas.find(p => p.texto.toLowerCase().includes('balance'));
+  if (preguntaBalance) {
+    const totalRespuestas = selectedSurvey.value.respuestas.length;
+    const respuestasBajas = selectedSurvey.value.respuestas.filter(r => {
+      const respuesta = r.respuestas[preguntaBalance.id];
+      return respuesta === 1 || respuesta === 2;
+    }).length;
+
+    // Si más del 35% tiene balance bajo (1-2), recomienda servicios de comunicación
+    if ((respuestasBajas / totalRespuestas) > 0.35) {
+      const servicioParaComunicacion = todosLosServicios.filter(s => s.palabraClave === 'comunicacion');
+      serviciosRecomendados.push(...servicioParaComunicacion);
+    }
+  }
+
+  // Eliminar duplicados y devolver
+  return [...new Set(serviciosRecomendados)];
+});
+
 // Methods
 const formatearFecha = (fecha) => {
   return new Date(fecha).toLocaleDateString('es-ES', {

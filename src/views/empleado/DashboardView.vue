@@ -207,11 +207,14 @@
                         </div>
                         <div class="flex items-center text-sm text-gray-500 mt-1">
                           <MapPin class="h-4 w-4 mr-1" />
-                          <span>{{ sesion.modalidad === 'virtual' ? 'Sesión Virtual' : sesion.ubicacion }}</span>
+                          <span>{{ sesion.tipo === 'personal' ? 'Sesión Confidencial' : sesion.modalidad === 'virtual' ? 'Sesión Virtual' : sesion.ubicacion }}</span>
                         </div>
                       </div>
                       <div class="text-right">
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span :class="[
+                          'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                          sesion.tipo === 'personal' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
+                        ]">
                           Confirmada
                         </span>
                       </div>
@@ -482,7 +485,9 @@ import { useEncuestasStore } from '@/stores/encuestas.store';
 import { useComunicadosStore } from '@/stores/comunicados.store';
 import { useSesionesStore } from '@/stores/sesiones.store';
 import { useGamificacionStore } from '@/stores/gamificacion.store';
+import { useReservasStore } from '@/stores/reservas.store.js';
 import { useAuthStore } from '@/stores/auth.store';
+import { storeToRefs } from 'pinia';
 import Button from '@/components/common/Button.vue';
 import { 
   BarChart3,
@@ -515,18 +520,23 @@ const encuestasStore = useEncuestasStore();
 const comunicadosStore = useComunicadosStore();
 const sesionesStore = useSesionesStore();
 const gamificacionStore = useGamificacionStore();
+const reservasStore = useReservasStore();
 
 // Store state
 const { activeSurvey } = storeToRefs(encuestasStore);
 const { comunicados } = storeToRefs(comunicadosStore);
 const { sesiones } = storeToRefs(sesionesStore);
 const { puntosUsuario } = storeToRefs(gamificacionStore);
+const { misReservas } = storeToRefs(reservasStore);
+// Simulación del ID de usuario
+const usuarioIdDemo = 'user-empleado-01';
 
 // Store actions
 const { fetchActiveSurvey } = encuestasStore;
 const { cargarComunicados } = comunicadosStore;
 const { cargarSesiones } = sesionesStore;
 const { cargarPuntos } = gamificacionStore;
+const { fetchMisReservas } = reservasStore;
 
 // Local state
 const loading = ref(true);
@@ -560,13 +570,39 @@ const proximasSesiones = computed(() => {
   if (!sesiones.value) return [];
   
   const ahora = new Date();
-  return sesiones.value
+  
+  // Combinar sesiones de actividades grupales y sesiones de apoyo personal
+  const sesionesGrupales = sesiones.value
     .filter(sesion => {
-      // Filtrar sesiones futuras donde el empleado está inscrito
       const fechaSesion = new Date(`${sesion.fecha}T${sesion.hora}`);
       const estaInscrito = sesion.participantes?.some(p => p.id === empleadoActual.value.id);
       return fechaSesion > ahora && estaInscrito;
     })
+    .map(sesion => ({
+      ...sesion,
+      tipo: 'grupal'
+    }));
+  
+  // Sesiones de apoyo personal (reservas individuales)
+  const sesionesPersonales = misReservas.value
+    .filter(reserva => {
+      const fechaSesion = new Date(`${reserva.sesionInfo.fecha}T${reserva.sesionInfo.hora}`);
+      return fechaSesion > ahora;
+    })
+    .map(reserva => ({
+      id: reserva.id,
+      titulo: reserva.sesionInfo.titulo,
+      fecha: reserva.sesionInfo.fecha,
+      hora: reserva.sesionInfo.hora,
+      modalidad: 'personal',
+      ubicacion: 'Sesión confidencial',
+      tipo: 'personal'
+    }));
+  
+  // Combinar y ordenar todas las sesiones
+  const todasLasSesiones = [...sesionesGrupales, ...sesionesPersonales];
+  
+  return todasLasSesiones
     .sort((a, b) => {
       const fechaA = new Date(`${a.fecha}T${a.hora}`);
       const fechaB = new Date(`${b.fecha}T${b.hora}`);

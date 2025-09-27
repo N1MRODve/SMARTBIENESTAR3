@@ -1,9 +1,14 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { getColaboradorInfo, getDisponibilidad } from '@/services/mock/colaboradores.service.js';
+import { useReservasStore } from '@/stores/reservas.store.js';
 
 const route = useRoute();
+const router = useRouter();
+const reservasStore = useReservasStore();
+// Simulación del ID de usuario
+const usuarioIdDemo = 'user-empleado-01';
 const colaborador = ref(null);
 const disponibilidad = ref([]);
 const isLoading = ref(true);
@@ -37,24 +42,22 @@ onMounted(async () => {
   }
 });
 
-const handleReservarClick = (slot) => {
-  const mensajeConfirmacion = `
-    ¿Confirmas tu reserva de sesión confidencial?
-    Especialista: ${colaborador.value.nombre}
-    Fecha: ${new Date(slot.fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
-    Hora: ${slot.hora}
-  `;
+const handleReservarClick = async (slot) => {
+  const sesionInfo = {
+    id: slot.id,
+    titulo: `Sesión con ${colaborador.value.nombre}`,
+    fecha: slot.fecha,
+    hora: slot.hora,
+    especialista: colaborador.value.nombre
+  };
 
-  if (confirm(mensajeConfirmacion)) {
-    // Simula la reserva
-    slot.disponible = false; // El hueco ya no está disponible en la UI
+  const confirmacion = confirm(`¿Confirmas tu reserva para el ${sesionInfo.fecha} a las ${sesionInfo.hora}?`);
 
-    // Actualiza la lista para reflejar el cambio
-    disponibilidad.value = [...disponibilidad.value]; 
-
-    alert('¡Tu sesión ha sido reservada con éxito! Recibirás un recordatorio confidencial.');
-    // Aquí podrías redirigir al dashboard del empleado
-    // router.push('/empleado/dashboard');
+  if (confirmacion) {
+    await reservasStore.crearReserva(usuarioIdDemo, sesionInfo);
+    slot.disponible = false; // Actualiza la UI localmente
+    alert('¡Tu sesión ha sido reservada con éxito!');
+    router.push('/empleado/dashboard'); // Redirige al dashboard
   }
 };
 </script>

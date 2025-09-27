@@ -21,6 +21,14 @@
 
           <!-- Navegación -->
           <div class="flex items-center space-x-4">
+            <!-- Contador de Puntos -->
+            <div class="flex items-center bg-gradient-to-r from-yellow-100 to-yellow-200 px-3 py-2 rounded-lg border border-yellow-300">
+              <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <span class="text-sm font-bold text-yellow-800">{{ puntosUsuario }} Puntos</span>
+            </div>
+            
             <router-link 
               to="/empleado/encuesta"
               class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
@@ -214,6 +222,7 @@ import { useToast } from 'primevue/usetoast';
 import { storeToRefs } from 'pinia';
 import { useSesionesStore } from '@/stores/sesiones.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useGamificacionStore } from '@/stores/gamificacion.store';
 import Button from '@/components/common/Button.vue';
 import { 
   Calendar, 
@@ -234,10 +243,13 @@ const router = useRouter();
 const toast = useToast();
 const sesionesStore = useSesionesStore();
 const authStore = useAuthStore();
+const gamificacionStore = useGamificacionStore();
 
 // Store state
 const { sesiones, loading, error } = storeToRefs(sesionesStore);
+const { puntosUsuario } = storeToRefs(gamificacionStore);
 const { cargarSesiones, reservarPlazaSesion, cancelarReservaSesion } = sesionesStore;
+const { otorgarPuntosReserva, cargarPuntos } = gamificacionStore;
 
 // Local state
 const procesandoReserva = ref(null);
@@ -283,12 +295,27 @@ const reservarPlaza = async (sesionId) => {
   try {
     await reservarPlazaSesion(sesionId, empleadoActual.value);
     
-    toast.add({
-      severity: 'success',
-      summary: '¡Plaza reservada!',
-      detail: 'Tu plaza ha sido reservada exitosamente',
-      life: 4000
-    });
+    // Otorgar puntos por reservar la sesión
+    try {
+      const sesion = sesiones.value.find(s => s.id === sesionId);
+      await otorgarPuntosReserva(empleadoActual.value.id, sesion?.titulo || 'Sesión');
+      
+      toast.add({
+        severity: 'success',
+        summary: '¡Plaza reservada y puntos ganados!',
+        detail: 'Tu plaza ha sido reservada (+25 puntos)',
+        life: 4000
+      });
+    } catch (puntosError) {
+      console.error('Error al otorgar puntos:', puntosError);
+      // Mostrar mensaje de éxito de reserva aunque fallen los puntos
+      toast.add({
+        severity: 'success',
+        summary: '¡Plaza reservada!',
+        detail: 'Tu plaza ha sido reservada exitosamente',
+        life: 4000
+      });
+    }
     
   } catch (error) {
     console.error('Error al reservar plaza:', error);
@@ -359,6 +386,8 @@ const handleLogout = async () => {
 // Load data on mount
 onMounted(() => {
   cargarSesiones();
+  // Cargar puntos del usuario
+  cargarPuntos(empleadoActual.value.id);
 });
 </script>
 

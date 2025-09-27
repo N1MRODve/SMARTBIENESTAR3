@@ -133,6 +133,15 @@ const routes = [
     }
   },
   {
+    path: '/empleado/apoyo-personal/:colaboradorId/reservar',
+    name: 'empleado-reservar-sesion',
+    component: () => import('../views/empleado/ReservarSesionView.vue'),
+    meta: { 
+      requiresAuth: true, 
+      roles: ['empleado'] 
+    }
+  },
+  {
     path: '/empleado/encuesta',
     name: 'empleado-encuesta',
     component: ResponderEncuestaView,

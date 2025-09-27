@@ -38,8 +38,24 @@ onMounted(async () => {
 });
 
 const handleReservarClick = (slot) => {
-  // La lógica de confirmación y reserva la haremos en el siguiente paso
-  alert(`Has seleccionado el horario: ${slot.fecha} a las ${slot.hora}. ¡Confidencialidad garantizada!`);
+  const mensajeConfirmacion = `
+    ¿Confirmas tu reserva de sesión confidencial?
+    Especialista: ${colaborador.value.nombre}
+    Fecha: ${new Date(slot.fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
+    Hora: ${slot.hora}
+  `;
+
+  if (confirm(mensajeConfirmacion)) {
+    // Simula la reserva
+    slot.disponible = false; // El hueco ya no está disponible en la UI
+
+    // Actualiza la lista para reflejar el cambio
+    disponibilidad.value = [...disponibilidad.value]; 
+
+    alert('¡Tu sesión ha sido reservada con éxito! Recibirás un recordatorio confidencial.');
+    // Aquí podrías redirigir al dashboard del empleado
+    // router.push('/empleado/dashboard');
+  }
 };
 </script>
 
@@ -69,9 +85,12 @@ const handleReservarClick = (slot) => {
               v-for="slot in slots" 
               :key="slot.id"
               @click="handleReservarClick(slot)"
-              class="p-2 border rounded-md text-center font-medium
-                     border-primary text-primary hover:bg-primary hover:text-white
-                     transition-colors duration-200">
+              :disabled="!slot.disponible"
+              class="p-2 border rounded-md text-center font-medium transition-colors duration-200"
+              :class="{
+                'border-primary text-primary hover:bg-primary hover:text-white': slot.disponible,
+                'bg-gray-200 text-gray-400 cursor-not-allowed': !slot.disponible
+              }">
               {{ slot.hora }}
             </button>
           </div>

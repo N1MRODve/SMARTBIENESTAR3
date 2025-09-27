@@ -281,14 +281,12 @@
                 </div>
 
                 <!-- Botón de Acción -->
-                <Button 
-                  @click="verDisponibilidad(especialista.id)"
-                  :loading="cargandoDisponibilidad === especialista.id"
-                  class="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold py-3"
-                >
-                  <Calendar class="h-4 w-4 mr-2" />
-                  Ver Disponibilidad y Reservar
-                </Button>
+                <router-link :to="{ name: 'empleado-reservar-sesion', params: { colaboradorId: especialista.id } }">
+                  <Button class="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold py-3">
+                    <Calendar class="h-4 w-4 mr-2" />
+                    Ver Disponibilidad y Reservar
+                  </Button>
+                </router-link>
               </div>
             </div>
           </div>
@@ -451,21 +449,6 @@ const limpiarFiltros = () => {
   };
 };
 
-const verDisponibilidad = (especialistaId) => {
-  const especialista = especialistas.value.find(e => e.id === especialistaId);
-  if (especialista) {
-    especialistaSeleccionado.value = especialista;
-    mostrarModalDisponibilidad.value = true;
-    
-    // Por ahora, mostrar mensaje informativo
-    toast.add({
-      severity: 'info',
-      summary: 'Próximamente',
-      detail: `La funcionalidad de reserva con ${especialista.nombre} estará disponible pronto`,
-      life: 4000
-    });
-  }
-};
 
 const handleImageError = (event) => {
   // Fallback si la imagen no carga

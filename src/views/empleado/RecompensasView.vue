@@ -54,12 +54,6 @@
           >
             <!-- Header de la Recompensa -->
             <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-6 text-center">
-          <router-link 
-            to="/empleado/apoyo-personal"
-            class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-          >
-            Apoyo Personal
-          </router-link>
               <div class="text-4xl mb-3">{{ recompensa.icono }}</div>
               <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ recompensa.titulo }}</h3>
               <p class="text-sm text-gray-600">{{ recompensa.descripcion }}</p>
@@ -144,52 +138,5 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Información Adicional -->
-        <div class="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div class="flex items-start">
-            <Info class="h-6 w-6 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
-            <div>
-              <h4 class="text-lg font-medium text-blue-900 mb-2">¿Cómo ganar más puntos?</h4>
-              <ul class="text-blue-800 space-y-1 text-sm">
-                <li>• <strong>+10 puntos</strong> por completar cada encuesta de bienestar</li>
-                <li>• <strong>+25 puntos</strong> por reservar una sesión de bienestar</li>
-                <li>• <strong>+50 puntos</strong> por asistir a una sesión programada</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-       <Card>
-        <div class="p-4 text-center">
-          <p class="text-sm text-on-surface-variant">Mi Saldo</p>
-          <p class="text-3xl font-bold text-primary">{{ puntos || 0 }} Puntos</p>
-        </div>
-      </Card>
-    </header>
-
-    <div v-if="isLoading" class="text-center py-10">
-      <p>Cargando recompensas...</p>
-    </div>
-
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <Card v-for="recompensa in recompensas" :key="recompensa.id">
-        <template #header>
-          <h2 class="text-xl font-semibold text-on-surface">{{ recompensa.titulo }}</h2>
-        </template>
-        
-        <p class="text-on-surface-variant">{{ recompensa.descripcion }}</p>
-
-        <template #footer>
-          <div class="flex justify-between items-center">
-            <span class="text-lg font-bold text-primary">{{ recompensa.coste }} Puntos</span>
-            <Button @click="handleCanjear(recompensa)" :disabled="(puntos || 0) < recompensa.coste">
-              Canjear
-            </Button>
-          </div>
-        </template>
-      </Card>
-    </div>
   </div>
 </template>

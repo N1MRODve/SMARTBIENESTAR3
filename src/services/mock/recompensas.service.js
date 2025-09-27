@@ -251,6 +251,7 @@ export const addRecompensa = (nuevaRecompensa) => {
       
       catalogo.push(recompensa);
       console.log('Nueva recompensa añadida:', recompensa);
+      console.log('Catálogo actualizado, total recompensas:', catalogo.length);
       resolve({ success: true, recompensa });
     }, 500);
   });

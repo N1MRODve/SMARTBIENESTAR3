@@ -281,7 +281,7 @@ const handleGuardarRecompensa = async (datosRecompensa) => {
       });
     } else {
       // Modo creación
-      await crearRecompensa(datosRecompensa);
+      const resultado = await crearRecompensa(datosRecompensa);
       
       toast.add({
         severity: 'success',
@@ -289,6 +289,8 @@ const handleGuardarRecompensa = async (datosRecompensa) => {
         detail: `"${datosRecompensa.titulo}" ha sido añadida al catálogo`,
         life: 4000
       });
+      
+      console.log('Nueva recompensa creada y añadida al estado:', resultado);
     }
     
     mostrarModal.value = false;

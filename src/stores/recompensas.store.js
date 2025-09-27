@@ -113,6 +113,7 @@ export const useRecompensasStore = defineStore('recompensas', () => {
         recompensas.value.push(resultado.recompensa);
         
         console.log('Recompensa creada exitosamente:', resultado.recompensa);
+        console.log('Estado local actualizado, total recompensas:', recompensas.value.length);
         return resultado;
       }
     } catch (err) {

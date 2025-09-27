@@ -259,6 +259,7 @@ const resetFormulario = () => {
 const handleSubmit = () => {
   if (!formularioValido.value) return;
   
+  console.log('Enviando datos del formulario:', formData.value);
   emit('save', { ...formData.value });
 };
 

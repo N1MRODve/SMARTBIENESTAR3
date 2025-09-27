@@ -19,8 +19,13 @@ const adminRoutes = [
       {
         path: 'encuestas',
         name: 'admin-encuestas',
-        // Asegúrate de que esta vista exista o crea un placeholder
         component: () => import('@/views/admin/GestionEncuestasView.vue'), 
+      },
+      // --- RUTA AÑADIDA Y CORREGIDA ---
+      {
+        path: 'encuestas/:encuestaId/resultados',
+        name: 'admin-encuesta-resultados',
+        component: () => import('@/views/admin/ResultadosEncuestaView.vue'),
       },
       {
         path: 'recompensas',
@@ -30,18 +35,12 @@ const adminRoutes = [
       {
         path: 'comunicados',
         name: 'admin-comunicados',
-         // Asegúrate de que esta vista exista o crea un placeholder
         component: () => import('@/views/admin/GestionComunicadosView.vue'),
       },
       {
         path: 'crear-encuesta',
         name: 'admin-crear-encuesta',
         component: () => import('@/views/admin/CrearEncuestaView.vue'),
-      },
-      {
-        path: 'encuesta/:id/resultados',
-        name: 'admin-resultados-encuesta',
-        component: () => import('@/views/admin/ResultadosEncuestaView.vue'),
       },
       {
         path: 'crear-comunicado',

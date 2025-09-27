@@ -36,7 +36,7 @@ const verResultados = (encuestaId) => {
         <p class="text-on-surface-variant">Crea, gestiona y analiza todas las encuestas de tu organización.</p>
       </div>
       <Button @click="router.push('/admin/encuestas/crear')" variant="primary">
-        + Crear Nueva Encuesta
+        Crear Nueva Encuesta
       </Button>
     </header>
 

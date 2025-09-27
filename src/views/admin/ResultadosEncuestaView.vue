@@ -139,9 +139,11 @@
                     </svg>
                     <span>Recomendado para tu equipo</span>
                   </div>
-                  <Button variant="outline" class="text-sm">
-                    Ver más detalles
-                  </Button>
+                  <router-link :to="{ name: 'admin-servicio-detalle', params: { id: servicio.id } }">
+                    <Button variant="outline" class="text-sm">
+                      Ver más detalles
+                    </Button>
+                  </router-link>
                 </div>
               </div>
             </div>

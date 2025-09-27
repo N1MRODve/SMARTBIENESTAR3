@@ -277,19 +277,21 @@ const solicitarServicio = async () => {
     
     toast.add({
       severity: 'success',
-      summary: '¡Solicitud Enviada!',
-      detail: `Tu solicitud para "${servicio.value.titulo}" ha sido enviada. Nos contactaremos contigo pronto.`,
+      summary: '¡Solicitud enviada con éxito!',
+      detail: `Un asesor de SMART Bienestar se pondrá en contacto contigo en breve para coordinar los detalles de "${servicio.value.titulo}".`,
       life: 6000
     });
     
-    // Opcional: redirigir a una página de confirmación
-    // router.push('/admin/solicitudes');
+    // Opcional: volver al dashboard después de un momento
+    setTimeout(() => {
+      router.push('/admin/dashboard');
+    }, 2000);
     
   } catch (error) {
     toast.add({
       severity: 'error',
       summary: 'Error al enviar solicitud',
-      detail: 'No se pudo procesar tu solicitud. Intenta de nuevo.',
+      detail: 'No se pudo procesar tu solicitud. Por favor, intenta de nuevo o contacta a nuestro equipo de soporte.',
       life: 5000
     });
   } finally {

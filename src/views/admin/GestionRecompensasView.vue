@@ -225,7 +225,7 @@ import { useRecompensasStore } from '@/stores/recompensas.store';
 import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
 import RecompensaFormModal from '@/components/admin/RecompensaFormModal.vue';
-import { ArrowLeft, Plus, AlertCircle, RefreshCw, Gift, Edit, Trash2, Star } from 'lucide-vue-next';
+import { ArrowLeft, Plus, AlertCircle, RefreshCw, Gift, CreditCard as Edit, Trash2, Star } from 'lucide-vue-next';
 
 const router = useRouter();
 const toast = useToast();

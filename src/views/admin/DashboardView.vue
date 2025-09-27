@@ -28,6 +28,13 @@
                 Gestionar Servicios
               </router-link>
               <router-link 
+                to="/admin/recompensas"
+                class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
+              >
+                <Gift class="h-5 w-5 mr-2" />
+                Gestionar Recompensas
+              </router-link>
+              <router-link 
                 to="/admin/comunicados"
                 class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
               >

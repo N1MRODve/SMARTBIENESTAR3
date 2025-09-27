@@ -347,6 +347,11 @@ export const resetColaboradores = () => {
   return colaboradores;
 };
 
+// Función para obtener información específica de un colaborador (alias para getColaboradorById)
+export const getColaboradorInfo = (colaboradorId) => {
+  return getColaboradorById(colaboradorId);
+};
+
 /**
  * Genera y devuelve una lista de huecos de disponibilidad para un colaborador.
  * @param {string} colaboradorId - El ID del colaborador.

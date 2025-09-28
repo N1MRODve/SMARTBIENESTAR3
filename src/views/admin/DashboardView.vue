@@ -31,6 +31,29 @@ onMounted(async () => {
     isLoading.value = false;
   }
 });
+
+// Función para calcular el color dinámico basado en el score
+const getWellnessScoreColor = (score) => {
+  // Normalizar el score entre 0 y 1
+  const normalizedScore = Math.max(0, Math.min(10, score)) / 10;
+  
+  // Definir los puntos de color en el espectro rojo-amarillo-verde
+  if (normalizedScore <= 0.5) {
+    // De rojo (0) a amarillo (0.5)
+    const ratio = normalizedScore * 2; // 0 a 1
+    const red = 255;
+    const green = Math.round(255 * ratio);
+    const blue = 0;
+    return `rgb(${red}, ${green}, ${blue})`;
+  } else {
+    // De amarillo (0.5) a verde (1)
+    const ratio = (normalizedScore - 0.5) * 2; // 0 a 1
+    const red = Math.round(255 * (1 - ratio));
+    const green = 255;
+    const blue = 0;
+    return `rgb(${red}, ${green}, ${blue})`;
+  }
+};
 </script>
 
 <template>
@@ -44,7 +67,12 @@ onMounted(async () => {
         <template #header>
           <h2 class="text-xl font-semibold text-on-surface">Índice de Bienestar General</h2>
         </template>
-        <p class="text-7xl font-bold text-primary my-4">{{ summary.wellnessScore }}</p>
+        <p 
+          class="text-7xl font-bold my-4 transition-colors duration-500"
+          :style="{ color: getWellnessScoreColor(summary.wellnessScore) }"
+        >
+          {{ summary.wellnessScore }}
+        </p>
         <p class="text-on-surface-variant">sobre 10</p>
       </Card>
       

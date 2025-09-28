@@ -176,6 +176,11 @@ export const canjearRecompensa = async (usuarioId, recompensaId) => {
 export const getHistorialCanjes = (usuarioId) => {
   return new Promise(resolve => {
     setTimeout(() => {
+      // Si no se especifica usuarioId, devolver historial completo para admin
+      if (!usuarioId) {
+        return resolve([...historialCanjes.value]);
+      }
+      
       const historial = historialCanjesUsuario[usuarioId] || [];
       resolve(historial);
     }, 200);
@@ -195,6 +200,70 @@ export const getHistorialCanjesCompleto = () => {
   });
 };
 
+// Función para simular algunos canjes iniciales (para demo)
+export const inicializarCanjesDemo = () => {
+  const canjesDemo = [
+    {
+      id: 'canje-001',
+      usuarioId: 'emp-001',
+      nombreEmpleado: 'Ana García',
+      emailEmpleado: 'ana.garcia@empresa.com',
+      recompensaId: 'rec-02',
+      recompensaTitulo: 'Almuerzo Premium',
+      recompensaIcono: '🍽️',
+      categoria: 'gastronomia',
+      coste: 150,
+      fechaCanje: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // Hace 2 días
+      estado: 'completado'
+    },
+    {
+      id: 'canje-002',
+      usuarioId: 'emp-015',
+      nombreEmpleado: 'Isabel Torres',
+      emailEmpleado: 'isabel.torres@empresa.com',
+      recompensaId: 'rec-05',
+      recompensaTitulo: 'Entrada al Cine',
+      recompensaIcono: '🎬',
+      categoria: 'entretenimiento',
+      coste: 100,
+      fechaCanje: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // Hace 5 días
+      estado: 'completado'
+    },
+    {
+      id: 'canje-003',
+      usuarioId: 'emp-022',
+      nombreEmpleado: 'Sergio Delgado',
+      emailEmpleado: 'sergio.delgado@empresa.com',
+      recompensaId: 'rec-03',
+      recompensaTitulo: 'Masaje Relajante',
+      recompensaIcono: '💆‍♀️',
+      categoria: 'bienestar',
+      coste: 300,
+      fechaCanje: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Hace 1 día
+      estado: 'completado'
+    },
+    {
+      id: 'canje-004',
+      usuarioId: 'emp-009',
+      nombreEmpleado: 'Carmen Jiménez',
+      emailEmpleado: 'carmen.jimenez@empresa.com',
+      recompensaId: 'rec-09',
+      recompensaTitulo: 'Medio Día Libre',
+      recompensaIcono: '⏰',
+      categoria: 'tiempo',
+      coste: 250,
+      fechaCanje: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // Hace 1 semana
+      estado: 'completado'
+    }
+  ];
+  
+  historialCanjes.value = canjesDemo;
+  console.log('Canjes demo inicializados:', canjesDemo.length);
+  return canjesDemo;
+};
+
+// Inicializar canjes demo al cargar el módulo
+inicializarCanjesDemo();
 // Función para obtener estadísticas de canjes
 export const getEstadisticasCanjes = (usuarioId) => {
   return new Promise(resolve => {

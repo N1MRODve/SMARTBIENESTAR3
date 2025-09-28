@@ -79,6 +79,7 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     error.value = null;
     
     try {
+      // Si no se especifica usuarioId, cargar historial completo para admin
       const historialData = await getHistorialCanjes(usuarioId);
       historialCanjes.value = historialData;
     } catch (err) {

@@ -7,17 +7,7 @@ import { useRecompensasStore } from '@/stores/recompensas.store';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
 import RecompensaFormModal from '@/components/admin/RecompensaFormModal.vue';
-import { 
-  Plus, 
-  Edit3, 
-  Trash2, 
-  History, 
-  TrendingUp,
-  Users,
-  Gift,
-  AlertCircle,
-  RefreshCw
-} from 'lucide-vue-next';
+import { Plus, CreditCard as Edit3, Trash2, History, TrendingUp, Users, Gift, AlertCircle, RefreshCw } from 'lucide-vue-next';
 
 const router = useRouter();
 const toast = useToast();

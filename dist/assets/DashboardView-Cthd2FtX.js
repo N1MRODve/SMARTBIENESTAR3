@@ -1,1 +1,0 @@
-import{u as t,c as a,a as e,o as r}from"./index-Bc5WyCAq.js";const o={class:"space-y-8"},d={__name:"DashboardView",setup(l){return t(),(n,s)=>(r(),a("div",o,s[0]||(s[0]=[e("div",null,[e("h1",{class:"text-2xl font-bold text-gray-900"},"Dashboard Administrador"),e("p",{class:"mt-1 text-sm text-gray-500"}," Vista general de su empresa ")],-1)])))}};export{d as default};

@@ -306,13 +306,6 @@ export const deleteRecompensa = (recompensaId) => {
   });
 };
 
-/**
- * Devuelve el historial completo de canjes.
- */
-export const getHistorialCanjes = async () => {
-  return new Promise(resolve => resolve(historialCanjes.value));
-};
-
 // Función para resetear canjes (útil para la demo)
 export const resetCanjes = () => {
   historialCanjesUsuario = {};

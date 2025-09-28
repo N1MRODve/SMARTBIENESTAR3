@@ -417,6 +417,6 @@ onMounted(async () => {
       :recompensa="recompensaSeleccionada"
       :loading="guardando"
       @save="handleGuardarRecompensa"
-    </div>
+    />
   </div>
 </template>

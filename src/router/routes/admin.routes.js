@@ -72,6 +72,11 @@ const adminRoutes = [
         name: 'admin-servicio-detalle',
         component: () => import('@/views/admin/ServicioDetalleView.vue'),
       },
+      {
+        path: 'encuestas/programadas',
+        name: 'admin-encuestas-programadas',
+        component: () => import('@/views/admin/ScheduledSurveysView.vue'),
+      },
       // Redirección por defecto al dashboard si solo se entra a /admin
       {
         path: '',

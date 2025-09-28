@@ -50,7 +50,7 @@ const adminRoutes = [
       {
         path: 'recompensas',
         name: 'admin-recompensas',
-        component: () => import('@/views/admin/GestionRecompensasView.vue'),
+        component: () => import('@/views/admin/GestionRecompensasView.vue')
       },
       {
         path: 'recompensas/historial',

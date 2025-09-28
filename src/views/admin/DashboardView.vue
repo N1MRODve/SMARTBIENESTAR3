@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
 import SubScoreCard from '@/components/admin/SubScoreCard.vue';
+import ScoreGauge from '@/components/admin/ScoreGauge.vue';
 import { getAnalyticsSummary } from '@/services/mock/analytics.service.js';
 
 // --- Inicialización ---
@@ -63,18 +64,15 @@ const getWellnessScoreColor = (score) => {
 
   <div v-else-if="summary" class="space-y-8">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <Card class="lg:col-span-1 h-full text-center flex flex-col justify-center">
-        <template #header>
-          <h2 class="text-xl font-semibold text-on-surface">Índice de Bienestar General</h2>
-        </template>
-        <p 
-          class="text-7xl font-bold my-4 transition-colors duration-500"
-          :style="{ color: getWellnessScoreColor(summary.wellnessScore) }"
-        >
-          {{ summary.wellnessScore }}
-        </p>
-        <p class="text-on-surface-variant">sobre 10</p>
-      </Card>
+      <!-- Wellness Score Gauge -->
+      <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-center">
+        <ScoreGauge
+          :score="summary.wellnessScore"
+          title="Índice de Bienestar General"
+          description="Puntuación global basada en todas las métricas de bienestar del equipo"
+          :trend="0.3"
+        />
+      </div>
       
       <Card class="lg:col-span-2 h-full">
         <template #header>

@@ -3,6 +3,9 @@
 import { ref } from 'vue';
 import { getPuntos, addPuntos } from './gamificacion.service.js';
 
+// Simula una tabla en la BD que guarda los canjes
+const historialCanjes = ref([]);
+
 // Catálogo de recompensas disponibles
 const catalogo = [
   {
@@ -170,66 +173,35 @@ export const getRecompensasPorCategoria = (categoria) => {
 
 // Función para canjear una recompensa
 export const canjearRecompensa = async (usuarioId, recompensaId) => {
-  return new Promise(async (resolve, reject) => {
-    setTimeout(async () => {
-      try {
-        // Buscar la recompensa
-        const recompensa = catalogo.find(r => r.id === recompensaId);
-        if (!recompensa) {
-          reject(new Error('Recompensa no encontrada'));
-          return;
-        }
+  const recompensa = catalogo.find(r => r.id === recompensaId);
+  if (!recompensa) {
+    return { success: false, message: 'La recompensa no existe.' };
+  }
 
-        if (!recompensa.disponible) {
-          reject(new Error('Esta recompensa no está disponible actualmente'));
-          return;
-        }
+  const puntosActuales = await getPuntos(usuarioId);
+  if (puntosActuales < recompensa.coste) {
+    return { success: false, message: 'No tienes suficientes puntos.' };
+  }
 
-        // Verificar puntos del usuario
-        const puntosActuales = await getPuntos(usuarioId);
-        if (puntosActuales < recompensa.coste) {
-          reject(new Error(`Puntos insuficientes. Necesitas ${recompensa.coste} puntos, tienes ${puntosActuales}`));
-          return;
-        }
+  const exito = await restarPuntos(usuarioId, recompensa.coste);
+  if (exito) {
+    // --- LÍNEAS NUEVAS ---
+    // Añadimos el registro al historial
+    historialCanjes.value.push({
+      id: `canje-${Date.now()}`,
+      usuarioId,
+      recompensaId,
+      recompensaTitulo: recompensa.titulo,
+      coste: recompensa.coste,
+      fecha: new Date().toISOString().slice(0, 10) // Guardamos la fecha del canje
+    });
+    // --- FIN LÍNEAS NUEVAS ---
 
-        // Restar los puntos (cantidad negativa)
-        await addPuntos(usuarioId, -recompensa.coste, `Canje: ${recompensa.titulo}`);
+    console.log(`Usuario ${usuarioId} ha canjeado "${recompensa.titulo}"`);
+    return { success: true, message: '¡Recompensa canjeada con éxito!' };
+  }
 
-        // Registrar el canje
-        const canje = {
-          id: Date.now(),
-          usuarioId,
-          recompensaId,
-          recompensaTitulo: recompensa.titulo,
-          coste: recompensa.coste,
-          fecha: new Date().toISOString(),
-          estado: 'procesando' // procesando, completado, cancelado
-        };
-
-        // Añadir al historial global (para admin)
-        historialCanjes.value.unshift(canje);
-
-        // Añadir al historial del usuario (para vista individual)
-        if (!historialCanjesUsuario[usuarioId]) {
-          historialCanjesUsuario[usuarioId] = [];
-        }
-        historialCanjesUsuario[usuarioId].unshift(canje);
-
-        console.log(`Canje exitoso: ${recompensa.titulo} por ${recompensa.coste} puntos`);
-        
-        resolve({
-          success: true,
-          canje,
-          puntosRestantes: puntosActuales - recompensa.coste,
-          mensaje: `¡Has canjeado "${recompensa.titulo}" por ${recompensa.coste} puntos!`
-        });
-
-      } catch (error) {
-        console.error('Error en canje:', error);
-        reject(error);
-      }
-    }, 800); // Simular tiempo de procesamiento
-  });
+  return { success: false, message: 'Ha ocurrido un error al restar los puntos.' };
 };
 
 // Función para obtener el historial de canjes de un usuario
@@ -364,6 +336,13 @@ export const deleteRecompensa = (recompensaId) => {
       resolve({ success: true, recompensaEliminada });
     }, 400);
   });
+};
+
+/**
+ * Devuelve el historial completo de canjes.
+ */
+export const getHistorialCanjes = async () => {
+  return new Promise(resolve => resolve(historialCanjes.value));
 };
 
 // Función para resetear canjes (útil para la demo)

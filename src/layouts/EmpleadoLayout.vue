@@ -1,4 +1,5 @@
 <script setup>
+import { LayoutDashboard, Calendar, HeartHandshake, Gift } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth.store.js';
 import { useRouter } from 'vue-router';
 
@@ -23,26 +24,31 @@ const handleLogout = async () => {
         <ul class="space-y-2">
           <li>
             <router-link to="/empleado/dashboard" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
+              <LayoutDashboard class="w-5 h-5 text-on-surface-variant" />
               <span class="ml-3">Dashboard</span>
             </router-link>
           </li>
           <li>
             <router-link to="/empleado/actividades" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
+              <Calendar class="w-5 h-5 text-on-surface-variant" />
               <span class="ml-3">Actividades</span>
             </router-link>
           </li>
           <li>
             <router-link to="/empleado/apoyo-personal" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
+              <HeartHandshake class="w-5 h-5 text-on-surface-variant" />
               <span class="ml-3">Apoyo Personal</span>
             </router-link>
           </li>
           <li>
             <router-link to="/empleado/recompensas" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
+              <Gift class="w-5 h-5 text-on-surface-variant" />
               <span class="ml-3">Recompensas</span>
             </router-link>
           </li>
           <li>
             <router-link to="/empleado/reservas" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
+              <Calendar class="w-5 h-5 text-on-surface-variant" />
               <span class="ml-3">Mis Reservas</span>
             </router-link>
           </li>

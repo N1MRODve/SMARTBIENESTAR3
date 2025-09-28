@@ -5,3 +5,4 @@
 </template>
 
 <script setup>
+</script>

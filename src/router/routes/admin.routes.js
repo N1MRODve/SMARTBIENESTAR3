@@ -26,6 +26,11 @@ const adminRoutes = [
         name: 'admin-crear-encuesta',
         component: () => import('@/views/admin/CrearEncuestaView.vue'),
       },
+      {
+        path: 'encuestas/crear',
+        name: 'admin-crear-encuesta',
+        component: () => import('@/views/admin/CrearEncuestaView.vue'),
+      },
       // --- RUTA AÑADIDA Y CORREGIDA ---
       {
         path: 'encuestas/:encuestaId/resultados',

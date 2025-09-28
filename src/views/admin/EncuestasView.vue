@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { BarChart3, Edit3, Plus } from 'lucide-vue-next';
+import { BarChart3, CreditCard as Edit3, Plus } from 'lucide-vue-next';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
 import { getEncuestas } from '@/services/mock/encuestas.service.js';

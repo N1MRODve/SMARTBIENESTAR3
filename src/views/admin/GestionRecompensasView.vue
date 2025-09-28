@@ -264,7 +264,7 @@ import { storeToRefs } from 'pinia';
 import { useRecompensasStore } from '@/stores/recompensas.store';
 import Button from '@/components/common/Button.vue';
 import RecompensaFormModal from '@/components/admin/RecompensaFormModal.vue';
-import { Plus, AlertCircle, RefreshCw, Gift, History, Edit, Trash2 } from 'lucide-vue-next';
+import { Plus, AlertCircle, RefreshCw, Gift, History, CreditCard as Edit, Trash2 } from 'lucide-vue-next';
 
 const router = useRouter();
 const toast = useToast();

@@ -188,7 +188,7 @@ const tiempoTranscurrido = (fecha) => {
 };
 
 const crearNuevoComunicado = () => {
-  router.push('/admin/comunicados');
+  router.push('/admin/comunicados/crear');
 };
 
 const editarComunicado = (comunicadoId) => {

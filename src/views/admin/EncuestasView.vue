@@ -11,6 +11,31 @@ const encuestas = ref([]);
 const isLoading = ref(true);
 const router = useRouter();
 
+// Métodos para categorías
+const getCategoriaLabel = (categoria) => {
+  const labels = {
+    'salud-mental': 'Salud Mental',
+    'carga-laboral': 'Carga Laboral',
+    'comunicacion': 'Comunicación',
+    'ergonomia': 'Ergonomía',
+    'desarrollo': 'Desarrollo Profesional',
+    'general': 'Bienestar General'
+  };
+  return labels[categoria] || 'General';
+};
+
+const getCategoriaIcon = (categoria) => {
+  const icons = {
+    'salud-mental': '🧠',
+    'carga-laboral': '⚖️',
+    'comunicacion': '💬',
+    'ergonomia': '🪑',
+    'desarrollo': '📈',
+    'general': '📊'
+  };
+  return icons[categoria] || '📊';
+};
+
 // --- Carga de Datos ---
 onMounted(async () => {
   isLoading.value = true;
@@ -73,6 +98,9 @@ const editarEncuesta = (encuestaId) => {
                   ]"
                 >
                   {{ encuesta.estado }}
+                </span>
+                <span v-if="encuesta.categoria" class="ml-2 px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                  {{ getCategoriaIcon(encuesta.categoria) }} {{ getCategoriaLabel(encuesta.categoria) }}
                 </span>
               </div>
             </div>

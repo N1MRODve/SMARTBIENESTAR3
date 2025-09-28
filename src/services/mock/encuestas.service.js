@@ -10,6 +10,7 @@ const encuestasDb = ref([
   { 
     id: 'enc-01', 
     titulo: 'Encuesta de Pulso de Bienestar (Q3)', 
+    categoria: 'general',
     estado: 'Finalizada', 
     totalParticipantes: 42,
     preguntas: [
@@ -36,6 +37,7 @@ const encuestasDb = ref([
   { 
     id: 'enc-02', 
     titulo: 'Encuesta de Clima Laboral 2025', 
+    categoria: 'comunicacion',
     estado: 'Activa', 
     totalParticipantes: 35,
     // ... (podríamos añadir más datos aquí)
@@ -102,6 +104,7 @@ export const addSurvey = async (nuevaEncuesta) => {
   const encuestaConId = {
     ...nuevaEncuesta,
     id: `enc-${Date.now()}`,
+    categoria: nuevaEncuesta.categoria || 'general',
     totalParticipantes: 0,
     estado: 'Borrador'
   };
@@ -134,6 +137,7 @@ export const updateSurvey = async (encuestaActualizada) => {
         ...encuestasDb.value[index],
         titulo: encuestaActualizada.titulo,
         descripcion: encuestaActualizada.descripcion || '',
+        categoria: encuestaActualizada.categoria || 'general',
         estado: encuestaActualizada.estado,
         preguntas: encuestaActualizada.preguntas || [],
         fechaActualizacion: new Date().toISOString()

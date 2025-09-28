@@ -26,6 +26,11 @@ const verResultados = (encuestaId) => {
   // Usamos el nombre de la ruta que definimos para una navegación más robusta
   router.push({ name: 'admin-encuesta-resultados', params: { encuestaId: encuestaId } });
 };
+
+const editarEncuesta = (encuestaId) => {
+  // Navegar a la vista de edición de encuesta
+  router.push({ name: 'admin-editar-encuesta', params: { encuestaId: encuestaId } });
+};
 </script>
 
 <template>
@@ -59,7 +64,7 @@ const verResultados = (encuestaId) => {
             <Button @click="verResultados(encuesta.id)" variant="primary" :disabled="encuesta.estado === 'Borrador'">
               Ver Resultados
             </Button>
-            <Button variant="outline">Editar</Button>
+            <Button @click="editarEncuesta(encuesta.id)" variant="outline">Editar</Button>
           </div>
         </div>
       </Card>

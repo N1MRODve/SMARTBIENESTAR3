@@ -114,6 +114,41 @@ export const addSurvey = async (nuevaEncuesta) => {
   });
 };
 export const getSurveyById = getResultadosEncuestaById;
+
+/**
+ * Simula la actualización de una encuesta existente.
+ * @param {Object} encuestaActualizada - Los datos actualizados de la encuesta.
+ */
+export const updateSurvey = async (encuestaActualizada) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const index = encuestasDb.value.findIndex(e => e.id === encuestaActualizada.id);
+      
+      if (index === -1) {
+        reject(new Error('Encuesta no encontrada'));
+        return;
+      }
+      
+      // Actualizar la encuesta manteniendo algunos campos originales
+      encuestasDb.value[index] = {
+        ...encuestasDb.value[index],
+        titulo: encuestaActualizada.titulo,
+        descripcion: encuestaActualizada.descripcion || '',
+        estado: encuestaActualizada.estado,
+        preguntas: encuestaActualizada.preguntas || [],
+        fechaActualizacion: new Date().toISOString()
+      };
+      
+      console.log('Encuesta actualizada:', encuestasDb.value[index]);
+      resolve({ 
+        success: true, 
+        encuesta: encuestasDb.value[index],
+        message: 'Encuesta actualizada correctamente'
+      });
+    }, 500);
+  });
+};
+
 /**
  * Simula el proceso de enviar respuestas a una encuesta.
  * @param {string} encuestaId - El ID de la encuesta.

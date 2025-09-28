@@ -39,7 +39,7 @@
       </div>
       
       <div class="p-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
           <!-- Wellness Score Gauge -->
           <div class="text-center">
             <ScoreGauge 
@@ -50,10 +50,16 @@
             />
           </div>
           
-          <!-- Key Insights -->
-          <div class="space-y-4">
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">Insights Clave</h3>
-            
+          <!-- Dimensions Chart -->
+          <div class="xl:col-span-2">
+            <DimensionsChart />
+          </div>
+        </div>
+        
+        <!-- Key Insights Section -->
+        <div class="mt-8 pt-8 border-t border-gray-200">
+          <h3 class="text-xl font-semibold text-gray-900 mb-6">Insights Clave</h3>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <InsightCard 
               :insight="{
                 type: 'strength',
@@ -73,17 +79,18 @@
                 score: 5.8
               }"
             />
-            
-            <div class="pt-4">
-              <Button 
-                @click="router.push('/admin/encuestas/enc-01/resultados')"
-                variant="outline"
-                class="w-full"
-              >
-                <BarChart3 class="h-4 w-4 mr-2" />
-                Ver Análisis Completo
-              </Button>
-            </div>
+          </div>
+          
+          <!-- Action Button -->
+          <div class="mt-6 text-center">
+            <Button 
+              @click="router.push('/admin/encuestas/enc-01/resultados')"
+              variant="outline"
+              class="w-full lg:w-auto"
+            >
+              <BarChart3 class="h-4 w-4 mr-2" />
+              Ver Análisis Completo
+            </Button>
           </div>
         </div>
       </div>
@@ -451,6 +458,7 @@ import {
 import Button from '@/components/common/Button.vue';
 import ScoreGauge from '@/components/admin/ScoreGauge.vue';
 import InsightCard from '@/components/admin/InsightCard.vue';
+import DimensionsChart from '@/components/admin/DimensionsChart.vue';
 
 const router = useRouter();
 </script>

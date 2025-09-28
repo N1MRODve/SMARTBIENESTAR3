@@ -110,38 +110,6 @@ const catalogo = [
   }
 ];
 
-// Historial global de canjes para administrador
-const historialCanjes = ref([
-  // Algunos canjes de ejemplo para demostración
-  {
-    id: 1,
-    usuarioId: 'emp-01',
-    recompensaId: 'rec-02',
-    recompensaTitulo: 'Almuerzo Premium',
-    coste: 150,
-    fecha: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // Hace 3 días
-    estado: 'completado'
-  },
-  {
-    id: 2,
-    usuarioId: 'emp-15',
-    recompensaId: 'rec-05',
-    recompensaTitulo: 'Entrada al Cine',
-    coste: 100,
-    fecha: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // Hace 7 días
-    estado: 'completado'
-  },
-  {
-    id: 3,
-    usuarioId: 'emp-25',
-    recompensaId: 'rec-01',
-    recompensaTitulo: 'Día Libre Adicional',
-    coste: 500,
-    fecha: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // Hace 10 días
-    estado: 'procesando'
-  }
-]);
-
 // Historial de canjes por usuario (para vista individual)
 let historialCanjesUsuario = {};
 

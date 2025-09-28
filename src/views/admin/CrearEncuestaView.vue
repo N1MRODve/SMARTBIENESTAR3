@@ -62,6 +62,66 @@
                     placeholder="Describe brevemente el propósito de esta encuesta..."
                   ></textarea>
                 </div>
+
+                <!-- Categoría de la Encuesta -->
+                <div class="form-group">
+                  <label for="categoria" class="form-label">
+                    Categoría de la Encuesta *
+                  </label>
+                  <select
+                    id="categoria"
+                    v-model="nuevaEncuesta.categoria"
+                    class="input"
+                    required
+                    @change="actualizarPreguntasSugeridas"
+                  >
+                    <option value="">Selecciona una categoría</option>
+                    <option value="salud-mental">🧠 Salud Mental</option>
+                    <option value="carga-laboral">⚖️ Carga Laboral</option>
+                    <option value="comunicacion">💬 Comunicación</option>
+                    <option value="ergonomia">🪑 Ergonomía</option>
+                    <option value="desarrollo">📈 Desarrollo Profesional</option>
+                    <option value="general">📊 Bienestar General</option>
+                  </select>
+                  <p class="mt-1 text-sm text-gray-500">
+                    Selecciona el área principal que evaluará esta encuesta
+                  </p>
+                </div>
+
+                <!-- Preguntas Sugeridas -->
+                <div v-if="preguntasSugeridas.length > 0" class="form-group">
+                  <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-start">
+                      <Lightbulb class="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+                      <div class="flex-1">
+                        <h4 class="text-sm font-medium text-blue-800 mb-2">Preguntas Sugeridas para {{ getCategoriaLabel(nuevaEncuesta.categoria) }}</h4>
+                        <div class="space-y-2">
+                          <div 
+                            v-for="(preguntaSugerida, index) in preguntasSugeridas" 
+                            :key="index"
+                            class="flex items-start justify-between p-3 bg-white border border-blue-200 rounded-lg"
+                          >
+                            <div class="flex-1">
+                              <p class="text-sm text-blue-900 font-medium">{{ preguntaSugerida.texto }}</p>
+                              <p class="text-xs text-blue-700 mt-1">Tipo: {{ getTipoLabel(preguntaSugerida.tipo) }}</p>
+                            </div>
+                            <Button 
+                              type="button"
+                              @click="añadirPreguntaSugerida(preguntaSugerida)"
+                              variant="outline"
+                              class="ml-3 text-blue-600 border-blue-300 hover:bg-blue-50"
+                            >
+                              <Plus class="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <p class="text-xs text-blue-600 mt-3">
+                          💡 Estas preguntas están diseñadas específicamente para evaluar {{ getCategoriaLabel(nuevaEncuesta.categoria).toLowerCase() }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -460,7 +520,8 @@ import {
   Trash2, 
   X, 
   Save, 
-  Rocket 
+  Rocket,
+  Lightbulb
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -472,6 +533,7 @@ const loading = ref(false);
 const nuevaEncuesta = ref({
   titulo: '',
   descripcion: '',
+  categoria: '',
   preguntas: [],
   esRecurrente: false,
   recurrencia: {
@@ -484,9 +546,149 @@ const nuevaEncuesta = ref({
   }
 });
 
+// Preguntas sugeridas por categoría
+const preguntasSugeridas = ref([]);
+
+// Catálogo de preguntas por dimensión
+const preguntasPorCategoria = {
+  'salud-mental': [
+    {
+      texto: '¿Cómo calificarías tu nivel de estrés en el trabajo durante la última semana?',
+      tipo: 'escala_1_5',
+      opciones: []
+    },
+    {
+      texto: '¿Te sientes emocionalmente agotado al final del día laboral?',
+      tipo: 'si_no',
+      opciones: []
+    },
+    {
+      texto: '¿Qué factores contribuyen más a tu estrés laboral?',
+      tipo: 'opcion_multiple',
+      opciones: ['Carga de trabajo excesiva', 'Falta de tiempo', 'Presión de deadlines', 'Conflictos interpersonales', 'Incertidumbre laboral']
+    },
+    {
+      texto: '¿Qué estrategias o recursos te ayudarían a gestionar mejor el estrés?',
+      tipo: 'texto_abierto',
+      opciones: []
+    }
+  ],
+  'carga-laboral': [
+    {
+      texto: '¿Consideras que tu carga de trabajo actual es manejable?',
+      tipo: 'escala_1_5',
+      opciones: []
+    },
+    {
+      texto: '¿Logras mantener un equilibrio saludable entre trabajo y vida personal?',
+      tipo: 'si_no',
+      opciones: []
+    },
+    {
+      texto: '¿Con qué frecuencia trabajas fuera de tu horario habitual?',
+      tipo: 'opcion_multiple',
+      opciones: ['Nunca', 'Ocasionalmente', 'Frecuentemente', 'Casi siempre', 'Siempre']
+    },
+    {
+      texto: '¿Qué cambios en la organización del trabajo mejorarían tu bienestar?',
+      tipo: 'texto_abierto',
+      opciones: []
+    }
+  ],
+  'comunicacion': [
+    {
+      texto: '¿Qué tan clara y efectiva consideras la comunicación en tu equipo?',
+      tipo: 'escala_1_5',
+      opciones: []
+    },
+    {
+      texto: '¿Te sientes cómodo expresando tus ideas y opiniones en el trabajo?',
+      tipo: 'si_no',
+      opciones: []
+    },
+    {
+      texto: '¿Cuál es el principal desafío en la comunicación de tu equipo?',
+      tipo: 'opcion_multiple',
+      opciones: ['Falta de claridad en instrucciones', 'Comunicación tardía', 'Demasiadas reuniones', 'Canales inadecuados', 'Falta de feedback']
+    },
+    {
+      texto: '¿Cómo podríamos mejorar la comunicación en tu área de trabajo?',
+      tipo: 'texto_abierto',
+      opciones: []
+    }
+  ],
+  'ergonomia': [
+    {
+      texto: '¿Qué tan cómodo te sientes físicamente en tu puesto de trabajo?',
+      tipo: 'escala_1_5',
+      opciones: []
+    },
+    {
+      texto: '¿Experimentas dolores o molestias físicas relacionadas con tu trabajo?',
+      tipo: 'si_no',
+      opciones: []
+    },
+    {
+      texto: '¿Qué aspectos de tu espacio de trabajo te causan más incomodidad?',
+      tipo: 'opcion_multiple',
+      opciones: ['Silla inadecuada', 'Altura del escritorio', 'Iluminación', 'Ruido', 'Temperatura', 'Espacio insuficiente']
+    },
+    {
+      texto: '¿Qué mejoras en tu espacio de trabajo tendrían mayor impacto en tu comodidad?',
+      tipo: 'texto_abierto',
+      opciones: []
+    }
+  ],
+  'desarrollo': [
+    {
+      texto: '¿Sientes que tienes oportunidades de crecimiento profesional en la empresa?',
+      tipo: 'escala_1_5',
+      opciones: []
+    },
+    {
+      texto: '¿Recibes feedback regular sobre tu desempeño y desarrollo?',
+      tipo: 'si_no',
+      opciones: []
+    },
+    {
+      texto: '¿Qué tipo de desarrollo profesional te interesa más?',
+      tipo: 'opcion_multiple',
+      opciones: ['Capacitación técnica', 'Habilidades de liderazgo', 'Certificaciones', 'Mentoring', 'Proyectos desafiantes']
+    },
+    {
+      texto: '¿Qué obstáculos encuentras para tu desarrollo profesional en la empresa?',
+      tipo: 'texto_abierto',
+      opciones: []
+    }
+  ],
+  'general': [
+    {
+      texto: '¿Cómo calificarías tu satisfacción general con el trabajo?',
+      tipo: 'escala_1_5',
+      opciones: []
+    },
+    {
+      texto: '¿Recomendarías esta empresa como un buen lugar para trabajar?',
+      tipo: 'si_no',
+      opciones: []
+    },
+    {
+      texto: '¿Cuál es el aspecto más positivo de trabajar en esta empresa?',
+      tipo: 'opcion_multiple',
+      opciones: ['Ambiente de trabajo', 'Beneficios', 'Flexibilidad', 'Oportunidades de crecimiento', 'Compañeros de trabajo']
+    },
+    {
+      texto: '¿Qué sugerencias tienes para mejorar el bienestar general en la empresa?',
+      tipo: 'texto_abierto',
+      opciones: []
+    }
+  ]
+};
+
 // Computed properties
 const puedeSerLanzada = computed(() => {
   const basico = nuevaEncuesta.value.titulo.trim() && 
+         nuevaEncuesta.value.categoria &&
          nuevaEncuesta.value.preguntas.length > 0 &&
          nuevaEncuesta.value.preguntas.every(p => 
            p.texto.trim() && 
@@ -550,6 +752,55 @@ const previewRecurrencia = computed(() => {
   
   return texto;
 });
+
+// Métodos para categorías y preguntas sugeridas
+const getCategoriaLabel = (categoria) => {
+  const labels = {
+    'salud-mental': 'Salud Mental',
+    'carga-laboral': 'Carga Laboral',
+    'comunicacion': 'Comunicación',
+    'ergonomia': 'Ergonomía',
+    'desarrollo': 'Desarrollo Profesional',
+    'general': 'Bienestar General'
+  };
+  return labels[categoria] || categoria;
+};
+
+const getTipoLabel = (tipo) => {
+  const labels = {
+    'opcion_multiple': 'Opción Múltiple',
+    'si_no': 'Sí / No',
+    'escala_1_5': 'Escala 1-5',
+    'texto_abierto': 'Texto Abierto'
+  };
+  return labels[tipo] || tipo;
+};
+
+const actualizarPreguntasSugeridas = () => {
+  if (nuevaEncuesta.value.categoria && preguntasPorCategoria[nuevaEncuesta.value.categoria]) {
+    preguntasSugeridas.value = preguntasPorCategoria[nuevaEncuesta.value.categoria];
+  } else {
+    preguntasSugeridas.value = [];
+  }
+};
+
+const añadirPreguntaSugerida = (preguntaSugerida) => {
+  const nuevaPregunta = {
+    id: Date.now() + Math.random(),
+    texto: preguntaSugerida.texto,
+    tipo: preguntaSugerida.tipo,
+    opciones: [...preguntaSugerida.opciones]
+  };
+  
+  nuevaEncuesta.value.preguntas.push(nuevaPregunta);
+  
+  toast.add({
+    severity: 'success',
+    summary: 'Pregunta añadida',
+    detail: 'La pregunta sugerida ha sido agregada a tu encuesta',
+    life: 3000
+  });
+};
 
 // Métodos para gestionar preguntas
 const añadirPregunta = () => {

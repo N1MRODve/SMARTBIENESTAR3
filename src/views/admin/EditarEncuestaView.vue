@@ -79,6 +79,31 @@
                   ></textarea>
                 </div>
 
+                <!-- Categoría de la Encuesta -->
+                <div class="form-group">
+                  <label for="categoria" class="form-label">
+                    Categoría de la Encuesta *
+                  </label>
+                  <select
+                    id="categoria"
+                    v-model="encuesta.categoria"
+                    class="input"
+                    required
+                    :disabled="guardando"
+                  >
+                    <option value="">Selecciona una categoría</option>
+                    <option value="salud-mental">🧠 Salud Mental</option>
+                    <option value="carga-laboral">⚖️ Carga Laboral</option>
+                    <option value="comunicacion">💬 Comunicación</option>
+                    <option value="ergonomia">🪑 Ergonomía</option>
+                    <option value="desarrollo">📈 Desarrollo Profesional</option>
+                    <option value="general">📊 Bienestar General</option>
+                  </select>
+                  <p class="mt-1 text-sm text-gray-500">
+                    Esta categoría ayuda a clasificar y analizar los resultados
+                  </p>
+                </div>
+
                 <!-- Estado -->
                 <div class="form-group">
                   <label for="estado" class="form-label">
@@ -337,6 +362,7 @@ const cargarEncuesta = async () => {
       id: encuestaData.id,
       titulo: encuestaData.titulo || '',
       descripcion: encuestaData.descripcion || '',
+      categoria: encuestaData.categoria || 'general',
       estado: encuestaData.estado || 'borrador',
       preguntas: encuestaData.preguntas || []
     };

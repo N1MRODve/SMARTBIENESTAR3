@@ -51,8 +51,17 @@
           <!-- Header de Resultados -->
           <div class="bg-white rounded-lg shadow-sm p-6">
             <div class="flex justify-between items-start">
-              <div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ encuesta.titulo }}</h1>
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h1 class="text-3xl font-bold text-gray-900">{{ encuesta.titulo }}</h1>
+                  <!-- Badge de Alertas Activas -->
+                  <div v-if="alertasActivas.length > 0"
+                       class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold"
+                       :class="alertasPorTipo.criticas > 0 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'">
+                    <Bell class="h-4 w-4" />
+                    <span>{{ alertasActivas.length }} {{ alertasActivas.length === 1 ? 'alerta activa' : 'alertas activas' }}</span>
+                  </div>
+                </div>
                 <div class="flex items-center space-x-6 text-sm text-gray-500">
                   <div class="flex items-center">
                     <Users class="h-4 w-4 mr-1" />
@@ -322,6 +331,97 @@
               </div>
             </div>
           </div>
+
+          <!-- Bloque de Alertas de Bienestar -->
+          <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-orange-50">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-600 rounded-xl flex items-center justify-center mr-4">
+                    <Bell class="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Alertas de Bienestar</h2>
+                    <p class="text-gray-600">Prioridades de intervención automáticas</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-3xl font-bold" :class="alertasPorTipo.criticas > 0 ? 'text-red-600' : alertasPorTipo.moderadas > 0 ? 'text-orange-600' : 'text-green-600'">
+                    {{ alertasActivas.length }}
+                  </div>
+                  <div class="text-sm text-gray-600">
+                    {{ alertasActivas.length === 0 ? 'Sin alertas' : alertasActivas.length === 1 ? 'Alerta activa' : 'Alertas activas' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-8">
+              <!-- TODO: conectar con datos reales desde Supabase cuando esté disponible -->
+
+              <!-- Sin Alertas -->
+              <div v-if="alertasActivas.length === 0"
+                   class="bg-green-50 rounded-lg p-4 shadow-sm flex items-center gap-3 text-sm border border-green-200">
+                <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <CheckCircle class="h-5 w-5 text-white" />
+                </div>
+                <div class="flex-1">
+                  <p class="font-semibold text-green-900">Todo estable</p>
+                  <p class="text-green-700">No se requieren acciones urgentes. Todas las categorías muestran niveles saludables.</p>
+                </div>
+              </div>
+
+              <!-- Con Alertas -->
+              <div v-else class="space-y-3">
+                <div v-for="(alerta, index) in alertasActivas"
+                     :key="index"
+                     class="rounded-lg p-4 shadow-sm flex items-start gap-3 text-sm transition-all duration-200 hover:shadow-md border"
+                     :class="getAlertaClasses(alerta.tipo)">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                       :class="getAlertaIconClasses(alerta.tipo)">
+                    <component :is="getAlertaIcon(alerta.tipo)" class="h-5 w-5 text-white" />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between gap-2 mb-1">
+                      <h3 class="font-bold" :class="getAlertaTitleClasses(alerta.tipo)">
+                        {{ alerta.titulo }}
+                      </h3>
+                      <span class="text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap"
+                            :class="getAlertaBadgeClasses(alerta.tipo)">
+                        {{ alerta.tipo === 'critica' ? 'Riesgo Alto' : alerta.tipo === 'moderada' ? 'Atención Moderada' : 'Estable' }}
+                      </span>
+                    </div>
+                    <p class="leading-relaxed" :class="getAlertaTextClasses(alerta.tipo)">
+                      {{ alerta.mensaje }}
+                    </p>
+                    <div class="mt-2 pt-2 border-t" :class="getAlertaBorderClasses(alerta.tipo)">
+                      <p class="text-xs font-medium" :class="getAlertaTextClasses(alerta.tipo)">
+                        Categoría: {{ alerta.categoria }} ({{ alerta.valor }}%)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Resumen de Alertas -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-red-50 rounded-lg p-4 text-center border border-red-200">
+                      <div class="text-2xl font-bold text-red-600">{{ alertasPorTipo.criticas }}</div>
+                      <div class="text-sm text-red-800 font-medium">Alertas Críticas</div>
+                    </div>
+                    <div class="bg-orange-50 rounded-lg p-4 text-center border border-orange-200">
+                      <div class="text-2xl font-bold text-orange-600">{{ alertasPorTipo.moderadas }}</div>
+                      <div class="text-sm text-orange-800 font-medium">Alertas Moderadas</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 text-center border border-green-200">
+                      <div class="text-2xl font-bold text-green-600">{{ alertasPorTipo.estables }}</div>
+                      <div class="text-sm text-green-800 font-medium">Áreas Estables</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -354,7 +454,9 @@ import {
   Brain,
   Heart,
   Smile,
-  Zap
+  Zap,
+  Bell,
+  ShieldAlert
 } from 'lucide-vue-next';
 import { Chart, registerables } from 'chart.js';
 
@@ -606,6 +708,101 @@ const categoriasInterpretadas = computed(() => {
     }
   ];
 });
+
+// Sistema de Alertas de Bienestar
+// TODO: conectar con datos reales desde Supabase cuando esté disponible
+const alertasActivas = computed(() => {
+  if (!encuesta.value?.preguntas) return [];
+
+  const alertas = [];
+
+  // Generar alertas basadas en las categorías interpretadas
+  categoriasInterpretadas.value.forEach(categoria => {
+    if (categoria.valor < 60) {
+      alertas.push({
+        tipo: 'critica',
+        categoria: categoria.nombre,
+        valor: categoria.valor,
+        titulo: `Riesgo alto en ${categoria.nombre}`,
+        mensaje: `Requiere acción inmediata. El nivel actual (${categoria.valor}%) indica una situación crítica que necesita intervención urgente para evitar deterioro adicional.`
+      });
+    } else if (categoria.valor >= 60 && categoria.valor <= 80) {
+      alertas.push({
+        tipo: 'moderada',
+        categoria: categoria.nombre,
+        valor: categoria.valor,
+        titulo: `Atención moderada en ${categoria.nombre}`,
+        mensaje: `Considera acciones preventivas. El nivel actual (${categoria.valor}%) muestra margen de mejora que puede ser abordado con estrategias proactivas.`
+      });
+    }
+  });
+
+  return alertas;
+});
+
+// Contador de alertas por tipo
+const alertasPorTipo = computed(() => {
+  const conteo = {
+    criticas: 0,
+    moderadas: 0,
+    estables: 0
+  };
+
+  categoriasInterpretadas.value.forEach(categoria => {
+    if (categoria.valor < 60) {
+      conteo.criticas++;
+    } else if (categoria.valor >= 60 && categoria.valor <= 80) {
+      conteo.moderadas++;
+    } else {
+      conteo.estables++;
+    }
+  });
+
+  return conteo;
+});
+
+// Funciones para estilos de alertas
+const getAlertaClasses = (tipo) => {
+  if (tipo === 'critica') return 'bg-red-50 border-red-200';
+  if (tipo === 'moderada') return 'bg-orange-50 border-orange-200';
+  return 'bg-green-50 border-green-200';
+};
+
+const getAlertaIconClasses = (tipo) => {
+  if (tipo === 'critica') return 'bg-red-500';
+  if (tipo === 'moderada') return 'bg-orange-500';
+  return 'bg-green-500';
+};
+
+const getAlertaIcon = (tipo) => {
+  if (tipo === 'critica') return AlertTriangle;
+  if (tipo === 'moderada') return ShieldAlert;
+  return CheckCircle;
+};
+
+const getAlertaTitleClasses = (tipo) => {
+  if (tipo === 'critica') return 'text-red-900';
+  if (tipo === 'moderada') return 'text-orange-900';
+  return 'text-green-900';
+};
+
+const getAlertaTextClasses = (tipo) => {
+  if (tipo === 'critica') return 'text-red-700';
+  if (tipo === 'moderada') return 'text-orange-700';
+  return 'text-green-700';
+};
+
+const getAlertaBadgeClasses = (tipo) => {
+  if (tipo === 'critica') return 'bg-red-100 text-red-700';
+  if (tipo === 'moderada') return 'bg-orange-100 text-orange-700';
+  return 'bg-green-100 text-green-700';
+};
+
+const getAlertaBorderClasses = (tipo) => {
+  if (tipo === 'critica') return 'border-red-200';
+  if (tipo === 'moderada') return 'border-orange-200';
+  return 'border-green-200';
+};
 
 // Cargar resultados al montar el componente
 onMounted(() => {

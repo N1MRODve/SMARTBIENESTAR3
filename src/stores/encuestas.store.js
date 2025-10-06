@@ -51,15 +51,49 @@ export const useEncuestasStore = defineStore('encuestas', () => {
     }
   };
 
-  const submitSurveyAnswers = async (respuestas) => {
+  const submitSurveyAnswers = async (encuestaId, respuestas) => {
     isLoading.value = true;
-    
+
     try {
-      // Enviar respuestas usando el mock service
-      await addAnswer(activeSurvey.value.id, respuestas);
-      
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      // Get auth token from localStorage or session
+      const authToken = localStorage.getItem('supabase.auth.token') ||
+                       sessionStorage.getItem('supabase.auth.token');
+
+      if (!authToken) {
+        throw new Error('No estás autenticado');
+      }
+
+      const apiUrl = `${supabaseUrl}/functions/v1/submit-survey-response`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          encuesta_id: encuestaId,
+          respuestas: respuestas
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Check for duplicate submission
+        if (response.status === 409 && data.isDuplicate) {
+          const duplicateError = new Error(data.error || 'Ya has respondido esta encuesta.');
+          duplicateError.isDuplicate = true;
+          throw duplicateError;
+        }
+        throw new Error(data.error || 'Error al enviar respuestas');
+      }
+
       console.log('Respuestas enviadas:', respuestas);
-      return { success: true, message: 'Respuestas enviadas correctamente' };
+      return { success: true, message: data.message || 'Respuestas enviadas correctamente' };
     } catch (err) {
       error.value = err.message || 'Error al enviar respuestas';
       throw err;

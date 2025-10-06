@@ -362,14 +362,14 @@ onMounted(() => {
 // --- Lógica de envío ---
 const handleSubmit = async () => {
   if (!allQuestionsAnswered.value) return;
-  
+
   try {
     await submitSurveyAnswers(activeSurvey.value.id, userAnswers.value);
-    
+
     // Otorgar puntos por completar la encuesta
     try {
       await otorgarPuntosEncuesta(authStore.user?.id || 'user-empleado-01');
-      
+
       toast.add({
         severity: 'success',
         summary: '¡Puntos ganados!',
@@ -380,16 +380,27 @@ const handleSubmit = async () => {
       console.error('Error al otorgar puntos:', puntosError);
       // No bloquear el flujo si falla la gamificación
     }
-    
+
     surveySubmitted.value = true;
   } catch (error) {
     console.error('Error al enviar encuesta:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'No se pudo enviar la encuesta',
-      life: 5000
-    });
+
+    // Check if this is a duplicate submission error
+    if (error.isDuplicate) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Encuesta ya completada',
+        detail: 'Ya has respondido esta encuesta.',
+        life: 5000
+      });
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: error.message || 'No se pudo enviar la encuesta',
+        life: 5000
+      });
+    }
   }
 };
 

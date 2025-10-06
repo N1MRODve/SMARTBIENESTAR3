@@ -1,12 +1,16 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': '/src',
-      'ws': '/src/shims/ws.js'
+      '@': path.resolve(__dirname, 'src'),
+      'ws': path.resolve(__dirname, 'src/shims/ws.js')
     }
   }
 });

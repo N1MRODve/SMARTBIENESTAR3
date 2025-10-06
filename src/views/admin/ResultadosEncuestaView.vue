@@ -97,6 +97,15 @@
 
               <!-- Contenido de Resultados -->
               <div class="p-6">
+                <!-- Alerta de Protección de Anonimato -->
+                <div v-if="pregunta.resultadosPorGrupo && tieneGruposConPocasRespuestas(pregunta)" class="mb-6 bg-yellow-50 text-yellow-800 border border-yellow-300 rounded-lg p-4 flex items-start gap-3">
+                  <AlertTriangle class="h-5 w-5 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p class="font-medium">Protección de Anonimato</p>
+                    <p class="text-sm mt-1">No se muestran resultados de grupos con menos de 5 respuestas para preservar el anonimato.</p>
+                  </div>
+                </div>
+
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <!-- Gráfico -->
                   <div>
@@ -171,6 +180,25 @@
                         </div>
                       </div>
                     </div>
+
+                    <!-- Resultados por Departamento (si existen) -->
+                    <div v-if="pregunta.resultadosPorGrupo && pregunta.resultadosPorGrupo.length > 0">
+                      <h4 class="text-md font-medium text-gray-900 mb-3">Resultados por Departamento</h4>
+                      <div class="space-y-3">
+                        <template v-for="grupo in pregunta.resultadosPorGrupo" :key="grupo.departamento">
+                          <!-- Mostrar solo si tiene 5 o más respuestas -->
+                          <div v-if="grupo.total_respuestas >= 5" class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                              <span class="font-medium text-gray-900">{{ grupo.departamento }}</span>
+                              <span class="text-sm text-gray-500">{{ grupo.total_respuestas }} respuestas</span>
+                            </div>
+                            <div class="text-sm text-gray-700">
+                              Promedio: <span class="font-semibold">{{ grupo.promedio }}</span>
+                            </div>
+                          </div>
+                        </template>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -208,10 +236,10 @@ import { useToast } from 'primevue/usetoast';
 import { getResultadosEncuestaById } from '@/services/mock/encuestas.service.js';
 import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
-import { 
-  ArrowLeft, 
-  AlertCircle, 
-  RefreshCw, 
+import {
+  ArrowLeft,
+  AlertCircle,
+  RefreshCw,
   ChevronRight,
   Users,
   TrendingUp,
@@ -221,7 +249,8 @@ import {
   BarChart3,
   Lightbulb,
   Send,
-  CheckCircle
+  CheckCircle,
+  AlertTriangle
 } from 'lucide-vue-next';
 import { Chart, registerables } from 'chart.js';
 
@@ -360,6 +389,12 @@ const exportarResultados = () => {
 
 const crearComunicado = () => {
   router.push('/admin/crear-comunicado');
+};
+
+// Verificar si una pregunta tiene grupos con menos de 5 respuestas
+const tieneGruposConPocasRespuestas = (pregunta) => {
+  if (!pregunta.resultadosPorGrupo) return false;
+  return pregunta.resultadosPorGrupo.some(grupo => grupo.total_respuestas < 5);
 };
 
 // Cargar resultados al montar el componente

@@ -7,17 +7,27 @@ import { ref } from 'vue';
 const totalEmpleados = 50; 
 
 const encuestasDb = ref([
-  { 
-    id: 'enc-01', 
-    titulo: 'Encuesta de Pulso de Bienestar (Q3)', 
+  {
+    id: 'enc-01',
+    titulo: 'Encuesta de Pulso de Bienestar (Q3)',
     categoria: 'general',
-    estado: 'Finalizada', 
+    estado: 'Finalizada',
     totalParticipantes: 42,
+    privacidadNivel: 'anonimato_parcial',
     preguntas: [
-      { 
-        id: 'p1', 
+      {
+        id: 'p1',
         texto: '¿Cómo calificarías tu nivel de estrés esta semana?',
-        resultados: { labels: ['Bajo', 'Medio', 'Alto'], data: [10, 20, 12] }, // 42 respuestas
+        resultados: { labels: ['Bajo', 'Medio', 'Alto'], data: [10, 20, 12] },
+        resultadosPorGrupo: [
+          { departamento: 'Desarrollo', total_respuestas: 8, promedio: '2.1 (Medio)' },
+          { departamento: 'Marketing', total_respuestas: 6, promedio: '2.8 (Alto)' },
+          { departamento: 'Ventas', total_respuestas: 7, promedio: '1.9 (Bajo-Medio)' },
+          { departamento: 'RRHH', total_respuestas: 3, promedio: '1.7 (Bajo)' },
+          { departamento: 'Finanzas', total_respuestas: 5, promedio: '2.2 (Medio)' },
+          { departamento: 'Operaciones', total_respuestas: 8, promedio: '2.4 (Medio)' },
+          { departamento: 'Atención al Cliente', total_respuestas: 5, promedio: '2.6 (Medio-Alto)' }
+        ],
         insight: 'Un 28% del equipo reporta un nivel de estrés alto.',
         recomendacion: {
           id: 'serv-01',
@@ -28,19 +38,28 @@ const encuestasDb = ref([
       {
         id: 'p2',
         texto: '¿Sientes que tienes las herramientas adecuadas?',
-        resultados: { labels: ['Sí', 'No'], data: [35, 7] }, // 42 respuestas
+        resultados: { labels: ['Sí', 'No'], data: [35, 7] },
+        resultadosPorGrupo: [
+          { departamento: 'Desarrollo', total_respuestas: 8, promedio: '87.5% Sí' },
+          { departamento: 'Marketing', total_respuestas: 6, promedio: '83.3% Sí' },
+          { departamento: 'Ventas', total_respuestas: 7, promedio: '71.4% Sí' },
+          { departamento: 'RRHH', total_respuestas: 3, promedio: '100% Sí' },
+          { departamento: 'Finanzas', total_respuestas: 5, promedio: '80% Sí' },
+          { departamento: 'Operaciones', total_respuestas: 8, promedio: '87.5% Sí' },
+          { departamento: 'Atención al Cliente', total_respuestas: 5, promedio: '60% Sí' }
+        ],
         insight: 'La mayoría se siente equipada para su trabajo.',
         recomendacion: null
       }
     ]
   },
-  { 
-    id: 'enc-02', 
-    titulo: 'Encuesta de Clima Laboral 2025', 
+  {
+    id: 'enc-02',
+    titulo: 'Encuesta de Clima Laboral 2025',
     categoria: 'comunicacion',
-    estado: 'Activa', 
+    estado: 'Activa',
     totalParticipantes: 35,
-    // ... (podríamos añadir más datos aquí)
+    privacidadNivel: 'anonimato_completo'
   },
 ]);
 

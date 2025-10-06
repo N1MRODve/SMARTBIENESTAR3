@@ -60,7 +60,7 @@
         <div class="mt-8 pt-8 border-t border-gray-200">
           <h3 class="text-xl font-semibold text-gray-900 mb-6">Insights Clave</h3>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <InsightCard 
+            <InsightCard
               :insight="{
                 type: 'strength',
                 title: 'Comunicación Excelente',
@@ -69,10 +69,10 @@
                 score: 8.3
               }"
             />
-            
-            <InsightCard 
+
+            <InsightCard
               :insight="{
-                type: 'weakness', 
+                type: 'weakness',
                 title: 'Oportunidad en Salud Mental',
                 description: 'La salud mental (5.8) es el área con mayor oportunidad de mejora.',
                 icon: '🧠',
@@ -80,10 +80,10 @@
               }"
             />
           </div>
-          
+
           <!-- Action Button -->
           <div class="mt-6 text-center">
-            <Button 
+            <Button
               @click="router.push('/admin/encuestas/enc-01/resultados')"
               variant="outline"
               class="w-full lg:w-auto"
@@ -91,6 +91,90 @@
               <BarChart3 class="h-4 w-4 mr-2" />
               Ver Análisis Completo
             </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones Sugeridas Section -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-amber-50 to-yellow-50 px-8 py-6 border-b border-gray-200">
+        <div class="flex items-center">
+          <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center mr-4">
+            <Lightbulb class="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900">Recomendaciones Automáticas</h2>
+            <p class="text-gray-600">Acciones sugeridas basadas en el índice de bienestar actual</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-8">
+        <!-- Recomendación basada en índice de bienestar -->
+        <div v-if="indiceBienestar < 60" class="bg-red-50 rounded-xl p-6 shadow-sm border border-red-200">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <AlertTriangle class="h-6 w-6 text-white" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-red-900 mb-2">Nivel de Riesgo Detectado</h3>
+              <p class="text-red-800 mb-4">
+                El bienestar del equipo muestra señales de riesgo. Recomendamos iniciar un taller de gestión del estrés o una sesión de mindfulness.
+              </p>
+              <Button
+                @click="solicitarAccion('critico', indiceBienestar)"
+                :loading="loadingAccion"
+                class="bg-red-600 hover:bg-red-700 text-white border-0"
+              >
+                <AlertCircle class="h-4 w-4 mr-2" />
+                Solicitar acción recomendada
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div v-else-if="indiceBienestar >= 60 && indiceBienestar <= 80" class="bg-orange-50 rounded-xl p-6 shadow-sm border border-orange-200">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <TrendingUp class="h-6 w-6 text-white" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-orange-900 mb-2">Áreas de Mejora Identificadas</h3>
+              <p class="text-orange-800 mb-4">
+                Se detectan áreas de mejora. Considera acciones preventivas como encuestas rápidas o sesiones de comunicación interna.
+              </p>
+              <Button
+                @click="solicitarAccion('preventivo', indiceBienestar)"
+                :loading="loadingAccion"
+                class="bg-orange-600 hover:bg-orange-700 text-white border-0"
+              >
+                <AlertCircle class="h-4 w-4 mr-2" />
+                Solicitar acción recomendada
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="bg-green-50 rounded-xl p-6 shadow-sm border border-green-200">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <CheckCircle class="h-6 w-6 text-white" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-green-900 mb-2">Bienestar Positivo</h3>
+              <p class="text-green-800 mb-4">
+                El bienestar general es positivo. Mantén las iniciativas actuales y refuerza la comunicación.
+              </p>
+              <Button
+                @click="solicitarAccion('mantenimiento', indiceBienestar)"
+                :loading="loadingAccion"
+                class="bg-green-600 hover:bg-green-700 text-white border-0"
+              >
+                <CheckCircle class="h-4 w-4 mr-2" />
+                Solicitar acción recomendada
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -429,13 +513,16 @@
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { 
-  LayoutDashboard, 
-  TrendingUp, 
-  FileText, 
-  Users, 
-  Gift, 
+import { useToast } from 'primevue/usetoast';
+import { createClient } from '@supabase/supabase-js';
+import {
+  LayoutDashboard,
+  TrendingUp,
+  FileText,
+  Users,
+  Gift,
   Megaphone,
   HeartHandshake,
   Calendar,
@@ -453,7 +540,10 @@ import {
   MessageSquare,
   Brain,
   Monitor,
-  Calculator
+  Calculator,
+  Lightbulb,
+  AlertTriangle,
+  AlertCircle
 } from 'lucide-vue-next';
 import Button from '@/components/common/Button.vue';
 import ScoreGauge from '@/components/admin/ScoreGauge.vue';
@@ -461,6 +551,70 @@ import InsightCard from '@/components/admin/InsightCard.vue';
 import DimensionsChart from '@/components/admin/DimensionsChart.vue';
 
 const router = useRouter();
+const toast = useToast();
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+const indiceBienestar = ref(72);
+const loadingAccion = ref(false);
+
+const solicitarAccion = async (tipoAccion, nivel) => {
+  loadingAccion.value = true;
+
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      toast.add({
+        severity: 'error',
+        summary: 'Error de autenticación',
+        detail: 'Debes iniciar sesión para solicitar acciones',
+        life: 4000
+      });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('acciones_recomendadas')
+      .insert({
+        user_id: user.id,
+        encuesta_id: null,
+        tipo_accion: tipoAccion,
+        nivel_bienestar: nivel,
+        fecha_solicitud: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error('Error al guardar acción:', error);
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No se pudo registrar la solicitud',
+        life: 4000
+      });
+      return;
+    }
+
+    toast.add({
+      severity: 'success',
+      summary: 'Solicitud registrada',
+      detail: 'La acción recomendada ha sido registrada exitosamente',
+      life: 4000
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Ocurrió un error al procesar la solicitud',
+      life: 4000
+    });
+  } finally {
+    loadingAccion.value = false;
+  }
+};
 </script>
 
 <style scoped>

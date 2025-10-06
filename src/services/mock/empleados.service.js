@@ -110,3 +110,17 @@ export const setEstadoEmpleado = async (empleadoId, nuevoEstado) => {
   }
   return new Promise(resolve => setTimeout(() => resolve({ success: !!empleado }), 200));
 };
+
+/**
+ * Actualiza los datos de un empleado.
+ * @param {string} empleadoId - El ID del empleado a actualizar.
+ * @param {Object} datosActualizados - Los nuevos datos del empleado.
+ */
+export const actualizarEmpleado = async (empleadoId, datosActualizados) => {
+  const index = empleados.value.findIndex(e => e.id === empleadoId);
+  if (index !== -1) {
+    empleados.value[index] = { ...empleados.value[index], ...datosActualizados };
+    return new Promise(resolve => setTimeout(() => resolve({ success: true, empleado: empleados.value[index] }), 200));
+  }
+  return new Promise(resolve => setTimeout(() => resolve({ success: false }), 200));
+};

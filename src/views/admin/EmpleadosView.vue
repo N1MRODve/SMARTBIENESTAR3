@@ -34,7 +34,7 @@
               </span>
             </td>
             <td class="p-4">
-              <button class="text-primary hover:underline">Editar</button>
+              <button @click="abrirModalEditar(empleado)" class="text-primary hover:underline">Editar</button>
             </td>
           </tr>
         </tbody>
@@ -46,19 +46,28 @@
       @close="isModalVisible = false"
       @submit="handleInvitar"
     />
+
+    <EditarEmpleadoModal
+      v-if="isEditModalVisible"
+      :empleado="empleadoSeleccionado"
+      @close="isEditModalVisible = false"
+      @submit="handleActualizarEmpleado"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getEmpleados, invitarEmpleados } from '@/services/mock/empleados.service.js';
+import { getEmpleados, invitarEmpleados, actualizarEmpleado } from '@/services/mock/empleados.service.js';
 import InvitarEmpleadosModal from '@/components/admin/InvitarEmpleadosModal.vue';
+import EditarEmpleadoModal from '@/components/admin/EditarEmpleadoModal.vue';
 
 const empleados = ref([]);
 const isLoading = ref(true);
-const isModalVisible = ref(false); // Variable para controlar la visibilidad del modal
+const isModalVisible = ref(false);
+const isEditModalVisible = ref(false);
+const empleadoSeleccionado = ref(null);
 
-// Función para cargar los empleados
 const cargarEmpleados = async () => {
   isLoading.value = true;
   try {
@@ -72,10 +81,20 @@ const cargarEmpleados = async () => {
 
 onMounted(cargarEmpleados);
 
-// Función para manejar el envío de invitaciones desde el modal
 const handleInvitar = async (emails) => {
   await invitarEmpleados(emails);
-  isModalVisible.value = false; // Cierra el modal
-  await cargarEmpleados(); // Recarga la lista para mostrar los nuevos invitados
+  isModalVisible.value = false;
+  await cargarEmpleados();
+};
+
+const abrirModalEditar = (empleado) => {
+  empleadoSeleccionado.value = empleado;
+  isEditModalVisible.value = true;
+};
+
+const handleActualizarEmpleado = async (datosActualizados) => {
+  await actualizarEmpleado(empleadoSeleccionado.value.id, datosActualizados);
+  isEditModalVisible.value = false;
+  await cargarEmpleados();
 };
 </script>

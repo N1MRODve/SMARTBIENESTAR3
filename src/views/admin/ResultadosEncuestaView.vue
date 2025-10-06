@@ -375,16 +375,23 @@
               <div v-else class="space-y-3">
                 <div v-for="(alerta, index) in alertasActivas"
                      :key="index"
-                     class="rounded-lg p-4 shadow-sm flex items-start gap-3 text-sm transition-all duration-200 hover:shadow-md border"
-                     :class="getAlertaClasses(alerta.tipo)">
+                     class="rounded-lg p-4 shadow-sm flex items-start gap-3 text-sm transition-all duration-200 hover:shadow-md border cursor-pointer"
+                     :class="[
+                       getAlertaClasses(alerta.tipo),
+                       alerta.gestionada ? 'opacity-50' : ''
+                     ]"
+                     @click="abrirModalRecomendaciones(alerta)">
                   <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                        :class="getAlertaIconClasses(alerta.tipo)">
-                    <component :is="getAlertaIcon(alerta.tipo)" class="h-5 w-5 text-white" />
+                    <component :is="alerta.gestionada ? CheckCircle : getAlertaIcon(alerta.tipo)" class="h-5 w-5 text-white" />
                   </div>
                   <div class="flex-1 min-w-0">
                     <div class="flex items-start justify-between gap-2 mb-1">
                       <h3 class="font-bold" :class="getAlertaTitleClasses(alerta.tipo)">
                         {{ alerta.titulo }}
+                        <span v-if="alerta.gestionada" class="ml-2 text-xs font-normal text-green-600">
+                          (Gestionada ✓)
+                        </span>
                       </h3>
                       <span class="text-xs font-semibold px-2 py-1 rounded-full whitespace-nowrap"
                             :class="getAlertaBadgeClasses(alerta.tipo)">
@@ -399,6 +406,9 @@
                         Categoría: {{ alerta.categoria }} ({{ alerta.valor }}%)
                       </p>
                     </div>
+                  </div>
+                  <div class="flex-shrink-0 text-gray-400">
+                    <ChevronRight class="h-5 w-5" />
                   </div>
                 </div>
 
@@ -425,6 +435,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Recomendaciones -->
+    <ModalAccionRecomendada
+      v-model="modalRecomendacionesAbierto"
+      :alerta="alertaSeleccionada"
+      @marcar-gestionado="marcarAlertaComoGestionada"
+    />
   </div>
 </template>
 
@@ -435,6 +452,7 @@ import { useToast } from 'primevue/usetoast';
 import { getResultadosEncuestaById } from '@/services/mock/encuestas.service.js';
 import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
+import ModalAccionRecomendada from '@/components/admin/ModalAccionRecomendada.vue';
 import {
   ArrowLeft,
   AlertCircle,
@@ -475,6 +493,13 @@ const charts = ref({});
 
 // Índice de bienestar global (mock - basado en tasas de participación positivas)
 const indiceBienestarGlobal = ref(72);
+
+// Estado del modal de recomendaciones
+const modalRecomendacionesAbierto = ref(false);
+const alertaSeleccionada = ref(null);
+
+// Estado de alertas gestionadas (mock - en producción se guardaría en Supabase)
+const alertasGestionadas = ref([]);
 
 // Métodos
 const cargarResultados = async () => {
@@ -718,27 +743,55 @@ const alertasActivas = computed(() => {
 
   // Generar alertas basadas en las categorías interpretadas
   categoriasInterpretadas.value.forEach(categoria => {
+    const alertaId = `${categoria.nombre}-${categoria.valor}`;
+    const gestionada = alertasGestionadas.value.includes(alertaId);
+
     if (categoria.valor < 60) {
       alertas.push({
+        id: alertaId,
         tipo: 'critica',
         categoria: categoria.nombre,
         valor: categoria.valor,
         titulo: `Riesgo alto en ${categoria.nombre}`,
-        mensaje: `Requiere acción inmediata. El nivel actual (${categoria.valor}%) indica una situación crítica que necesita intervención urgente para evitar deterioro adicional.`
+        mensaje: `Requiere acción inmediata. El nivel actual (${categoria.valor}%) indica una situación crítica que necesita intervención urgente para evitar deterioro adicional.`,
+        gestionada
       });
     } else if (categoria.valor >= 60 && categoria.valor <= 80) {
       alertas.push({
+        id: alertaId,
         tipo: 'moderada',
         categoria: categoria.nombre,
         valor: categoria.valor,
         titulo: `Atención moderada en ${categoria.nombre}`,
-        mensaje: `Considera acciones preventivas. El nivel actual (${categoria.valor}%) muestra margen de mejora que puede ser abordado con estrategias proactivas.`
+        mensaje: `Considera acciones preventivas. El nivel actual (${categoria.valor}%) muestra margen de mejora que puede ser abordado con estrategias proactivas.`,
+        gestionada
       });
     }
   });
 
   return alertas;
 });
+
+// Abrir modal de recomendaciones
+const abrirModalRecomendaciones = (alerta) => {
+  alertaSeleccionada.value = alerta;
+  modalRecomendacionesAbierto.value = true;
+};
+
+// Marcar alerta como gestionada
+const marcarAlertaComoGestionada = (alerta) => {
+  // TODO: en futuro conectar acción con tabla 'acciones_recomendadas' en Supabase
+  if (!alertasGestionadas.value.includes(alerta.id)) {
+    alertasGestionadas.value.push(alerta.id);
+  }
+
+  toast.add({
+    severity: 'success',
+    summary: 'Alerta gestionada',
+    detail: `La alerta de "${alerta.categoria}" ha sido marcada como gestionada.`,
+    life: 4000
+  });
+};
 
 // Contador de alertas por tipo
 const alertasPorTipo = computed(() => {

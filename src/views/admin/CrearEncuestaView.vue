@@ -125,6 +125,77 @@
               </div>
             </div>
 
+            <!-- Configuración de Privacidad -->
+            <div class="p-6 border-b border-gray-200">
+              <h2 class="text-xl font-semibold text-gray-900 mb-6">Configuración de Privacidad</h2>
+
+              <div class="space-y-4">
+                <p class="text-sm text-gray-600 mb-4">
+                  Selecciona el nivel de privacidad para las respuestas de esta encuesta
+                </p>
+
+                <!-- Anonimato completo -->
+                <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50" :class="{
+                  'border-primary bg-blue-50': nuevaEncuesta.privacidadNivel === 'anonimato_completo',
+                  'border-gray-300': nuevaEncuesta.privacidadNivel !== 'anonimato_completo'
+                }">
+                  <input
+                    type="radio"
+                    v-model="nuevaEncuesta.privacidadNivel"
+                    value="anonimato_completo"
+                    class="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                  />
+                  <div class="ml-3 flex-1">
+                    <div class="flex items-center">
+                      <span class="text-base font-semibold text-gray-900">Anonimato completo</span>
+                      <span class="ml-2 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Recomendado</span>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-600">
+                      No se guarda ningún identificador del empleado. Las respuestas son 100% anónimas y no pueden asociarse a ningún usuario.
+                    </p>
+                  </div>
+                </label>
+
+                <!-- Anonimato parcial -->
+                <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50" :class="{
+                  'border-primary bg-blue-50': nuevaEncuesta.privacidadNivel === 'anonimato_parcial',
+                  'border-gray-300': nuevaEncuesta.privacidadNivel !== 'anonimato_parcial'
+                }">
+                  <input
+                    type="radio"
+                    v-model="nuevaEncuesta.privacidadNivel"
+                    value="anonimato_parcial"
+                    class="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                  />
+                  <div class="ml-3 flex-1">
+                    <span class="text-base font-semibold text-gray-900">Anonimato parcial</span>
+                    <p class="mt-1 text-sm text-gray-600">
+                      Se agregan resultados por departamento sin identificar a usuarios individuales. Permite análisis por área manteniendo privacidad.
+                    </p>
+                  </div>
+                </label>
+
+                <!-- Identificado -->
+                <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50" :class="{
+                  'border-primary bg-blue-50': nuevaEncuesta.privacidadNivel === 'identificado',
+                  'border-gray-300': nuevaEncuesta.privacidadNivel !== 'identificado'
+                }">
+                  <input
+                    type="radio"
+                    v-model="nuevaEncuesta.privacidadNivel"
+                    value="identificado"
+                    class="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                  />
+                  <div class="ml-3 flex-1">
+                    <span class="text-base font-semibold text-gray-900">Identificado</span>
+                    <p class="mt-1 text-sm text-gray-600">
+                      Las respuestas se asocian al usuario. Permite seguimiento individual y feedback personalizado.
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
             <!-- Preguntas -->
             <div class="p-6">
               <div class="flex items-center justify-between mb-6">
@@ -534,6 +605,7 @@ const nuevaEncuesta = ref({
   titulo: '',
   descripcion: '',
   categoria: '',
+  privacidadNivel: 'anonimato_completo',
   preguntas: [],
   esRecurrente: false,
   recurrencia: {
@@ -687,15 +759,16 @@ const preguntasPorCategoria = {
 
 // Computed properties
 const puedeSerLanzada = computed(() => {
-  const basico = nuevaEncuesta.value.titulo.trim() && 
+  const basico = nuevaEncuesta.value.titulo.trim() &&
          nuevaEncuesta.value.categoria &&
+         nuevaEncuesta.value.privacidadNivel &&
          nuevaEncuesta.value.preguntas.length > 0 &&
-         nuevaEncuesta.value.preguntas.every(p => 
-           p.texto.trim() && 
-           p.tipo && 
+         nuevaEncuesta.value.preguntas.every(p =>
+           p.texto.trim() &&
+           p.tipo &&
            (p.tipo !== 'opcion_multiple' || (p.opciones && p.opciones.every(o => o.trim())))
          );
-  
+
   if (!basico) return false;
   
   // Si es recurrente, validar configuración de recurrencia
@@ -862,6 +935,7 @@ const guardarBorrador = async () => {
     await encuestasStore.createNewSurvey({
       ...nuevaEncuesta.value,
       estado: 'borrador',
+      privacidadNivel: nuevaEncuesta.value.privacidadNivel,
       esRecurrente: nuevaEncuesta.value.esRecurrente,
       recurrencia: nuevaEncuesta.value.esRecurrente ? nuevaEncuesta.value.recurrencia : null
     });
@@ -964,6 +1038,7 @@ const handleLanzarEncuesta = async () => {
     await encuestasStore.createNewSurvey({
       ...nuevaEncuesta.value,
       estado: 'activa',
+      privacidadNivel: nuevaEncuesta.value.privacidadNivel,
       esRecurrente: nuevaEncuesta.value.esRecurrente,
       recurrencia: nuevaEncuesta.value.esRecurrente ? nuevaEncuesta.value.recurrencia : null
     });

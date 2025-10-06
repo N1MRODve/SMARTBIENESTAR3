@@ -105,6 +105,12 @@
             <p class="mt-2 text-primary-light">{{ activeSurvey.preguntas.length }} preguntas</p>
           </div>
 
+          <!-- Privacy Banner -->
+          <div v-if="activeSurvey.privacidadNivel" class="bg-blue-50 text-blue-800 rounded-md p-2 flex items-center gap-2 mx-6 mt-6">
+            <Lock class="h-4 w-4 flex-shrink-0" />
+            <span class="text-sm">{{ getPrivacyMessage(activeSurvey.privacidadNivel) }}</span>
+          </div>
+
           <!-- Form -->
           <form @submit.prevent="handleSubmit" class="p-6 space-y-8">
             <!-- Preguntas -->
@@ -318,7 +324,8 @@ import { useComunicadosStore } from '@/stores/comunicados.store';
 import { useGamificacionStore } from '@/stores/gamificacion.store';
 import { useAuthStore } from '@/stores/auth.store';
 import ComunicadoCard from '@/components/empleado/ComunicadoCard.vue';
-import { Megaphone } from 'lucide-vue-next';
+import Button from '@/components/ui/Button.vue';
+import { Megaphone, Lock, CheckCircle, AlertCircle, RefreshCw, RotateCcw, Send } from 'lucide-vue-next';
 
 const router = useRouter();
 const toast = useToast();
@@ -402,6 +409,16 @@ const limpiarRespuestas = () => {
 const resetearEncuesta = () => {
   limpiarRespuestas();
   surveySubmitted.value = false;
+};
+
+// --- Función para obtener mensaje de privacidad ---
+const getPrivacyMessage = (privacidadNivel) => {
+  const messages = {
+    'anonimato_completo': 'Tus respuestas son totalmente anónimas.',
+    'anonimato_parcial': 'Se mostrarán promedios por equipo, no respuestas individuales.',
+    'identificado': 'Tus respuestas serán visibles solo para RRHH autorizado.'
+  };
+  return messages[privacidadNivel] || '';
 };
 
 // --- Función para manejar el logout ---

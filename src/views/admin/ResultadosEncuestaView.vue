@@ -81,6 +81,105 @@
             </div>
           </div>
 
+          <!-- Resumen Interpretativo General -->
+          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-lg border border-blue-100 overflow-hidden">
+            <div class="px-8 py-6 border-b border-blue-200 bg-white/50">
+              <div class="flex items-center">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
+                  <BarChart3 class="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 class="text-2xl font-bold text-gray-900">Interpretación General</h2>
+                  <p class="text-gray-600">Análisis automático del estado de bienestar del equipo</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-8">
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <!-- Índice de Bienestar Global -->
+                <div class="lg:col-span-1 text-center">
+                  <div class="inline-flex items-center justify-center w-32 h-32 rounded-full mb-4"
+                       :class="getBienestarColorClasses(indiceBienestarGlobal).bgClass">
+                    <div class="text-center">
+                      <div class="text-4xl font-bold" :class="getBienestarColorClasses(indiceBienestarGlobal).textClass">
+                        {{ indiceBienestarGlobal }}%
+                      </div>
+                      <div class="text-xs font-medium mt-1" :class="getBienestarColorClasses(indiceBienestarGlobal).textClass">
+                        Bienestar Global
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Interpretación Textual -->
+                <div class="lg:col-span-2">
+                  <div class="p-6 rounded-xl border-2"
+                       :class="getBienestarColorClasses(indiceBienestarGlobal).borderClass + ' ' + getBienestarColorClasses(indiceBienestarGlobal).bgLightClass">
+                    <h3 class="text-lg font-semibold mb-3" :class="getBienestarColorClasses(indiceBienestarGlobal).textDarkClass">
+                      Estado General del Equipo
+                    </h3>
+                    <p class="text-base leading-relaxed" :class="getBienestarColorClasses(indiceBienestarGlobal).textDarkClass">
+                      {{ getInterpretacionGlobal(indiceBienestarGlobal) }}
+                    </p>
+                    <div class="mt-4 pt-4 border-t" :class="getBienestarColorClasses(indiceBienestarGlobal).borderClass">
+                      <p class="text-sm font-medium" :class="getBienestarColorClasses(indiceBienestarGlobal).textDarkClass">
+                        Basado en {{ encuesta.totalParticipantes }} respuestas de {{ encuesta.preguntas?.length || 0 }} preguntas
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interpretación por Categorías -->
+          <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-pink-50">
+              <div class="flex items-center">
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
+                  <Target class="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 class="text-2xl font-bold text-gray-900">Interpretación por Categorías</h2>
+                  <p class="text-gray-600">Análisis detallado de cada área evaluada</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-8">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div v-for="(categoria, index) in categoriasInterpretadas" :key="index"
+                     class="rounded-xl border-2 p-6 transition-all duration-200 hover:shadow-lg"
+                     :class="categoria.colorClasses.borderClass + ' ' + categoria.colorClasses.bgLightClass">
+                  <div class="flex items-start gap-4">
+                    <div class="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
+                         :class="categoria.colorClasses.bgClass">
+                      <component :is="categoria.icon" class="h-7 w-7 text-white" />
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h3 class="text-lg font-bold mb-1" :class="categoria.colorClasses.textDarkClass">
+                        {{ categoria.nombre }}
+                      </h3>
+                      <div class="flex items-center gap-2 mb-3">
+                        <span class="text-2xl font-bold" :class="categoria.colorClasses.textClass">
+                          {{ categoria.valor }}%
+                        </span>
+                        <span class="text-sm px-2 py-1 rounded-full font-medium"
+                              :class="categoria.colorClasses.badgeClass">
+                          {{ categoria.nivel }}
+                        </span>
+                      </div>
+                      <p class="text-sm leading-relaxed" :class="categoria.colorClasses.textDarkClass">
+                        {{ categoria.interpretacion }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Resultados por Pregunta -->
           <div v-if="encuesta.preguntas" class="space-y-8">
             <div 
@@ -230,7 +329,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { getResultadosEncuestaById } from '@/services/mock/encuestas.service.js';
@@ -250,7 +349,12 @@ import {
   Lightbulb,
   Send,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Target,
+  Brain,
+  Heart,
+  Smile,
+  Zap
 } from 'lucide-vue-next';
 import { Chart, registerables } from 'chart.js';
 
@@ -266,6 +370,9 @@ const encuesta = ref(null);
 const loading = ref(true);
 const error = ref(null);
 const charts = ref({});
+
+// Índice de bienestar global (mock - basado en tasas de participación positivas)
+const indiceBienestarGlobal = ref(72);
 
 // Métodos
 const cargarResultados = async () => {
@@ -396,6 +503,109 @@ const tieneGruposConPocasRespuestas = (pregunta) => {
   if (!pregunta.resultadosPorGrupo) return false;
   return pregunta.resultadosPorGrupo.some(grupo => grupo.total_respuestas < 5);
 };
+
+// Función para obtener clases de color según el nivel de bienestar
+const getBienestarColorClasses = (valor) => {
+  if (valor < 60) {
+    return {
+      bgClass: 'bg-red-100',
+      bgLightClass: 'bg-red-50',
+      textClass: 'text-red-600',
+      textDarkClass: 'text-red-800',
+      borderClass: 'border-red-200',
+      badgeClass: 'bg-red-100 text-red-700'
+    };
+  } else if (valor >= 60 && valor <= 80) {
+    return {
+      bgClass: 'bg-orange-100',
+      bgLightClass: 'bg-orange-50',
+      textClass: 'text-orange-600',
+      textDarkClass: 'text-orange-800',
+      borderClass: 'border-orange-200',
+      badgeClass: 'bg-orange-100 text-orange-700'
+    };
+  } else {
+    return {
+      bgClass: 'bg-green-100',
+      bgLightClass: 'bg-green-50',
+      textClass: 'text-green-600',
+      textDarkClass: 'text-green-800',
+      borderClass: 'border-green-200',
+      badgeClass: 'bg-green-100 text-green-700'
+    };
+  }
+};
+
+// Función para obtener interpretación textual según el valor
+const getInterpretacionTexto = (valor) => {
+  if (valor < 60) {
+    return {
+      nivel: 'Crítico',
+      texto: 'Nivel crítico. Requiere intervención inmediata.'
+    };
+  } else if (valor >= 60 && valor <= 80) {
+    return {
+      nivel: 'Mejora',
+      texto: 'Área con margen de mejora. Recomendamos acciones preventivas.'
+    };
+  } else {
+    return {
+      nivel: 'Saludable',
+      texto: 'Área saludable. Mantener prácticas actuales.'
+    };
+  }
+};
+
+// Función para obtener interpretación global
+const getInterpretacionGlobal = (valor) => {
+  if (valor < 60) {
+    return `El bienestar global actual es del ${valor}%. Este resultado indica un nivel crítico que requiere atención inmediata. Se recomienda implementar acciones de intervención urgente para mejorar el bienestar del equipo y abordar las áreas problemáticas identificadas.`;
+  } else if (valor >= 60 && valor <= 80) {
+    return `El bienestar global actual es del ${valor}%. Este resultado muestra un nivel aceptable con oportunidades de mejora. Se sugiere implementar acciones preventivas y monitorear continuamente las áreas que requieren atención para evitar que la situación se deteriore.`;
+  } else {
+    return `El bienestar global actual es del ${valor}%. Este resultado refleja un excelente estado de bienestar del equipo. Se recomienda mantener las prácticas actuales, continuar monitoreando y reforzar las iniciativas que han demostrado ser efectivas.`;
+  }
+};
+
+// Categorías interpretadas (mock data basado en las preguntas de la encuesta)
+const categoriasInterpretadas = computed(() => {
+  if (!encuesta.value?.preguntas) return [];
+
+  return [
+    {
+      nombre: 'Gestión del Estrés',
+      valor: 58,
+      icon: Brain,
+      ...getInterpretacionTexto(58),
+      interpretacion: 'Nivel crítico. Requiere intervención inmediata. El 28% del equipo reporta niveles altos de estrés.',
+      colorClasses: getBienestarColorClasses(58)
+    },
+    {
+      nombre: 'Herramientas y Recursos',
+      valor: 83,
+      icon: Zap,
+      ...getInterpretacionTexto(83),
+      interpretacion: 'Área saludable. Mantener prácticas actuales. La mayoría del equipo se siente bien equipado.',
+      colorClasses: getBienestarColorClasses(83)
+    },
+    {
+      nombre: 'Comunicación Interna',
+      valor: 72,
+      icon: Megaphone,
+      ...getInterpretacionTexto(72),
+      interpretacion: 'Área con margen de mejora. Recomendamos acciones preventivas para fortalecer la comunicación.',
+      colorClasses: getBienestarColorClasses(72)
+    },
+    {
+      nombre: 'Balance Vida-Trabajo',
+      valor: 68,
+      icon: Heart,
+      ...getInterpretacionTexto(68),
+      interpretacion: 'Área con margen de mejora. Considerar iniciativas que promuevan un mejor equilibrio.',
+      colorClasses: getBienestarColorClasses(68)
+    }
+  ];
+});
 
 // Cargar resultados al montar el componente
 onMounted(() => {

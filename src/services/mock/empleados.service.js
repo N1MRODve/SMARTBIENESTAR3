@@ -85,15 +85,18 @@ export const getEmpleados = async () => {
 /**
  * Añade nuevos empleados a la lista con estado 'Invitado'.
  * @param {string[]} emails - Un array de correos electrónicos a invitar.
+ * @param {string} departamento - El departamento asignado.
  */
-export const invitarEmpleados = async (emails) => {
+export const invitarEmpleados = async (emails, departamento = '') => {
   const nuevosEmpleados = emails.map(email => ({
     id: `emp-${Date.now()}-${Math.random()}`,
     nombre: 'Nuevo Invitado', // Nombre genérico inicial
     email: email,
+    departamento: departamento,
+    cargo: '',
     estado: 'Invitado',
   }));
-  
+
   empleados.value.push(...nuevosEmpleados);
   return new Promise(resolve => setTimeout(() => resolve({ success: true }), 200));
 };

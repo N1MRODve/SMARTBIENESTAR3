@@ -32,11 +32,22 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">
             Departamento
           </label>
-          <input
+          <select
             v-model="formData.departamento"
-            type="text"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+          >
+            <option value="">Seleccionar departamento</option>
+            <option value="RRHH">RRHH</option>
+            <option value="Ventas">Ventas</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Producción">Producción</option>
+            <option value="Atención al Cliente">Atención al Cliente</option>
+            <option value="Desarrollo">Desarrollo</option>
+            <option value="Finanzas">Finanzas</option>
+            <option value="Operaciones">Operaciones</option>
+            <option value="Calidad">Calidad</option>
+            <option value="Administración">Administración</option>
+          </select>
         </div>
 
         <div class="mb-4">

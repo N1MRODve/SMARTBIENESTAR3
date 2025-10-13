@@ -97,6 +97,11 @@ const adminRoutes = [
         name: 'admin-configuracion',
         component: () => import('@/views/admin/ConfiguracionGlobal.vue'),
       },
+      {
+        path: 'analitica',
+        name: 'admin-analitica',
+        component: () => import('@/views/admin/AnaliticaEjecutiva.vue'),
+      },
       // Redirección por defecto al dashboard si solo se entra a /admin
       {
         path: '',

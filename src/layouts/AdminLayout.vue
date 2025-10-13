@@ -57,9 +57,9 @@ const handleLogout = async () => {
 
     <div class="flex-1 flex flex-col overflow-hidden">
       <header class="bg-surface border-b border-surface-variant p-4 shadow-sm flex justify-between items-center">
-         <h2 class="text-xl font-semibold text-on-surface">Panel de Administración</h2>
+         <h2 class="text-2xl font-bold text-on-surface">Panel de Administración</h2>
         <div>
-           <button @click="handleLogout" class="font-semibold text-primary hover:underline">Cerrar Sesión</button>
+           <button @click="handleLogout" class="text-lg font-semibold text-primary hover:underline">Cerrar Sesión</button>
         </div>
       </header>
 

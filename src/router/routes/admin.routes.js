@@ -92,6 +92,11 @@ const adminRoutes = [
         name: 'admin-participacion',
         component: () => import('@/views/admin/PanelParticipacion.vue'),
       },
+      {
+        path: 'configuracion',
+        name: 'admin-configuracion',
+        component: () => import('@/views/admin/ConfiguracionGlobal.vue'),
+      },
       // Redirección por defecto al dashboard si solo se entra a /admin
       {
         path: '',

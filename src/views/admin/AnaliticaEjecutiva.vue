@@ -5,9 +5,18 @@
     <div class="py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900">Analítica Ejecutiva Consolidada</h1>
-          <p class="text-gray-600 mt-2">Resumen general de bienestar y participación organizacional</p>
+        <div class="mb-8 flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900">Analítica Ejecutiva Consolidada</h1>
+            <p class="text-gray-600 mt-2">Resumen general de bienestar y participación organizacional</p>
+          </div>
+          <button
+            @click="abrirPresentacion"
+            class="flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm"
+          >
+            <Monitor class="h-5 w-5" />
+            Modo Presentación
+          </button>
         </div>
 
         <!-- Grid KPIs Principales 2x2 -->
@@ -324,6 +333,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import Header from '@/components/common/Header.vue';
 import {
   Heart,
@@ -339,7 +349,8 @@ import {
   AlertCircle,
   LineChart,
   BarChart3,
-  Info
+  Info,
+  Monitor
 } from 'lucide-vue-next';
 import {
   analiticaMock,
@@ -350,6 +361,8 @@ import {
 } from '@/utils/analiticaMock.js';
 
 // TODO: conectar con "resultados_encuestas" y "departamentos" cuando BD esté activa.
+
+const router = useRouter();
 
 // Estado
 const analitica = ref(analiticaMock);
@@ -372,5 +385,9 @@ const obtenerColorBarra = (valor) => {
   if (valor >= 3.5) return 'bg-blue-500';
   if (valor >= 3.0) return 'bg-orange-500';
   return 'bg-red-500';
+};
+
+const abrirPresentacion = () => {
+  router.push('/admin/presentacion');
 };
 </script>

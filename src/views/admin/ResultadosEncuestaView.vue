@@ -375,6 +375,9 @@
             </div>
           </div>
 
+          <!-- Resultados por Departamento -->
+          <ResultadosPorDepartamento />
+
           <!-- Resumen General -->
           <div class="bg-white rounded-lg shadow-sm p-6">
             <h2 class="text-xl font-semibold text-gray-900 mb-4">Resumen Ejecutivo</h2>
@@ -515,6 +518,7 @@ import { getResultadosEncuestaById } from '@/services/mock/encuestas.service.js'
 import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
 import ModalAccionRecomendada from '@/components/admin/ModalAccionRecomendada.vue';
+import ResultadosPorDepartamento from '@/components/admin/results/ResultadosPorDepartamento.vue';
 import {
   ArrowLeft,
   AlertCircle,

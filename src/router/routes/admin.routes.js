@@ -112,6 +112,11 @@ const adminRoutes = [
         name: 'admin-servicios',
         component: () => import('@/views/admin/CatalogoServicios.vue'),
       },
+      {
+        path: 'solicitudes',
+        name: 'admin-solicitudes',
+        component: () => import('@/views/admin/SolicitudesServicios.vue'),
+      },
       // Redirección por defecto al dashboard si solo se entra a /admin
       {
         path: '',

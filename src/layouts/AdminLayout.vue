@@ -1,5 +1,5 @@
 <script setup>
-import { LayoutDashboard, Users, FileText, Gift, Megaphone, BarChart3, Settings, TrendingUp, Briefcase } from 'lucide-vue-next';
+import { LayoutDashboard, Users, FileText, Gift, Megaphone, BarChart3, Settings, TrendingUp, Briefcase, ClipboardList } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth.store.js';
 import { useRouter } from 'vue-router';
 
@@ -55,6 +55,12 @@ const handleLogout = async () => {
             <router-link to="/admin/servicios" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
               <Briefcase class="w-5 h-5 text-on-surface-variant" />
               <span class="ml-3">Servicios SMART</span>
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/admin/solicitudes" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
+              <ClipboardList class="w-5 h-5 text-on-surface-variant" />
+              <span class="ml-3">Solicitudes de Servicios</span>
             </router-link>
           </li>
           <li>

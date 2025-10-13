@@ -252,6 +252,13 @@
         </div>
       </div>
     </Dialog>
+
+    <!-- Modal de Solicitud de Servicio -->
+    <SolicitudServicio
+      v-model:visible="modalSolicitudAbierto"
+      :servicio="servicioSeleccionado"
+      @solicitud-guardada="handleSolicitudGuardada"
+    />
   </div>
 </template>
 
@@ -261,6 +268,7 @@ import { useRoute } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import Dialog from 'primevue/dialog';
 import Header from '@/components/common/Header.vue';
+import SolicitudServicio from '@/components/admin/SolicitudServicio.vue';
 import {
   Briefcase,
   Clock,
@@ -285,6 +293,7 @@ const toast = useToast();
 const categoriaSeleccionada = ref('Todos');
 const servicioSeleccionado = ref(null);
 const modalDetalleAbierto = ref(false);
+const modalSolicitudAbierto = ref(false);
 
 const categorias = computed(() => obtenerCategorias());
 
@@ -301,13 +310,12 @@ const abrirDetalleServicio = (servicio) => {
 };
 
 const solicitarImplementacion = () => {
-  toast.success(
-    `Solicitud de "${servicioSeleccionado.value.nombre}" registrada correctamente (mock)`,
-    {
-      timeout: 4000
-    }
-  );
   modalDetalleAbierto.value = false;
+  modalSolicitudAbierto.value = true;
+};
+
+const handleSolicitudGuardada = () => {
+  servicioSeleccionado.value = null;
 };
 
 onMounted(() => {

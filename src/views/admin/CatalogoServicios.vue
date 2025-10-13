@@ -44,10 +44,9 @@
           <div
             v-for="(servicio, index) in serviciosFiltrados"
             :key="servicio.id"
-            class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer group"
+            class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer group animate-fade-in"
             @click="abrirDetalleServicio(servicio)"
             :style="{ animationDelay: `${index * 0.1}s` }"
-            style="animation: fadeInUp 0.5s ease-out forwards; opacity: 0;"
           >
             <!-- Imagen -->
             <div class="relative h-40 overflow-hidden">
@@ -330,15 +329,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@keyframes fadeInUp {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
 .line-clamp-2 {

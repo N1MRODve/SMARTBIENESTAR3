@@ -506,6 +506,9 @@
               </div>
             </div>
           </div>
+
+          <!-- Recomendaciones SMART -->
+          <RecomendacionesSmart :resultados="encuesta.resultados" />
         </div>
       </div>
     </div>
@@ -538,6 +541,7 @@ import Button from '@/components/common/Button.vue';
 import ModalAccionRecomendada from '@/components/admin/ModalAccionRecomendada.vue';
 import ResultadosPorDepartamento from '@/components/admin/results/ResultadosPorDepartamento.vue';
 import ModalComunicadoPostEncuesta from '@/components/admin/ModalComunicadoPostEncuesta.vue';
+import RecomendacionesSmart from '@/components/admin/RecomendacionesSmart.vue';
 import {
   ArrowLeft,
   AlertCircle,

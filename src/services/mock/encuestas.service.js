@@ -61,6 +61,34 @@ const encuestasDb = ref([
     totalParticipantes: 35,
     privacidadNivel: 'anonimato_completo'
   },
+  // TODO: conectar con tabla "encuestas" y "respuestas_encuestas" cuando la BD esté activa.
+  {
+    id: 'clima360',
+    titulo: 'Clima360 Insight',
+    descripcion: 'Diagnóstico integral del clima laboral y bienestar organizacional.',
+    categoria: 'clima-laboral',
+    estado: 'Plantilla',
+    totalParticipantes: 0,
+    privacidadNivel: 'anonimato_completo',
+    esPlantilla: true,
+    preguntas: [
+      { id: 1, texto: 'La tasa de rotación está dentro de los estándares aceptables.', variable: 'rotacion', tipo: 'escala' },
+      { id: 2, texto: 'El absentismo no afecta significativamente la productividad.', variable: 'absentismo', tipo: 'escala' },
+      { id: 3, texto: 'Los empleados alcanzan consistentemente los objetivos de productividad establecidos.', variable: 'productividad', tipo: 'escala' },
+      { id: 4, texto: 'El liderazgo contribuye positivamente a la retención de talento.', variable: 'liderazgo', tipo: 'escala' },
+      { id: 5, texto: 'La comunicación interna es clara, transparente y efectiva.', variable: 'comunicacion', tipo: 'escala' },
+      { id: 6, texto: 'Ofrecemos oportunidades de desarrollo profesional y movilidad interna.', variable: 'desarrollo', tipo: 'escala' },
+      { id: 7, texto: 'Los empleados reciben reconocimiento oportuno y feedback constructivo.', variable: 'reconocimiento', tipo: 'escala' },
+      { id: 8, texto: 'Promovemos una cultura de bienestar y equilibrio vida-trabajo.', variable: 'bienestar', tipo: 'escala' },
+      { id: 9, texto: 'La empresa se adapta eficazmente a los cambios.', variable: 'adaptabilidad', tipo: 'escala' },
+      { id: 10, texto: 'Los empleados muestran sentido de pertenencia y compromiso.', variable: 'pertenencia', tipo: 'escala' }
+    ],
+    metricas: [
+      { id: 11, texto: 'Tasa de rotación anual', opciones: ['<5%', '5–10%', '11–15%', '>15%'], valores: [5, 4, 3, 1] },
+      { id: 12, texto: 'Tasa de absentismo', opciones: ['Bajo', 'Medio', 'Alto'], valores: [5, 3, 1] },
+      { id: 13, texto: 'Índice de productividad', opciones: ['Muy alta', 'Alta', 'Media', 'Baja', 'Muy baja'], valores: [5, 4, 3, 2, 1] }
+    ]
+  }
 ]);
 
 // --- Funciones del Servicio ---

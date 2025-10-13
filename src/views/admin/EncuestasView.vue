@@ -1,15 +1,17 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { BarChart3, CreditCard as Edit3, Plus } from 'lucide-vue-next';
+import { BarChart3, CreditCard as Edit3, Plus, Play } from 'lucide-vue-next';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
 import { getEncuestas } from '@/services/mock/encuestas.service.js';
+import DemoClima360 from '@/components/admin/DemoClima360.vue';
 
 // --- Inicialización ---
 const encuestas = ref([]);
 const isLoading = ref(true);
 const router = useRouter();
+const mostrarDemoClima360 = ref(false);
 
 // Métodos para categorías
 const getCategoriaLabel = (categoria) => {
@@ -19,7 +21,8 @@ const getCategoriaLabel = (categoria) => {
     'comunicacion': 'Comunicación',
     'ergonomia': 'Ergonomía',
     'desarrollo': 'Desarrollo Profesional',
-    'general': 'Bienestar General'
+    'general': 'Bienestar General',
+    'clima-laboral': 'Clima Laboral'
   };
   return labels[categoria] || 'General';
 };
@@ -31,7 +34,8 @@ const getCategoriaIcon = (categoria) => {
     'comunicacion': '💬',
     'ergonomia': '🪑',
     'desarrollo': '📈',
-    'general': '📊'
+    'general': '📊',
+    'clima-laboral': '🌡️'
   };
   return icons[categoria] || '📊';
 };
@@ -57,6 +61,10 @@ const editarEncuesta = (encuestaId) => {
   // Navegar a la vista de edición de encuesta
   router.push({ name: 'admin-editar-encuesta', params: { encuestaId: encuestaId } });
 };
+
+const probarPlantilla = () => {
+  mostrarDemoClima360.value = true;
+};
 </script>
 
 <template>
@@ -80,7 +88,10 @@ const editarEncuesta = (encuestaId) => {
       <div 
         v-for="encuesta in encuestas" 
         :key="encuesta.id"
-        class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 overflow-hidden"
+        :class="[
+          'bg-white rounded-xl shadow-sm border hover:shadow-md transition-all duration-200 overflow-hidden',
+          encuesta.esPlantilla ? 'border-blue-300 bg-blue-50/30' : 'border-gray-100'
+        ]"
       >
         <!-- Header with title and status -->
         <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
@@ -107,29 +118,41 @@ const editarEncuesta = (encuestaId) => {
             
             <!-- Action Links -->
             <div class="flex items-center space-x-4">
-              <!-- Ver Resultados Link -->
-              <button 
-                @click="verResultados(encuesta.id)" 
-                :disabled="encuesta.estado === 'Borrador'"
-                :class="[
-                  'flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                  encuesta.estado === 'Borrador' 
-                    ? 'text-gray-400 cursor-not-allowed' 
-                    : 'text-primary hover:bg-primary/10 hover:text-primary-dark'
-                ]"
+              <!-- Probar Plantilla (solo para plantillas) -->
+              <button
+                v-if="encuesta.esPlantilla"
+                @click="probarPlantilla"
+                class="flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 shadow-sm"
               >
-                <BarChart3 class="h-4 w-4 mr-2" />
-                Ver Resultados
+                <Play class="h-4 w-4 mr-2" />
+                Probar Plantilla
               </button>
-              
-              <!-- Editar Link -->
-              <button 
-                @click="editarEncuesta(encuesta.id)"
-                class="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
-              >
-                <Edit3 class="h-4 w-4 mr-2" />
-                Editar
-              </button>
+
+              <template v-else>
+                <!-- Ver Resultados Link -->
+                <button
+                  @click="verResultados(encuesta.id)"
+                  :disabled="encuesta.estado === 'Borrador'"
+                  :class="[
+                    'flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                    encuesta.estado === 'Borrador'
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-primary hover:bg-primary/10 hover:text-primary-dark'
+                  ]"
+                >
+                  <BarChart3 class="h-4 w-4 mr-2" />
+                  Ver Resultados
+                </button>
+
+                <!-- Editar Link -->
+                <button
+                  @click="editarEncuesta(encuesta.id)"
+                  class="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
+                >
+                  <Edit3 class="h-4 w-4 mr-2" />
+                  Editar
+                </button>
+              </template>
             </div>
           </div>
         </div>
@@ -158,5 +181,11 @@ const editarEncuesta = (encuestaId) => {
         </div>
       </div>
     </div>
+
+    <!-- Demo Clima360 Modal -->
+    <DemoClima360
+      v-if="mostrarDemoClima360"
+      @close="mostrarDemoClima360 = false"
+    />
   </div>
 </template>

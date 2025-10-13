@@ -556,15 +556,15 @@
               <div class="flex justify-between items-center">
                 <div class="text-sm text-gray-500">
                   <span v-if="nuevaEncuesta.preguntas.length === 0">
-                    Agrega al menos una pregunta para lanzar la encuesta
+                    Agrega al menos una pregunta para continuar
                   </span>
                   <span v-else>
                     {{ nuevaEncuesta.preguntas.length }} pregunta{{ nuevaEncuesta.preguntas.length !== 1 ? 's' : '' }} lista{{ nuevaEncuesta.preguntas.length !== 1 ? 's' : '' }}
                   </span>
                 </div>
-                
+
                 <div class="flex space-x-4">
-                  <Button 
+                  <Button
                     type="button"
                     @click="guardarBorrador"
                     variant="outline"
@@ -573,14 +573,16 @@
                     <Save class="h-4 w-4 mr-2" />
                     Guardar Borrador
                   </Button>
-                  
-                  <Button 
-                    type="submit"
+
+                  <Button
+                    type="button"
+                    @click="continuarAEnvio"
                     :loading="loading"
                     :disabled="!puedeSerLanzada"
+                    class="bg-indigo-600 text-white hover:bg-indigo-700"
                   >
-                    <Rocket class="h-4 w-4 mr-2" />
-                    Lanzar Encuesta
+                    Continuar a envío
+                    <ArrowRight class="h-4 w-4 ml-2" />
                   </Button>
                 </div>
               </div>
@@ -607,7 +609,8 @@ import {
   X,
   Save,
   Rocket,
-  Lightbulb
+  Lightbulb,
+  ArrowRight
 } from 'lucide-vue-next';
 import { plantillas } from '@/utils/plantillasMock.js';
 
@@ -993,6 +996,84 @@ const eliminarOpcion = (preguntaIndex, opcionIndex) => {
 // Métodos principales
 const volverAlDashboard = () => {
   router.push('/admin/dashboard');
+};
+
+const continuarAEnvio = async () => {
+  // Validación básica
+  if (!nuevaEncuesta.value.titulo.trim()) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Título requerido',
+      detail: 'Debes escribir un título para la encuesta',
+      life: 4000
+    });
+    return;
+  }
+
+  if (nuevaEncuesta.value.preguntas.length === 0) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Preguntas requeridas',
+      detail: 'Debes agregar al menos una pregunta',
+      life: 4000
+    });
+    return;
+  }
+
+  // Validar que todas las preguntas estén completas
+  for (let i = 0; i < nuevaEncuesta.value.preguntas.length; i++) {
+    const pregunta = nuevaEncuesta.value.preguntas[i];
+
+    if (!pregunta.texto.trim()) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Pregunta incompleta',
+        detail: `La pregunta ${i + 1} necesita un texto`,
+        life: 4000
+      });
+      return;
+    }
+
+    if (!pregunta.tipo) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Tipo de pregunta requerido',
+        detail: `Selecciona un tipo para la pregunta ${i + 1}`,
+        life: 4000
+      });
+      return;
+    }
+
+    if (pregunta.tipo === 'opcion_multiple') {
+      if (!pregunta.opciones || pregunta.opciones.length < 2) {
+        toast.add({
+          severity: 'warn',
+          summary: 'Opciones insuficientes',
+          detail: `La pregunta ${i + 1} necesita al menos 2 opciones`,
+          life: 4000
+        });
+        return;
+      }
+
+      for (let j = 0; j < pregunta.opciones.length; j++) {
+        if (!pregunta.opciones[j].trim()) {
+          toast.add({
+            severity: 'warn',
+            summary: 'Opción vacía',
+            detail: `Completa todas las opciones de la pregunta ${i + 1}`,
+            life: 4000
+          });
+          return;
+        }
+      }
+    }
+  }
+
+  // Guardar datos en sessionStorage para la vista de previsualización
+  sessionStorage.setItem('encuesta_preview', JSON.stringify(nuevaEncuesta.value));
+
+  // Redirigir a vista previa de envío
+  router.push('/admin/encuestas/preview-envio');
 };
 
 const guardarBorrador = async () => {

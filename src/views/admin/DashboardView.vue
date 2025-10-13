@@ -516,7 +516,7 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import {
   LayoutDashboard,
   TrendingUp,
@@ -552,10 +552,6 @@ import DimensionsChart from '@/components/admin/DimensionsChart.vue';
 
 const router = useRouter();
 const toast = useToast();
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const indiceBienestar = ref(72);
 const loadingAccion = ref(false);

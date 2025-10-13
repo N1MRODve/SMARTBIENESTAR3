@@ -380,7 +380,16 @@
 
           <!-- Resumen General -->
           <div class="bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4">Resumen Ejecutivo</h2>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-semibold text-gray-900">Resumen Ejecutivo</h2>
+              <button
+                @click="abrirModalComunicado"
+                class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm hover:shadow-md"
+              >
+                <MessageSquare class="h-5 w-5" />
+                Comunicar resultados
+              </button>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div class="text-center p-4 bg-blue-50 rounded-lg">
                 <p class="text-2xl font-bold text-blue-600">{{ encuesta.totalParticipantes }}</p>
@@ -507,6 +516,15 @@
       :alerta="alertaSeleccionada"
       @marcar-gestionado="marcarAlertaComoGestionada"
     />
+
+    <!-- Modal de Comunicado Post-Encuesta -->
+    <ModalComunicadoPostEncuesta
+      :is-open="modalComunicadoAbierto"
+      :nombre-encuesta="encuesta?.titulo || 'Encuesta'"
+      :encuesta-id="encuesta?.id || ''"
+      @close="cerrarModalComunicado"
+      @comunicado-enviado="handleComunicadoEnviado"
+    />
   </div>
 </template>
 
@@ -519,10 +537,12 @@ import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
 import ModalAccionRecomendada from '@/components/admin/ModalAccionRecomendada.vue';
 import ResultadosPorDepartamento from '@/components/admin/results/ResultadosPorDepartamento.vue';
+import ModalComunicadoPostEncuesta from '@/components/admin/ModalComunicadoPostEncuesta.vue';
 import {
   ArrowLeft,
   AlertCircle,
   RefreshCw,
+  MessageSquare,
   ChevronRight,
   Users,
   TrendingUp,
@@ -564,6 +584,7 @@ const tendenciaBienestar = ref('up'); // 'up', 'down', 'stable'
 const modalRecomendacionesAbierto = ref(false);
 const alertaSeleccionada = ref(null);
 const alertasGestionadas = ref([]);
+const modalComunicadoAbierto = ref(false);
 
 const cargarResultados = async () => {
   loading.value = true;
@@ -659,6 +680,23 @@ const crearGraficos = () => {
 
 const volverAtras = () => {
   router.push('/admin/encuestas');
+};
+
+const abrirModalComunicado = () => {
+  modalComunicadoAbierto.value = true;
+};
+
+const cerrarModalComunicado = () => {
+  modalComunicadoAbierto.value = false;
+};
+
+const handleComunicadoEnviado = (comunicado) => {
+  toast.add({
+    severity: 'success',
+    summary: 'Comunicado enviado',
+    detail: `Se ha enviado el comunicado a ${comunicado.total_destinatarios} personas`,
+    life: 4000
+  });
 };
 
 const handleSolicitarServicio = (servicioId) => {

@@ -23,6 +23,21 @@
           </div>
         </div>
 
+        <!-- Banner de Plantilla -->
+        <div v-if="plantillaUsada" class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+          <div class="flex items-start">
+            <div class="flex-shrink-0 text-2xl mr-3">{{ plantillaUsada.icon }}</div>
+            <div class="flex-1">
+              <h3 class="text-sm font-semibold text-indigo-900">
+                Basado en la plantilla: {{ plantillaUsada.nombre }}
+              </h3>
+              <p class="text-sm text-indigo-700 mt-1">
+                {{ plantillaUsada.descripcion }} Puedes editar las preguntas o agregar nuevas antes de lanzar la encuesta.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <!-- Formulario Principal -->
         <div class="bg-white rounded-lg shadow-sm overflow-hidden">
           <form @submit.prevent="handleLanzarEncuesta" class="space-y-8">
@@ -578,26 +593,29 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Button from '@/components/ui/Button.vue';
 import Header from '@/components/common/Header.vue';
-import { 
-  ArrowLeft, 
-  Plus, 
-  HelpCircle, 
-  Trash2, 
-  X, 
-  Save, 
+import {
+  ArrowLeft,
+  Plus,
+  HelpCircle,
+  Trash2,
+  X,
+  Save,
   Rocket,
   Lightbulb
 } from 'lucide-vue-next';
+import { plantillas } from '@/utils/plantillasMock.js';
 
 const router = useRouter();
+const route = useRoute();
 const toast = useToast();
 const encuestasStore = useEncuestasStore();
+const plantillaUsada = ref(null);
 
 // Estados reactivos
 const loading = ref(false);
@@ -608,6 +626,7 @@ const nuevaEncuesta = ref({
   privacidadNivel: 'anonimato_completo',
   preguntas: [],
   esRecurrente: false,
+  creada_desde: 'custom',
   recurrencia: {
     frecuencia: '',
     diaSemana: '',
@@ -617,6 +636,64 @@ const nuevaEncuesta = ref({
     fechaInicio: ''
   }
 });
+
+// TODO: al activar BD, vincular con tabla "plantillas_encuestas" y "encuestas_creadas".
+
+onMounted(() => {
+  const plantillaId = route.query.plantilla;
+  if (plantillaId) {
+    cargarPlantilla(plantillaId);
+  }
+});
+
+const cargarPlantilla = (plantillaId) => {
+  const plantilla = plantillas.find(p => p.id === plantillaId);
+  if (plantilla) {
+    plantillaUsada.value = plantilla;
+
+    // Cargar datos de la plantilla
+    nuevaEncuesta.value.titulo = plantilla.nombre;
+    nuevaEncuesta.value.descripcion = plantilla.descripcion;
+    nuevaEncuesta.value.categoria = mapearCategoria(plantilla.categoria);
+    nuevaEncuesta.value.creada_desde = 'plantilla';
+
+    // Cargar preguntas
+    nuevaEncuesta.value.preguntas = plantilla.preguntas.map(p => ({
+      id: Date.now() + Math.random(),
+      texto: p.texto,
+      tipo: p.tipo,
+      opciones: p.opciones ? [...p.opciones] : []
+    }));
+
+    // Cargar métricas si existen
+    if (plantilla.metricas && plantilla.metricas.length > 0) {
+      plantilla.metricas.forEach(m => {
+        nuevaEncuesta.value.preguntas.push({
+          id: Date.now() + Math.random(),
+          texto: m.texto,
+          tipo: m.tipo,
+          opciones: m.opciones ? [...m.opciones] : []
+        });
+      });
+    }
+
+    toast.add({
+      severity: 'info',
+      summary: 'Plantilla cargada',
+      detail: `Plantilla "${plantilla.nombre}" cargada. Puedes editar y personalizar las preguntas.`,
+      life: 5000
+    });
+  }
+};
+
+const mapearCategoria = (categoriaPlantilla) => {
+  const mapeo = {
+    'Clima laboral': 'general',
+    'Bienestar emocional': 'salud-mental',
+    'Satisfacción general': 'general'
+  };
+  return mapeo[categoriaPlantilla] || 'general';
+};
 
 // Preguntas sugeridas por categoría
 const preguntasSugeridas = ref([]);

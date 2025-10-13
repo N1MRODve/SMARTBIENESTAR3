@@ -14,6 +14,7 @@ const encuestasDb = ref([
     estado: 'Finalizada',
     totalParticipantes: 42,
     privacidadNivel: 'anonimato_parcial',
+    creada_desde: 'custom',
     preguntas: [
       {
         id: 'p1',
@@ -59,7 +60,8 @@ const encuestasDb = ref([
     categoria: 'comunicacion',
     estado: 'Activa',
     totalParticipantes: 35,
-    privacidadNivel: 'anonimato_completo'
+    privacidadNivel: 'anonimato_completo',
+    creada_desde: 'plantilla'
   },
   // TODO: conectar con tabla "encuestas" y "respuestas_encuestas" cuando la BD esté activa.
   {

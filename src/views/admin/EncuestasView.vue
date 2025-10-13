@@ -6,12 +6,14 @@ import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
 import { getEncuestas } from '@/services/mock/encuestas.service.js';
 import DemoClima360 from '@/components/admin/DemoClima360.vue';
+import SeleccionTipoEncuesta from '@/components/admin/SeleccionTipoEncuesta.vue';
 
 // --- Inicialización ---
 const encuestas = ref([]);
 const isLoading = ref(true);
 const router = useRouter();
 const mostrarDemoClima360 = ref(false);
+const mostrarModalCreacion = ref(false);
 
 // Métodos para categorías
 const getCategoriaLabel = (categoria) => {
@@ -65,6 +67,23 @@ const editarEncuesta = (encuestaId) => {
 const probarPlantilla = () => {
   mostrarDemoClima360.value = true;
 };
+
+const abrirModalCreacion = () => {
+  mostrarModalCreacion.value = true;
+};
+
+const handleSeleccionDesdeCero = () => {
+  mostrarModalCreacion.value = false;
+  router.push('/admin/encuestas/crear');
+};
+
+const handleSeleccionPlantilla = (plantilla) => {
+  mostrarModalCreacion.value = false;
+  router.push({
+    name: 'admin-crear-encuesta',
+    query: { plantilla: plantilla.id }
+  });
+};
 </script>
 
 <template>
@@ -74,7 +93,7 @@ const probarPlantilla = () => {
         <h1 class="text-3xl font-bold text-on-background">Gestión de Encuestas</h1>
         <p class="text-on-surface-variant">Crea, gestiona y analiza todas las encuestas de tu organización.</p>
       </div>
-      <Button @click="router.push('/admin/encuestas/crear')" variant="primary" class="shadow-lg hover:shadow-xl transition-shadow duration-200">
+      <Button @click="abrirModalCreacion" variant="primary" class="shadow-lg hover:shadow-xl transition-shadow duration-200">
         <Plus class="h-5 w-5 mr-2" />
         Crear Nueva Encuesta
       </Button>
@@ -159,23 +178,40 @@ const probarPlantilla = () => {
 
         <!-- Content with stats -->
         <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <!-- Participantes -->
             <div class="text-center">
               <div class="text-2xl font-bold text-gray-900">{{ encuesta.totalParticipantes }}</div>
               <div class="text-sm text-gray-500">Participantes</div>
             </div>
-            
+
             <!-- Tasa de Participación -->
             <div class="text-center">
               <div class="text-2xl font-bold text-primary">{{ encuesta.tasaParticipacion }}</div>
               <div class="text-sm text-gray-500">Tasa de Participación</div>
             </div>
-            
+
             <!-- Preguntas -->
             <div class="text-center">
               <div class="text-2xl font-bold text-gray-900">{{ encuesta.preguntas?.length || 0 }}</div>
               <div class="text-sm text-gray-500">Preguntas</div>
+            </div>
+
+            <!-- Origen -->
+            <div class="text-center">
+              <div class="flex justify-center mb-1">
+                <span
+                  :class="[
+                    'px-3 py-1 rounded-full text-xs font-medium',
+                    encuesta.creada_desde === 'plantilla'
+                      ? 'bg-indigo-50 text-indigo-800'
+                      : 'bg-gray-50 text-gray-800'
+                  ]"
+                >
+                  {{ encuesta.creada_desde === 'plantilla' ? 'Desde plantilla' : 'Desde cero' }}
+                </span>
+              </div>
+              <div class="text-sm text-gray-500">Origen</div>
             </div>
           </div>
         </div>
@@ -186,6 +222,14 @@ const probarPlantilla = () => {
     <DemoClima360
       v-if="mostrarDemoClima360"
       @close="mostrarDemoClima360 = false"
+    />
+
+    <!-- Modal Selección Tipo Encuesta -->
+    <SeleccionTipoEncuesta
+      v-if="mostrarModalCreacion"
+      @close="mostrarModalCreacion = false"
+      @seleccionar-desde-cero="handleSeleccionDesdeCero"
+      @seleccionar-plantilla="handleSeleccionPlantilla"
     />
   </div>
 </template>

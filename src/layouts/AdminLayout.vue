@@ -70,9 +70,9 @@ const handleLogout = async () => {
             </router-link>
           </li>
           <li>
-            <router-link to="/admin/comunicados" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
+            <router-link to="/admin/comunicacion" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
               <Megaphone class="w-5 h-5 text-on-surface-variant" />
-              <span class="ml-3">Gestionar Comunicados</span>
+              <span class="ml-3">Comunicaciones</span>
             </router-link>
           </li>
           <li>

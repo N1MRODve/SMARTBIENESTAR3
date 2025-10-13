@@ -87,6 +87,11 @@ const adminRoutes = [
         name: 'admin-preview-envio',
         component: () => import('@/views/admin/VistaPreviaEnvio.vue'),
       },
+      {
+        path: 'participacion',
+        name: 'admin-participacion',
+        component: () => import('@/views/admin/PanelParticipacion.vue'),
+      },
       // Redirección por defecto al dashboard si solo se entra a /admin
       {
         path: '',

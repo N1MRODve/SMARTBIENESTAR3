@@ -140,74 +140,162 @@
               </div>
             </div>
 
-            <!-- Configuración de Privacidad -->
-            <div class="p-6 border-b border-gray-200">
-              <h2 class="text-xl font-semibold text-gray-900 mb-6">Configuración de Privacidad</h2>
+            <!-- Configuración de Privacidad y Anonimato -->
+            <div class="p-6 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+              <div class="flex items-center mb-6">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
+                  <Shield class="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 class="text-xl font-semibold text-gray-900">Configuración de Privacidad y Anonimato</h2>
+                  <p class="text-sm text-gray-600 mt-1">
+                    Define cómo se gestionarán las respuestas y qué nivel de anonimato tendrán los participantes
+                  </p>
+                </div>
+              </div>
 
               <div class="space-y-4">
-                <p class="text-sm text-gray-600 mb-4">
-                  Selecciona el nivel de privacidad para las respuestas de esta encuesta
-                </p>
-
                 <!-- Anonimato completo -->
-                <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50" :class="{
-                  'border-primary bg-blue-50': nuevaEncuesta.privacidadNivel === 'anonimato_completo',
-                  'border-gray-300': nuevaEncuesta.privacidadNivel !== 'anonimato_completo'
+                <label class="flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md" :class="{
+                  'border-green-500 bg-green-50 ring-2 ring-green-200': nuevaEncuesta.privacidadNivel === 'anonimato_completo',
+                  'border-gray-300 bg-white': nuevaEncuesta.privacidadNivel !== 'anonimato_completo'
                 }">
-                  <input
-                    type="radio"
-                    v-model="nuevaEncuesta.privacidadNivel"
-                    value="anonimato_completo"
-                    class="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
-                  />
-                  <div class="ml-3 flex-1">
-                    <div class="flex items-center">
-                      <span class="text-base font-semibold text-gray-900">Anonimato completo</span>
-                      <span class="ml-2 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Recomendado</span>
+                  <div class="flex items-start flex-1">
+                    <div class="flex-shrink-0 mr-4">
+                      <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <span class="text-2xl">🟢</span>
+                      </div>
                     </div>
-                    <p class="mt-1 text-sm text-gray-600">
-                      No se guarda ningún identificador del empleado. Las respuestas son 100% anónimas y no pueden asociarse a ningún usuario.
-                    </p>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center">
+                          <input
+                            type="radio"
+                            v-model="nuevaEncuesta.privacidadNivel"
+                            value="anonimato_completo"
+                            class="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300"
+                          />
+                          <span class="ml-3 text-lg font-bold text-gray-900">Anónimo completo</span>
+                        </div>
+                        <span class="px-3 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full border border-green-300">
+                          Recomendado
+                        </span>
+                      </div>
+                      <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                        No se guarda ningún identificador personal. Solo se muestran resultados agregados globales.
+                      </p>
+                      <div class="flex items-start bg-white/70 border border-green-200 rounded-lg p-3">
+                        <ShieldCheck class="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
+                        <p class="text-xs text-green-800 font-medium">
+                          Máxima confianza: Los empleados se sentirán seguros compartiendo su opinión honesta
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </label>
 
                 <!-- Anonimato parcial -->
-                <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50" :class="{
-                  'border-primary bg-blue-50': nuevaEncuesta.privacidadNivel === 'anonimato_parcial',
-                  'border-gray-300': nuevaEncuesta.privacidadNivel !== 'anonimato_parcial'
+                <label class="flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md" :class="{
+                  'border-orange-500 bg-orange-50 ring-2 ring-orange-200': nuevaEncuesta.privacidadNivel === 'anonimato_parcial',
+                  'border-gray-300 bg-white': nuevaEncuesta.privacidadNivel !== 'anonimato_parcial'
                 }">
-                  <input
-                    type="radio"
-                    v-model="nuevaEncuesta.privacidadNivel"
-                    value="anonimato_parcial"
-                    class="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
-                  />
-                  <div class="ml-3 flex-1">
-                    <span class="text-base font-semibold text-gray-900">Anonimato parcial</span>
-                    <p class="mt-1 text-sm text-gray-600">
-                      Se agregan resultados por departamento sin identificar a usuarios individuales. Permite análisis por área manteniendo privacidad.
-                    </p>
+                  <div class="flex items-start flex-1">
+                    <div class="flex-shrink-0 mr-4">
+                      <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                        <span class="text-2xl">🟠</span>
+                      </div>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center mb-2">
+                        <input
+                          type="radio"
+                          v-model="nuevaEncuesta.privacidadNivel"
+                          value="anonimato_parcial"
+                          class="h-5 w-5 text-orange-600 focus:ring-orange-500 border-gray-300"
+                        />
+                        <span class="ml-3 text-lg font-bold text-gray-900">Anónimo parcial</span>
+                      </div>
+                      <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                        Se agrupan las respuestas por departamento, sin mostrar datos individuales.
+                      </p>
+                      <div class="space-y-2">
+                        <div class="flex items-start bg-white/70 border border-orange-200 rounded-lg p-3">
+                          <BarChart3 class="h-5 w-5 text-orange-600 mt-0.5 mr-2 flex-shrink-0" />
+                          <p class="text-xs text-orange-800 font-medium">
+                            Análisis por área: Identifica departamentos con oportunidades de mejora
+                          </p>
+                        </div>
+                        <div class="flex items-start bg-white/70 border border-orange-200 rounded-lg p-3">
+                          <Lock class="h-5 w-5 text-orange-600 mt-0.5 mr-2 flex-shrink-0" />
+                          <p class="text-xs text-orange-800 font-medium">
+                            Protección garantizada: No se revelan identidades individuales
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </label>
 
                 <!-- Identificado -->
-                <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50" :class="{
-                  'border-primary bg-blue-50': nuevaEncuesta.privacidadNivel === 'identificado',
-                  'border-gray-300': nuevaEncuesta.privacidadNivel !== 'identificado'
+                <label class="flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md" :class="{
+                  'border-blue-500 bg-blue-50 ring-2 ring-blue-200': nuevaEncuesta.privacidadNivel === 'identificado',
+                  'border-gray-300 bg-white': nuevaEncuesta.privacidadNivel !== 'identificado'
                 }">
-                  <input
-                    type="radio"
-                    v-model="nuevaEncuesta.privacidadNivel"
-                    value="identificado"
-                    class="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
-                  />
-                  <div class="ml-3 flex-1">
-                    <span class="text-base font-semibold text-gray-900">Identificado</span>
-                    <p class="mt-1 text-sm text-gray-600">
-                      Las respuestas se asocian al usuario. Permite seguimiento individual y feedback personalizado.
-                    </p>
+                  <div class="flex items-start flex-1">
+                    <div class="flex-shrink-0 mr-4">
+                      <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                        <span class="text-2xl">🔵</span>
+                      </div>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center mb-2">
+                        <input
+                          type="radio"
+                          v-model="nuevaEncuesta.privacidadNivel"
+                          value="identificado"
+                          class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
+                        />
+                        <span class="ml-3 text-lg font-bold text-gray-900">Identificado (con propósito)</span>
+                      </div>
+                      <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                        Las respuestas se asocian al usuario solo con fines de seguimiento interno. Requiere consentimiento.
+                      </p>
+                      <div class="space-y-2">
+                        <div class="flex items-start bg-white/70 border border-blue-200 rounded-lg p-3">
+                          <UserCheck class="h-5 w-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+                          <p class="text-xs text-blue-800 font-medium">
+                            Seguimiento personalizado: Permite dar feedback directo y apoyo individualizado
+                          </p>
+                        </div>
+                        <div class="flex items-start bg-yellow-50 border border-yellow-300 rounded-lg p-3">
+                          <AlertTriangle class="h-5 w-5 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" />
+                          <p class="text-xs text-yellow-800 font-medium">
+                            Importante: Puede reducir la sinceridad de las respuestas. Comunica claramente el propósito
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </label>
+              </div>
+
+              <!-- Mensaje de Confianza Global -->
+              <div class="mt-6 bg-white border-2 border-indigo-200 rounded-xl p-5">
+                <div class="flex items-start">
+                  <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                      <Heart class="h-5 w-5 text-indigo-600" />
+                    </div>
+                  </div>
+                  <div class="ml-4">
+                    <h4 class="text-sm font-bold text-gray-900 mb-1">Compromiso con la privacidad</h4>
+                    <p class="text-xs text-gray-700 leading-relaxed">
+                      SMART Bienestar cumple con las normativas de protección de datos (GDPR).
+                      Todas las respuestas se cifran y almacenan de forma segura.
+                      Tu configuración será visible para los empleados antes de responder.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -610,7 +698,14 @@ import {
   Save,
   Rocket,
   Lightbulb,
-  ArrowRight
+  ArrowRight,
+  Shield,
+  ShieldCheck,
+  BarChart3,
+  Lock,
+  UserCheck,
+  AlertTriangle,
+  Heart
 } from 'lucide-vue-next';
 import { plantillas } from '@/utils/plantillasMock.js';
 

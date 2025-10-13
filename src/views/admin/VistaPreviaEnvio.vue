@@ -39,7 +39,7 @@
                   <p class="text-gray-700 mt-1">{{ encuesta.descripcion }}</p>
                 </div>
 
-                <div class="flex items-center gap-6 pt-2">
+                <div class="flex items-center gap-6 pt-2 flex-wrap">
                   <div class="flex items-center text-sm text-gray-600">
                     <FileText class="h-5 w-5 mr-2 text-primary" />
                     <span><strong>{{ encuesta.preguntas?.length || 0 }}</strong> preguntas</span>
@@ -56,6 +56,21 @@
                     >
                       {{ encuesta.creada_desde === 'plantilla' ? '🧩 Desde plantilla' : '🧱 Desde cero' }}
                     </span>
+                  </div>
+                </div>
+
+                <!-- Configuración de Privacidad -->
+                <div class="pt-4 border-t border-gray-200">
+                  <label class="text-sm font-medium text-gray-500 mb-2 block">Nivel de Privacidad</label>
+                  <div
+                    class="flex items-start p-3 rounded-lg border-2"
+                    :class="getPrivacidadClasses(encuesta.privacidadNivel || 'anonimato_completo')"
+                  >
+                    <component :is="getPrivacidadIcon(encuesta.privacidadNivel || 'anonimato_completo')" class="h-5 w-5 mt-0.5 mr-3 flex-shrink-0" />
+                    <div>
+                      <p class="font-semibold text-sm">{{ getPrivacidadLabel(encuesta.privacidadNivel || 'anonimato_completo') }}</p>
+                      <p class="text-xs mt-1 text-gray-600">{{ getPrivacidadDescripcion(encuesta.privacidadNivel || 'anonimato_completo') }}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -320,7 +335,10 @@ import {
   Eye,
   X,
   CheckCircle,
-  Shield
+  Shield,
+  ShieldCheck,
+  Lock,
+  UserCheck
 } from 'lucide-vue-next';
 import { departamentos, getTotalEmpleados } from '@/utils/departamentosMock.js';
 
@@ -463,5 +481,41 @@ const volver = () => {
 
 const irAListaEncuestas = () => {
   router.push('/admin/encuestas');
+};
+
+const getPrivacidadIcon = (nivel) => {
+  const iconos = {
+    'anonimato_completo': ShieldCheck,
+    'anonimato_parcial': Lock,
+    'identificado': UserCheck
+  };
+  return iconos[nivel] || ShieldCheck;
+};
+
+const getPrivacidadLabel = (nivel) => {
+  const labels = {
+    'anonimato_completo': 'Anónimo completo',
+    'anonimato_parcial': 'Anónimo parcial',
+    'identificado': 'Identificado (con propósito)'
+  };
+  return labels[nivel] || 'Anónimo completo';
+};
+
+const getPrivacidadDescripcion = (nivel) => {
+  const descripciones = {
+    'anonimato_completo': 'Respuestas 100% anónimas sin identificadores',
+    'anonimato_parcial': 'Agrupadas por departamento sin datos individuales',
+    'identificado': 'Asociadas al usuario con fines de seguimiento'
+  };
+  return descripciones[nivel] || 'Respuestas 100% anónimas';
+};
+
+const getPrivacidadClasses = (nivel) => {
+  const clases = {
+    'anonimato_completo': 'bg-green-50 border-green-300 text-green-800',
+    'anonimato_parcial': 'bg-orange-50 border-orange-300 text-orange-800',
+    'identificado': 'bg-blue-50 border-blue-300 text-blue-800'
+  };
+  return clases[nivel] || 'bg-green-50 border-green-300 text-green-800';
 };
 </script>

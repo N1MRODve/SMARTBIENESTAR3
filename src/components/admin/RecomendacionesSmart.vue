@@ -121,6 +121,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import {
   Sparkles,
@@ -137,6 +138,7 @@ import {
 
 // TODO: conectar con tabla "servicios" y lógica de recomendaciones personalizada en futuras iteraciones.
 
+const router = useRouter();
 const toast = useToast();
 
 // Props
@@ -154,11 +156,26 @@ const recomendaciones = computed(() => {
 
 // Métodos
 const verPrograma = (servicio) => {
-  toast.add({
-    severity: 'info',
-    summary: servicio.nombre,
-    detail: 'Abrir detalle del programa próximamente. Funcionalidad en desarrollo.',
-    life: 4000
+  const servicioIdMap = {
+    'clima-laboral': 'trabajo_equipo',
+    'liderazgo-efectivo': 'liderazgo_consciente',
+    'balance-vida': 'balance_vida_trabajo',
+    'comunicacion-interna': 'comunicacion_interna',
+    'reconocimiento': 'cultura_feedback',
+    'desarrollo-profesional': 'retencion_talento',
+    'salud-mental': 'bienestar_mental',
+    'trabajo-equipo': 'trabajo_equipo',
+    'gestion-conflictos': 'trabajo_equipo',
+    'autonomia-empoderamiento': 'retencion_talento',
+    'recursos-condiciones': 'trabajo_equipo',
+    'cultura-innovacion': 'retencion_talento'
+  };
+
+  const servicioMockId = servicioIdMap[servicio.id] || 'liderazgo_consciente';
+
+  router.push({
+    name: 'admin-servicios',
+    query: { servicio: servicioMockId }
   });
 };
 </script>

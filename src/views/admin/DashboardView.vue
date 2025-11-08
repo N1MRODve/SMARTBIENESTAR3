@@ -10,11 +10,8 @@ import {
   Gift,
   FileText,
   TrendingUp,
-  Plus
+  ArrowRight
 } from 'lucide-vue-next';
-import StatsCard from '@/components/ui/StatsCard.vue';
-import EmptyState from '@/components/common/EmptyState.vue';
-import Button from '@/components/ui/Button.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -42,7 +39,6 @@ const loadDashboardData = async () => {
   loading.value = true;
 
   try {
-    // Cargar datos de la empresa
     const { data: empresaData } = await supabase
       .from('empresas')
       .select('*')
@@ -51,7 +47,6 @@ const loadDashboardData = async () => {
 
     empresa.value = empresaData;
 
-    // Cargar estadísticas
     await Promise.all([
       loadEmpleadosCount(),
       loadComunicadosCount(),
@@ -104,187 +99,140 @@ const loadRecompensasCount = async () => {
 
   stats.value.recompensasDisponibles = count || 0;
 };
+
+const quickActions = [
+  {
+    title: 'Empleados',
+    description: 'Gestiona tu equipo',
+    icon: Users,
+    route: '/admin/empleados',
+    stat: computed(() => stats.value.totalEmpleados)
+  },
+  {
+    title: 'Comunicación',
+    description: 'Envía mensajes',
+    icon: MessageSquare,
+    route: '/admin/comunicacion',
+    stat: computed(() => stats.value.comunicadosActivos)
+  },
+  {
+    title: 'Encuestas',
+    description: 'Mide el clima',
+    icon: FileText,
+    route: '/admin/encuestas',
+    stat: computed(() => stats.value.encuestasActivas)
+  },
+  {
+    title: 'Recompensas',
+    description: 'Motiva al equipo',
+    icon: Gift,
+    route: '/admin/recompensas',
+    stat: computed(() => stats.value.recompensasDisponibles)
+  },
+  {
+    title: 'Analítica',
+    description: 'Revisa métricas',
+    icon: TrendingUp,
+    route: '/admin/analitica',
+    stat: null
+  }
+];
 </script>
 
 <template>
-  <div class="space-y-8">
+  <div class="space-y-6">
 
-    <!-- Hero Section -->
-    <div class="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl shadow-2xl">
-      <div class="absolute inset-0 bg-black/10"></div>
-      <div class="relative px-8 py-12">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-6">
-            <div class="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-              <LayoutDashboard class="h-10 w-10 text-white" />
-            </div>
-            <div>
-              <h1 class="text-4xl font-bold text-white mb-2">Dashboard</h1>
-              <p class="text-xl text-white/90">{{ empresa?.nombre || 'Tu empresa' }}</p>
-            </div>
+    <!-- Header -->
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 border border-gray-300 rounded-lg flex items-center justify-center">
+            <LayoutDashboard class="h-6 w-6 text-gray-900" />
           </div>
-          <div class="text-right">
-            <div class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full">
-              <div class="w-3 h-3 bg-green-400 rounded-full mr-2 animate-pulse"></div>
-              <span class="text-white font-medium">Sistema Activo</span>
-            </div>
+          <div>
+            <h1 class="text-2xl font-semibold text-gray-900">Panel Principal</h1>
+            <p class="text-sm text-gray-600 mt-0.5">{{ empresa?.nombre || 'Cargando...' }}</p>
           </div>
+        </div>
+        <div v-if="!loading" class="flex items-center space-x-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md">
+          <div class="w-2 h-2 bg-black rounded-full"></div>
+          <span class="text-xs font-medium text-gray-900">Activo</span>
         </div>
       </div>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <div v-if="loading" class="flex items-center justify-center py-20">
+      <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-300 border-t-gray-900"></div>
     </div>
 
     <!-- Stats Grid -->
-    <div v-else-if="hasData" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <StatsCard
-        title="Empleados"
-        :value="stats.totalEmpleados"
-        icon="users"
-        color="blue"
-        :trend="null"
-        description="Empleados activos"
-        @click="router.push('/admin/empleados')"
-      />
-
-      <StatsCard
-        title="Comunicados"
-        :value="stats.comunicadosActivos"
-        icon="message-square"
-        color="green"
-        :trend="null"
-        description="Mensajes enviados"
-        @click="router.push('/admin/comunicacion')"
-      />
-
-      <StatsCard
-        title="Encuestas"
-        :value="stats.encuestasActivas"
-        icon="file-text"
-        color="purple"
-        :trend="null"
-        description="Encuestas activas"
-        @click="router.push('/admin/encuestas')"
-      />
-
-      <StatsCard
-        title="Recompensas"
-        :value="stats.recompensasDisponibles"
-        icon="gift"
-        color="orange"
-        :trend="null"
-        description="Premios disponibles"
-        @click="router.push('/admin/recompensas')"
-      />
-    </div>
-
-    <!-- Quick Actions -->
-    <div v-if="hasData" class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-      <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-8 py-6 border-b border-gray-200">
-        <h2 class="text-2xl font-bold text-gray-900">Acciones Rápidas</h2>
-        <p class="text-gray-600 mt-1">Gestiona las áreas principales de tu empresa</p>
-      </div>
-
-      <div class="p-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-          <!-- Invitar Empleados -->
-          <button
-            @click="router.push('/admin/empleados')"
-            class="group p-6 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl transition-all hover:shadow-md"
-          >
-            <div class="flex items-start space-x-4">
-              <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Users class="h-6 w-6 text-white" />
-              </div>
-              <div class="flex-1 text-left">
-                <h3 class="font-semibold text-gray-900 mb-1">Gestionar Empleados</h3>
-                <p class="text-sm text-gray-600">Invita y administra tu equipo</p>
-              </div>
-            </div>
-          </button>
-
-          <!-- Crear Comunicado -->
-          <button
-            @click="router.push('/admin/comunicacion')"
-            class="group p-6 bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 rounded-xl transition-all hover:shadow-md"
-          >
-            <div class="flex items-start space-x-4">
-              <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <MessageSquare class="h-6 w-6 text-white" />
-              </div>
-              <div class="flex-1 text-left">
-                <h3 class="font-semibold text-gray-900 mb-1">Comunicación</h3>
-                <p class="text-sm text-gray-600">Envía mensajes a tu equipo</p>
-              </div>
-            </div>
-          </button>
-
-          <!-- Crear Encuesta -->
-          <button
-            @click="router.push('/admin/encuestas')"
-            class="group p-6 bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-xl transition-all hover:shadow-md"
-          >
-            <div class="flex items-start space-x-4">
-              <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <FileText class="h-6 w-6 text-white" />
-              </div>
-              <div class="flex-1 text-left">
-                <h3 class="font-semibold text-gray-900 mb-1">Encuestas</h3>
-                <p class="text-sm text-gray-600">Mide el clima laboral</p>
-              </div>
-            </div>
-          </button>
-
-          <!-- Gestionar Recompensas -->
-          <button
-            @click="router.push('/admin/recompensas')"
-            class="group p-6 bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 rounded-xl transition-all hover:shadow-md"
-          >
-            <div class="flex items-start space-x-4">
-              <div class="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Gift class="h-6 w-6 text-white" />
-              </div>
-              <div class="flex-1 text-left">
-                <h3 class="font-semibold text-gray-900 mb-1">Recompensas</h3>
-                <p class="text-sm text-gray-600">Configura premios y motivación</p>
-              </div>
-            </div>
-          </button>
-
-          <!-- Analítica -->
-          <button
-            @click="router.push('/admin/analitica')"
-            class="group p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 rounded-xl transition-all hover:shadow-md"
-          >
-            <div class="flex items-start space-x-4">
-              <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                <TrendingUp class="h-6 w-6 text-white" />
-              </div>
-              <div class="flex-1 text-left">
-                <h3 class="font-semibold text-gray-900 mb-1">Analítica</h3>
-                <p class="text-sm text-gray-600">Reportes y métricas</p>
-              </div>
-            </div>
-          </button>
-
+    <template v-else-if="hasData">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div
+          v-for="stat in [
+            { label: 'Empleados', value: stats.totalEmpleados, icon: Users },
+            { label: 'Comunicados', value: stats.comunicadosActivos, icon: MessageSquare },
+            { label: 'Encuestas', value: stats.encuestasActivas, icon: FileText },
+            { label: 'Recompensas', value: stats.recompensasDisponibles, icon: Gift }
+          ]"
+          :key="stat.label"
+          class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div class="flex items-start justify-between mb-4">
+            <component :is="stat.icon" class="h-5 w-5 text-gray-900" />
+            <span class="text-2xl font-semibold text-gray-900">{{ stat.value }}</span>
+          </div>
+          <p class="text-sm text-gray-600">{{ stat.label }}</p>
         </div>
       </div>
-    </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="border-b border-gray-200 px-6 py-4">
+          <h2 class="text-lg font-semibold text-gray-900">Acciones Rápidas</h2>
+          <p class="text-sm text-gray-600 mt-0.5">Accede a las funciones principales</p>
+        </div>
+
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <button
+              v-for="action in quickActions"
+              :key="action.title"
+              @click="router.push(action.route)"
+              class="group text-left p-4 border border-gray-200 rounded-lg hover:border-gray-900 hover:shadow-sm transition-all"
+            >
+              <div class="flex items-start justify-between mb-3">
+                <component :is="action.icon" class="h-5 w-5 text-gray-900" />
+                <ArrowRight class="h-4 w-4 text-gray-400 group-hover:text-gray-900 group-hover:translate-x-0.5 transition-all" />
+              </div>
+              <h3 class="font-medium text-gray-900 mb-1">{{ action.title }}</h3>
+              <p class="text-sm text-gray-600">{{ action.description }}</p>
+              <div v-if="action.stat" class="mt-2 pt-2 border-t border-gray-100">
+                <span class="text-xs text-gray-500">Total: <span class="font-medium text-gray-900">{{ action.stat.value }}</span></span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
 
     <!-- Empty State -->
-    <div v-if="!loading && !hasData" class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-      <EmptyState
-        :icon="LayoutDashboard"
-        title="¡Bienvenido a Smart Bienestar!"
-        description="Tu plataforma está lista. Comienza invitando a tu equipo, creando comunicados o configurando encuestas para medir el clima laboral."
-        action-text="Ver guía de inicio"
-        :action-icon="Plus"
-        @action="router.push('/admin/onboarding')"
-      />
+    <div v-else class="bg-white border border-gray-200 rounded-lg shadow-sm p-12 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 border border-gray-300 rounded-lg flex items-center justify-center">
+        <LayoutDashboard class="h-8 w-8 text-gray-400" />
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Bienvenido a Smart Bienestar</h3>
+      <p class="text-gray-600 mb-6 max-w-md mx-auto">
+        Tu plataforma está lista. Comienza configurando tu empresa.
+      </p>
+      <button
+        @click="router.push('/admin/empleados')"
+        class="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+      >
+        Comenzar
+        <ArrowRight class="h-4 w-4 ml-2" />
+      </button>
     </div>
 
   </div>

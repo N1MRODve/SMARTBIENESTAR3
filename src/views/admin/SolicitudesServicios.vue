@@ -64,8 +64,26 @@
           </div>
         </div>
 
+        <!-- Loading State -->
+        <div v-if="loading" class="flex items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-xl p-8 text-center mb-8">
+          <AlertTriangle class="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 class="text-lg font-medium text-red-800 mb-2">Error al cargar datos</h3>
+          <p class="text-red-600 mb-4">{{ error }}</p>
+          <button
+            @click="cargarSolicitudes"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+
         <!-- Tabla de Solicitudes -->
-        <div class="bg-white shadow-sm rounded-xl overflow-hidden">
+        <div v-else class="bg-white shadow-sm rounded-xl overflow-hidden">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
@@ -319,9 +337,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
+import { useAuthStore } from '@/stores/auth.store';
+import { solicitudesService } from '@/services/solicitudes.service';
 import Dialog from 'primevue/dialog';
 import Header from '@/components/common/Header.vue';
 import {
@@ -337,24 +357,78 @@ import {
   Plus,
   AlertTriangle
 } from 'lucide-vue-next';
-import {
-  solicitudesMock,
-  estadosDisponibles,
-  obtenerColorEstado,
-  actualizarEstadoSolicitud,
-  eliminarSolicitud
-} from '@/utils/solicitudesMock.js';
-
-// TODO: conectar con tablas "solicitudes_servicios" y "departamentos" en futuras iteraciones.
 
 const router = useRouter();
 const toast = useToast();
+const authStore = useAuthStore();
 
-const solicitudes = ref(solicitudesMock);
+const solicitudes = ref([]);
 const solicitudSeleccionada = ref(null);
 const solicitudAEliminar = ref(null);
 const modalDetallesAbierto = ref(false);
 const modalConfirmacionAbierto = ref(false);
+const loading = ref(true);
+const error = ref(null);
+
+const estadosDisponibles = ['Pendiente', 'En curso', 'Completado', 'Rechazado'];
+
+onMounted(async () => {
+  await cargarSolicitudes();
+});
+
+const cargarSolicitudes = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const data = await solicitudesService.getAll(authStore.empresaId);
+    solicitudes.value = data.map(s => ({
+      id: s.id,
+      servicio: {
+        nombre: s.servicio?.nombre || 'Servicio eliminado',
+        icono: getCategoriaIcon(s.servicio?.categoria)
+      },
+      departamento: s.empleado?.departamentos?.nombre || 'Sin departamento',
+      fecha_solicitud: s.fecha_solicitud?.split('T')[0],
+      fecha_implementacion: s.fecha_respuesta?.split('T')[0],
+      estado: capitalizeEstado(s.estado),
+      objetivos: s.motivo,
+      comentarios: s.notas_admin,
+      solicitante: s.empleado?.nombre || 'Empleado'
+    }));
+  } catch (err) {
+    console.error('Error cargando solicitudes:', err);
+    error.value = 'No se pudieron cargar las solicitudes';
+  } finally {
+    loading.value = false;
+  }
+};
+
+const getCategoriaIcon = (categoria) => {
+  const iconos = {
+    'salud_mental': '🧠',
+    'fisico': '🏋️',
+    'financiero': '💰',
+    'legal': '⚖️',
+    'familiar': '👨‍👩‍👧'
+  };
+  return iconos[categoria] || '📝';
+};
+
+const capitalizeEstado = (estado) => {
+  if (estado === 'pendiente') return 'Pendiente';
+  if (estado === 'aprobada') return 'En curso';
+  if (estado === 'completada') return 'Completado';
+  if (estado === 'rechazada') return 'Rechazado';
+  return estado;
+};
+
+const estadoToDb = (estado) => {
+  if (estado === 'Pendiente') return 'pendiente';
+  if (estado === 'En curso') return 'aprobada';
+  if (estado === 'Completado') return 'completada';
+  if (estado === 'Rechazado') return 'rechazada';
+  return estado;
+};
 
 const contarPorEstado = (estado) => {
   return solicitudes.value.filter(s => s.estado === estado).length;
@@ -370,11 +444,17 @@ const formatearFecha = (fecha) => {
   });
 };
 
-const cambiarEstado = (id, nuevoEstado) => {
-  actualizarEstadoSolicitud(id, nuevoEstado);
-  toast.info(`Estado actualizado a "${nuevoEstado}"`, {
-    timeout: 3000
-  });
+const cambiarEstado = async (id, nuevoEstado) => {
+  try {
+    await solicitudesService.updateEstado(id, estadoToDb(nuevoEstado));
+    await cargarSolicitudes();
+    toast.info(`Estado actualizado a "${nuevoEstado}"`, {
+      timeout: 3000
+    });
+  } catch (err) {
+    console.error('Error actualizando estado:', err);
+    toast.error('Error al actualizar el estado');
+  }
 };
 
 const verDetalles = (solicitud) => {
@@ -387,18 +467,34 @@ const confirmarEliminar = (solicitud) => {
   modalConfirmacionAbierto.value = true;
 };
 
-const eliminar = () => {
+const eliminar = async () => {
   if (solicitudAEliminar.value) {
-    eliminarSolicitud(solicitudAEliminar.value.id);
-    toast.success('Solicitud eliminada correctamente', {
-      timeout: 3000
-    });
-    modalConfirmacionAbierto.value = false;
-    solicitudAEliminar.value = null;
+    try {
+      await solicitudesService.delete(solicitudAEliminar.value.id);
+      await cargarSolicitudes();
+      toast.success('Solicitud eliminada correctamente', {
+        timeout: 3000
+      });
+      modalConfirmacionAbierto.value = false;
+      solicitudAEliminar.value = null;
+    } catch (err) {
+      console.error('Error eliminando solicitud:', err);
+      toast.error('Error al eliminar la solicitud');
+    }
   }
 };
 
 const irACatalogo = () => {
   router.push({ name: 'admin-servicios' });
+};
+
+const obtenerColorEstado = (estado) => {
+  const colores = {
+    'Pendiente': { badge: 'bg-yellow-100 text-yellow-800' },
+    'En curso': { badge: 'bg-blue-100 text-blue-800' },
+    'Completado': { badge: 'bg-green-100 text-green-800' },
+    'Rechazado': { badge: 'bg-red-100 text-red-800' }
+  };
+  return colores[estado] || { badge: 'bg-gray-100 text-gray-800' };
 };
 </script>

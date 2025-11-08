@@ -4,6 +4,25 @@
 
     <div class="py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Loading State -->
+        <div v-if="loading" class="flex items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+          <AlertCircle class="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 class="text-lg font-medium text-red-800 mb-2">Error al cargar datos</h3>
+          <p class="text-red-600 mb-4">{{ error }}</p>
+          <button
+            @click="cargarDatos"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+
+        <div v-else>
         <!-- Header -->
         <div class="mb-8 flex items-center justify-between">
           <div>
@@ -326,14 +345,17 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth.store';
+import { analiticaService } from '@/services/analitica.service';
 import Header from '@/components/common/Header.vue';
 import {
   Heart,
@@ -353,25 +375,59 @@ import {
   Monitor
 } from 'lucide-vue-next';
 import {
-  analiticaMock,
-  evolucionMock,
-  categoriasBienestarMock,
   generarResumenEjecutivo,
   obtenerEstadoGlobal
 } from '@/utils/analiticaMock.js';
 
-// TODO: conectar con "resultados_encuestas" y "departamentos" cuando BD esté activa.
-
 const router = useRouter();
+const authStore = useAuthStore();
 
 // Estado
-const analitica = ref(analiticaMock);
-const evolucion = ref(evolucionMock);
-const categorias = ref(categoriasBienestarMock);
+const analitica = ref({
+  bienestar_global: 0,
+  variacion_trimestral: 0,
+  participacion_global: 0,
+  alertas_activas: 0,
+  encuestas_activas: 0,
+  encuestas_completadas: 0,
+  empleados_totales: 0,
+  departamentos_fuertes: [],
+  departamentos_criticos: []
+});
+const evolucion = ref([]);
+const categorias = ref([]);
+const loading = ref(true);
+const error = ref(null);
 
 // Computed
 const estadoGlobal = computed(() => obtenerEstadoGlobal(analitica.value.bienestar_global));
 const resumenEjecutivo = computed(() => generarResumenEjecutivo(analitica.value));
+
+// Cargar datos
+onMounted(async () => {
+  await cargarDatos();
+});
+
+const cargarDatos = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const [analiticaData, evolucionData, categoriasData] = await Promise.all([
+      analiticaService.getAnalytics(authStore.empresaId),
+      analiticaService.getEvolution(authStore.empresaId),
+      analiticaService.getCategorias(authStore.empresaId)
+    ]);
+
+    analitica.value = analiticaData;
+    evolucion.value = evolucionData;
+    categorias.value = categoriasData;
+  } catch (err) {
+    console.error('Error cargando analítica:', err);
+    error.value = 'No se pudieron cargar los datos';
+  } finally {
+    loading.value = false;
+  }
+};
 
 // Métodos
 const obtenerColorVariacion = (variacion) => {

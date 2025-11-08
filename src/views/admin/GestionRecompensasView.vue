@@ -68,6 +68,23 @@ const cargarHistorial = async () => {
   loading.value = true;
   error.value = null;
   try {
+    // Primero obtener las recompensas de la empresa
+    const { data: recompensasEmpresa, error: recompError } = await supabase
+      .from('recompensas')
+      .select('id')
+      .eq('empresa_id', authStore.empresaId);
+
+    if (recompError) throw recompError;
+
+    const recompensaIds = recompensasEmpresa.map(r => r.id);
+
+    if (recompensaIds.length === 0) {
+      historialCanjes.value = [];
+      loading.value = false;
+      return;
+    }
+
+    // Luego obtener los canjes de esas recompensas
     const { data, error: err } = await supabase
       .from('canjes_recompensas')
       .select(`
@@ -75,7 +92,7 @@ const cargarHistorial = async () => {
         empleado:empleados(nombre, email),
         recompensa:recompensas(nombre, categoria, imagen_url)
       `)
-      .eq('recompensa.empresa_id', authStore.empresaId)
+      .in('recompensa_id', recompensaIds)
       .order('fecha_canje', { ascending: false });
 
     if (err) throw err;

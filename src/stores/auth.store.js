@@ -10,10 +10,11 @@ export const useAuthStore = defineStore('auth', () => {
   const initializationDone = ref(false);
 
   const isAuthenticated = computed(() => !!user.value && !!session.value);
+  const empresaId = computed(() => empleado.value?.empresa_id || null);
+  const isAdmin = computed(() => empleado.value?.es_admin || false);
   const userRole = computed(() => {
-    // TODO: Implementar sistema de roles real basado en empleado
-    // Por ahora, retorna 'admin' como default
-    return empleado.value ? 'admin' : null;
+    if (!empleado.value) return null;
+    return empleado.value.es_admin ? 'admin' : 'empleado';
   });
 
   const initialize = async () => {
@@ -101,6 +102,8 @@ export const useAuthStore = defineStore('auth', () => {
     loading,
     initializationDone,
     isAuthenticated,
+    empresaId,
+    isAdmin,
     userRole,
     initialize,
     login,

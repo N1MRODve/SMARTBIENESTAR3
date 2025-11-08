@@ -1,7 +1,116 @@
+<script setup>
+import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth.store';
+import { supabase } from '@/lib/supabase';
+import {
+  LayoutDashboard,
+  Users,
+  MessageSquare,
+  Gift,
+  FileText,
+  TrendingUp,
+  Plus
+} from 'lucide-vue-next';
+import StatsCard from '@/components/ui/StatsCard.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
+import Button from '@/components/ui/Button.vue';
+
+const router = useRouter();
+const authStore = useAuthStore();
+
+const loading = ref(true);
+const empresa = ref(null);
+const stats = ref({
+  totalEmpleados: 0,
+  comunicadosActivos: 0,
+  encuestasActivas: 0,
+  recompensasDisponibles: 0
+});
+
+const hasData = computed(() => {
+  return stats.value.totalEmpleados > 0 ||
+         stats.value.comunicadosActivos > 0 ||
+         stats.value.encuestasActivas > 0;
+});
+
+onMounted(async () => {
+  await loadDashboardData();
+});
+
+const loadDashboardData = async () => {
+  loading.value = true;
+
+  try {
+    // Cargar datos de la empresa
+    const { data: empresaData } = await supabase
+      .from('empresas')
+      .select('*')
+      .eq('id', authStore.empresaId)
+      .maybeSingle();
+
+    empresa.value = empresaData;
+
+    // Cargar estadísticas
+    await Promise.all([
+      loadEmpleadosCount(),
+      loadComunicadosCount(),
+      loadEncuestasCount(),
+      loadRecompensasCount()
+    ]);
+
+  } catch (error) {
+    console.error('Error cargando dashboard:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const loadEmpleadosCount = async () => {
+  const { count } = await supabase
+    .from('empleados')
+    .select('*', { count: 'exact', head: true })
+    .eq('empresa_id', authStore.empresaId)
+    .eq('estado', 'Activo');
+
+  stats.value.totalEmpleados = count || 0;
+};
+
+const loadComunicadosCount = async () => {
+  const { count } = await supabase
+    .from('comunicados')
+    .select('*', { count: 'exact', head: true })
+    .eq('empresa_id', authStore.empresaId);
+
+  stats.value.comunicadosActivos = count || 0;
+};
+
+const loadEncuestasCount = async () => {
+  const { count } = await supabase
+    .from('encuestas')
+    .select('*', { count: 'exact', head: true })
+    .eq('empresa_id', authStore.empresaId)
+    .eq('estado', 'Activa');
+
+  stats.value.encuestasActivas = count || 0;
+};
+
+const loadRecompensasCount = async () => {
+  const { count } = await supabase
+    .from('recompensas')
+    .select('*', { count: 'exact', head: true })
+    .eq('empresa_id', authStore.empresaId)
+    .eq('activa', true);
+
+  stats.value.recompensasDisponibles = count || 0;
+};
+</script>
+
 <template>
   <div class="space-y-8">
+
     <!-- Hero Section -->
-    <div class="relative overflow-hidden bg-gradient-to-br from-primary via-primary-dark to-blue-900 rounded-2xl shadow-2xl">
+    <div class="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl shadow-2xl">
       <div class="absolute inset-0 bg-black/10"></div>
       <div class="relative px-8 py-12">
         <div class="flex items-center justify-between">
@@ -10,8 +119,8 @@
               <LayoutDashboard class="h-10 w-10 text-white" />
             </div>
             <div>
-              <h1 class="text-4xl font-bold text-white mb-2">Dashboard Administrativo</h1>
-              <p class="text-xl text-white/80">Gestiona el bienestar de tu organización</p>
+              <h1 class="text-4xl font-bold text-white mb-2">Dashboard</h1>
+              <p class="text-xl text-white/90">{{ empresa?.nombre || 'Tu empresa' }}</p>
             </div>
           </div>
           <div class="text-right">
@@ -24,626 +133,159 @@
       </div>
     </div>
 
-    <!-- Wellness Overview Section -->
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-8 py-6 border-b border-gray-200">
-        <div class="flex items-center">
-          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-            <TrendingUp class="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h2 class="text-2xl font-bold text-gray-900">Índice de Bienestar General</h2>
-            <p class="text-gray-600">Puntuación global basada en todas las métricas de bienestar del equipo</p>
-          </div>
-        </div>
-      </div>
-      
-      <div class="p-8">
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          <!-- Wellness Score Gauge -->
-          <div class="text-center">
-            <ScoreGauge 
-              :score="7.2" 
-              title="Índice de Bienestar"
-              description="Puntuación global del equipo"
-              :trend="0.3"
-            />
-          </div>
-          
-          <!-- Dimensions Chart -->
-          <div class="xl:col-span-2">
-            <DimensionsChart />
-          </div>
-        </div>
-        
-        <!-- Key Insights Section -->
-        <div class="mt-8 pt-8 border-t border-gray-200">
-          <h3 class="text-xl font-semibold text-gray-900 mb-6">Insights Clave</h3>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <InsightCard
-              :insight="{
-                type: 'strength',
-                title: 'Comunicación Excelente',
-                description: 'La comunicación (8.3) es el punto más fuerte del equipo.',
-                icon: '💬',
-                score: 8.3
-              }"
-            />
-
-            <InsightCard
-              :insight="{
-                type: 'weakness',
-                title: 'Oportunidad en Salud Mental',
-                description: 'La salud mental (5.8) es el área con mayor oportunidad de mejora.',
-                icon: '🧠',
-                score: 5.8
-              }"
-            />
-          </div>
-
-          <!-- Action Button -->
-          <div class="mt-6 text-center">
-            <Button
-              @click="router.push('/admin/encuestas/enc-01/resultados')"
-              variant="outline"
-              class="w-full lg:w-auto"
-            >
-              <BarChart3 class="h-4 w-4 mr-2" />
-              Ver Análisis Completo
-            </Button>
-          </div>
-        </div>
-      </div>
+    <!-- Loading State -->
+    <div v-if="loading" class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
 
-    <!-- Acciones Sugeridas Section -->
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-      <div class="bg-gradient-to-r from-amber-50 to-yellow-50 px-8 py-6 border-b border-gray-200">
-        <div class="flex items-center">
-          <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-xl flex items-center justify-center mr-4">
-            <Lightbulb class="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h2 class="text-2xl font-bold text-gray-900">Recomendaciones Automáticas</h2>
-            <p class="text-gray-600">Acciones sugeridas basadas en el índice de bienestar actual</p>
-          </div>
-        </div>
+    <!-- Stats Grid -->
+    <div v-else-if="hasData" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <StatsCard
+        title="Empleados"
+        :value="stats.totalEmpleados"
+        icon="users"
+        color="blue"
+        :trend="null"
+        description="Empleados activos"
+        @click="router.push('/admin/empleados')"
+      />
+
+      <StatsCard
+        title="Comunicados"
+        :value="stats.comunicadosActivos"
+        icon="message-square"
+        color="green"
+        :trend="null"
+        description="Mensajes enviados"
+        @click="router.push('/admin/comunicacion')"
+      />
+
+      <StatsCard
+        title="Encuestas"
+        :value="stats.encuestasActivas"
+        icon="file-text"
+        color="purple"
+        :trend="null"
+        description="Encuestas activas"
+        @click="router.push('/admin/encuestas')"
+      />
+
+      <StatsCard
+        title="Recompensas"
+        :value="stats.recompensasDisponibles"
+        icon="gift"
+        color="orange"
+        :trend="null"
+        description="Premios disponibles"
+        @click="router.push('/admin/recompensas')"
+      />
+    </div>
+
+    <!-- Quick Actions -->
+    <div v-if="hasData" class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-8 py-6 border-b border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-900">Acciones Rápidas</h2>
+        <p class="text-gray-600 mt-1">Gestiona las áreas principales de tu empresa</p>
       </div>
 
       <div class="p-8">
-        <!-- Recomendación basada en índice de bienestar -->
-        <div v-if="indiceBienestar < 60" class="bg-red-50 rounded-xl p-6 shadow-sm border border-red-200">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <AlertTriangle class="h-6 w-6 text-white" />
-            </div>
-            <div class="flex-1">
-              <h3 class="text-lg font-semibold text-red-900 mb-2">Nivel de Riesgo Detectado</h3>
-              <p class="text-red-800 mb-4">
-                El bienestar del equipo muestra señales de riesgo. Recomendamos iniciar un taller de gestión del estrés o una sesión de mindfulness.
-              </p>
-              <Button
-                @click="solicitarAccion('critico', indiceBienestar)"
-                :loading="loadingAccion"
-                class="bg-red-600 hover:bg-red-700 text-white border-0"
-              >
-                <AlertCircle class="h-4 w-4 mr-2" />
-                Solicitar acción recomendada
-              </Button>
-            </div>
-          </div>
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        <div v-else-if="indiceBienestar >= 60 && indiceBienestar <= 80" class="bg-orange-50 rounded-xl p-6 shadow-sm border border-orange-200">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <TrendingUp class="h-6 w-6 text-white" />
-            </div>
-            <div class="flex-1">
-              <h3 class="text-lg font-semibold text-orange-900 mb-2">Áreas de Mejora Identificadas</h3>
-              <p class="text-orange-800 mb-4">
-                Se detectan áreas de mejora. Considera acciones preventivas como encuestas rápidas o sesiones de comunicación interna.
-              </p>
-              <Button
-                @click="solicitarAccion('preventivo', indiceBienestar)"
-                :loading="loadingAccion"
-                class="bg-orange-600 hover:bg-orange-700 text-white border-0"
-              >
-                <AlertCircle class="h-4 w-4 mr-2" />
-                Solicitar acción recomendada
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div v-else class="bg-green-50 rounded-xl p-6 shadow-sm border border-green-200">
-          <div class="flex items-start gap-4">
-            <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <CheckCircle class="h-6 w-6 text-white" />
-            </div>
-            <div class="flex-1">
-              <h3 class="text-lg font-semibold text-green-900 mb-2">Bienestar Positivo</h3>
-              <p class="text-green-800 mb-4">
-                El bienestar general es positivo. Mantén las iniciativas actuales y refuerza la comunicación.
-              </p>
-              <Button
-                @click="solicitarAccion('mantenimiento', indiceBienestar)"
-                :loading="loadingAccion"
-                class="bg-green-600 hover:bg-green-700 text-white border-0"
-              >
-                <CheckCircle class="h-4 w-4 mr-2" />
-                Solicitar acción recomendada
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Platform Components Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Surveys Management -->
-      <div class="group bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-6">
-          <div class="flex items-center justify-between">
-            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <FileText class="h-7 w-7 text-white" />
-            </div>
-            <div class="text-right">
-              <div class="text-3xl font-bold text-white">3</div>
-              <div class="text-blue-100 text-sm">Encuestas</div>
-            </div>
-          </div>
-        </div>
-        <div class="p-6">
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">Gestión de Encuestas</h3>
-          <p class="text-gray-600 mb-4">Crea y analiza encuestas de bienestar para obtener insights valiosos</p>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center text-sm text-gray-500">
-              <CheckCircle class="h-4 w-4 mr-1 text-green-500" />
-              <span>1 Activa</span>
-            </div>
-            <Button 
-              @click="router.push('/admin/encuestas')"
-              variant="outline"
-              class="group-hover:bg-blue-50 group-hover:border-blue-200"
-            >
-              <ArrowRight class="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Employee Management -->
-      <div class="group bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-        <div class="bg-gradient-to-br from-green-500 to-emerald-600 p-6">
-          <div class="flex items-center justify-between">
-            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <Users class="h-7 w-7 text-white" />
-            </div>
-            <div class="text-right">
-              <div class="text-3xl font-bold text-white">50</div>
-              <div class="text-green-100 text-sm">Empleados</div>
-            </div>
-          </div>
-        </div>
-        <div class="p-6">
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">Gestión de Empleados</h3>
-          <p class="text-gray-600 mb-4">Administra tu equipo e invita nuevos miembros a la plataforma</p>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center text-sm text-gray-500">
-              <UserCheck class="h-4 w-4 mr-1 text-green-500" />
-              <span>42 Activos</span>
-            </div>
-            <Button 
-              @click="router.push('/admin/empleados')"
-              variant="outline"
-              class="group-hover:bg-green-50 group-hover:border-green-200"
-            >
-              <ArrowRight class="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Rewards System -->
-      <div class="group bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-        <div class="bg-gradient-to-br from-purple-500 to-purple-600 p-6">
-          <div class="flex items-center justify-between">
-            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <Gift class="h-7 w-7 text-white" />
-            </div>
-            <div class="text-right">
-              <div class="text-3xl font-bold text-white">10</div>
-              <div class="text-purple-100 text-sm">Recompensas</div>
-            </div>
-          </div>
-        </div>
-        <div class="p-6">
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">Sistema de Recompensas</h3>
-          <p class="text-gray-600 mb-4">Motiva a tu equipo con un catálogo de recompensas atractivas</p>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center text-sm text-gray-500">
-              <Star class="h-4 w-4 mr-1 text-yellow-500" />
-              <span>4 Canjeadas</span>
-            </div>
-            <Button 
-              @click="router.push('/admin/recompensas')"
-              variant="outline"
-              class="group-hover:bg-purple-50 group-hover:border-purple-200"
-            >
-              <ArrowRight class="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Communications -->
-      <div class="group bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-        <div class="bg-gradient-to-br from-orange-500 to-red-500 p-6">
-          <div class="flex items-center justify-between">
-            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <Megaphone class="h-7 w-7 text-white" />
-            </div>
-            <div class="text-right">
-              <div class="text-3xl font-bold text-white">1</div>
-              <div class="text-orange-100 text-sm">Comunicados</div>
-            </div>
-          </div>
-        </div>
-        <div class="p-6">
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">Comunicados</h3>
-          <p class="text-gray-600 mb-4">Mantén informado a tu equipo con comunicados importantes</p>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center text-sm text-gray-500">
-              <Clock class="h-4 w-4 mr-1 text-orange-500" />
-              <span>Hace 2 días</span>
-            </div>
-            <Button 
-              @click="router.push('/admin/comunicados')"
-              variant="outline"
-              class="group-hover:bg-orange-50 group-hover:border-orange-200"
-            >
-              <ArrowRight class="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Wellness Services -->
-      <div class="group bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-        <div class="bg-gradient-to-br from-teal-500 to-cyan-600 p-6">
-          <div class="flex items-center justify-between">
-            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <HeartHandshake class="h-7 w-7 text-white" />
-            </div>
-            <div class="text-right">
-              <div class="text-3xl font-bold text-white">3</div>
-              <div class="text-teal-100 text-sm">Servicios</div>
-            </div>
-          </div>
-        </div>
-        <div class="p-6">
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">Servicios de Bienestar</h3>
-          <p class="text-gray-600 mb-4">Programa sesiones especializadas basadas en las necesidades del equipo</p>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center text-sm text-gray-500">
-              <Calendar class="h-4 w-4 mr-1 text-teal-500" />
-              <span>2 Programadas</span>
-            </div>
-            <Button 
-              @click="router.push('/admin/servicios')"
-              variant="outline"
-              class="group-hover:bg-teal-50 group-hover:border-teal-200"
-            >
-              <ArrowRight class="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Analytics & Reports -->
-      <div class="group bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-        <div class="bg-gradient-to-br from-pink-500 to-rose-600 p-6">
-          <div class="flex items-center justify-between">
-            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <BarChart3 class="h-7 w-7 text-white" />
-            </div>
-            <div class="text-right">
-              <div class="text-3xl font-bold text-white">85%</div>
-              <div class="text-pink-100 text-sm">Participación</div>
-            </div>
-          </div>
-        </div>
-        <div class="p-6">
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">Analytics & Reportes</h3>
-          <p class="text-gray-600 mb-4">Analiza tendencias y genera reportes detallados de bienestar</p>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center text-sm text-gray-500">
-              <TrendingUp class="h-4 w-4 mr-1 text-green-500" />
-              <span>+12% vs anterior</span>
-            </div>
-            <Button 
-              @click="router.push('/admin/encuestas/enc-01/resultados')"
-              variant="outline"
-              class="group-hover:bg-pink-50 group-hover:border-pink-200"
-            >
-              <ArrowRight class="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quick Actions Section -->
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-      <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 border-b border-gray-200">
-        <div class="flex items-center">
-          <div class="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-xl flex items-center justify-center mr-4">
-            <Zap class="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h2 class="text-2xl font-bold text-gray-900">Acciones Rápidas</h2>
-            <p class="text-gray-600">Tareas frecuentes para gestionar la plataforma</p>
-          </div>
-        </div>
-      </div>
-      
-      <div class="p-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Create Survey -->
-          <Button 
-            @click="router.push('/admin/encuestas/crear')"
-            class="h-24 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-          >
-            <div class="flex flex-col items-center">
-              <Plus class="h-8 w-8 mb-2" />
-              <span class="font-semibold">Nueva Encuesta</span>
-            </div>
-          </Button>
-
-          <!-- Invite Employees -->
-          <Button 
+          <!-- Invitar Empleados -->
+          <button
             @click="router.push('/admin/empleados')"
-            class="h-24 bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            class="group p-6 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl transition-all hover:shadow-md"
           >
-            <div class="flex flex-col items-center">
-              <UserPlus class="h-8 w-8 mb-2" />
-              <span class="font-semibold">Invitar Empleados</span>
+            <div class="flex items-start space-x-4">
+              <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users class="h-6 w-6 text-white" />
+              </div>
+              <div class="flex-1 text-left">
+                <h3 class="font-semibold text-gray-900 mb-1">Gestionar Empleados</h3>
+                <p class="text-sm text-gray-600">Invita y administra tu equipo</p>
+              </div>
             </div>
-          </Button>
+          </button>
 
-          <!-- Create Reward -->
-          <Button 
+          <!-- Crear Comunicado -->
+          <button
+            @click="router.push('/admin/comunicacion')"
+            class="group p-6 bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 rounded-xl transition-all hover:shadow-md"
+          >
+            <div class="flex items-start space-x-4">
+              <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <MessageSquare class="h-6 w-6 text-white" />
+              </div>
+              <div class="flex-1 text-left">
+                <h3 class="font-semibold text-gray-900 mb-1">Comunicación</h3>
+                <p class="text-sm text-gray-600">Envía mensajes a tu equipo</p>
+              </div>
+            </div>
+          </button>
+
+          <!-- Crear Encuesta -->
+          <button
+            @click="router.push('/admin/encuestas')"
+            class="group p-6 bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-xl transition-all hover:shadow-md"
+          >
+            <div class="flex items-start space-x-4">
+              <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <FileText class="h-6 w-6 text-white" />
+              </div>
+              <div class="flex-1 text-left">
+                <h3 class="font-semibold text-gray-900 mb-1">Encuestas</h3>
+                <p class="text-sm text-gray-600">Mide el clima laboral</p>
+              </div>
+            </div>
+          </button>
+
+          <!-- Gestionar Recompensas -->
+          <button
             @click="router.push('/admin/recompensas')"
-            class="h-24 bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            class="group p-6 bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 rounded-xl transition-all hover:shadow-md"
           >
-            <div class="flex flex-col items-center">
-              <Gift class="h-8 w-8 mb-2" />
-              <span class="font-semibold">Nueva Recompensa</span>
+            <div class="flex items-start space-x-4">
+              <div class="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Gift class="h-6 w-6 text-white" />
+              </div>
+              <div class="flex-1 text-left">
+                <h3 class="font-semibold text-gray-900 mb-1">Recompensas</h3>
+                <p class="text-sm text-gray-600">Configura premios y motivación</p>
+              </div>
             </div>
-          </Button>
+          </button>
 
-          <!-- Send Communication -->
-          <Button 
-            @click="router.push('/admin/comunicados/crear')"
-            class="h-24 bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+          <!-- Analítica -->
+          <button
+            @click="router.push('/admin/analitica')"
+            class="group p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 rounded-xl transition-all hover:shadow-md"
           >
-            <div class="flex flex-col items-center">
-              <Send class="h-8 w-8 mb-2" />
-              <span class="font-semibold">Nuevo Comunicado</span>
+            <div class="flex items-start space-x-4">
+              <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                <TrendingUp class="h-6 w-6 text-white" />
+              </div>
+              <div class="flex-1 text-left">
+                <h3 class="font-semibold text-gray-900 mb-1">Analítica</h3>
+                <p class="text-sm text-gray-600">Reportes y métricas</p>
+              </div>
             </div>
-          </Button>
+          </button>
+
         </div>
       </div>
     </div>
 
-    <!-- Recent Activity Feed -->
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-      <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-8 py-6 border-b border-gray-200">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center">
-            <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
-              <Activity class="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h2 class="text-2xl font-bold text-gray-900">Actividad Reciente</h2>
-              <p class="text-gray-600">Últimas acciones en la plataforma</p>
-            </div>
-          </div>
-          <Button variant="outline" class="text-sm">
-            Ver Todo
-          </Button>
-        </div>
-      </div>
-      
-      <div class="p-8">
-        <div class="space-y-6">
-          <!-- Activity Item 1 -->
-          <div class="flex items-start space-x-4 p-4 bg-green-50 rounded-xl border border-green-200">
-            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <CheckCircle class="h-5 w-5 text-white" />
-            </div>
-            <div class="flex-1">
-              <p class="text-gray-900 font-medium">Nueva respuesta a encuesta recibida</p>
-              <p class="text-gray-600 text-sm">Ana García completó "Pulso de Bienestar Semanal"</p>
-              <p class="text-gray-500 text-xs mt-1">Hace 2 horas</p>
-            </div>
-          </div>
-
-          <!-- Activity Item 2 -->
-          <div class="flex items-start space-x-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
-            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <Calendar class="h-5 w-5 text-white" />
-            </div>
-            <div class="flex-1">
-              <p class="text-gray-900 font-medium">Sesión de mindfulness programada</p>
-              <p class="text-gray-600 text-sm">Taller programado para el viernes 17 de enero</p>
-              <p class="text-gray-500 text-xs mt-1">Hace 1 día</p>
-            </div>
-          </div>
-
-          <!-- Activity Item 3 -->
-          <div class="flex items-start space-x-4 p-4 bg-purple-50 rounded-xl border border-purple-200">
-            <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <Gift class="h-5 w-5 text-white" />
-            </div>
-            <div class="flex-1">
-              <p class="text-gray-900 font-medium">Recompensa canjeada</p>
-              <p class="text-gray-600 text-sm">Carlos López canjeó "Almuerzo Premium" (150 puntos)</p>
-              <p class="text-gray-500 text-xs mt-1">Hace 3 días</p>
-            </div>
-          </div>
-
-          <!-- Activity Item 4 -->
-          <div class="flex items-start space-x-4 p-4 bg-orange-50 rounded-xl border border-orange-200">
-            <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <Megaphone class="h-5 w-5 text-white" />
-            </div>
-            <div class="flex-1">
-              <p class="text-gray-900 font-medium">Comunicado publicado</p>
-              <p class="text-gray-600 text-sm">"Bienvenida a la nueva plataforma" enviado a 50 empleados</p>
-              <p class="text-gray-500 text-xs mt-1">Hace 1 semana</p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- Empty State -->
+    <div v-if="!loading && !hasData" class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+      <EmptyState
+        :icon="LayoutDashboard"
+        title="¡Bienvenido a Smart Bienestar!"
+        description="Tu plataforma está lista. Comienza invitando a tu equipo, creando comunicados o configurando encuestas para medir el clima laboral."
+        action-text="Ver guía de inicio"
+        :action-icon="Plus"
+        @action="router.push('/admin/onboarding')"
+      />
     </div>
+
   </div>
 </template>
-
-<script setup>
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
-import { supabase } from '@/lib/supabase';
-import {
-  LayoutDashboard,
-  TrendingUp,
-  FileText,
-  Users,
-  Gift,
-  Megaphone,
-  HeartHandshake,
-  Calendar,
-  BarChart3,
-  CheckCircle,
-  UserCheck,
-  Star,
-  Clock,
-  ArrowRight,
-  Zap,
-  Plus,
-  UserPlus,
-  Send,
-  Activity,
-  MessageSquare,
-  Brain,
-  Monitor,
-  Calculator,
-  Lightbulb,
-  AlertTriangle,
-  AlertCircle
-} from 'lucide-vue-next';
-import Button from '@/components/common/Button.vue';
-import ScoreGauge from '@/components/admin/ScoreGauge.vue';
-import InsightCard from '@/components/admin/InsightCard.vue';
-import DimensionsChart from '@/components/admin/DimensionsChart.vue';
-
-const router = useRouter();
-const toast = useToast();
-
-const indiceBienestar = ref(72);
-const loadingAccion = ref(false);
-
-const solicitarAccion = async (tipoAccion, nivel) => {
-  loadingAccion.value = true;
-
-  try {
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      toast.add({
-        severity: 'error',
-        summary: 'Error de autenticación',
-        detail: 'Debes iniciar sesión para solicitar acciones',
-        life: 4000
-      });
-      return;
-    }
-
-    const { error } = await supabase
-      .from('acciones_recomendadas')
-      .insert({
-        user_id: user.id,
-        encuesta_id: null,
-        tipo_accion: tipoAccion,
-        nivel_bienestar: nivel,
-        fecha_solicitud: new Date().toISOString()
-      });
-
-    if (error) {
-      console.error('Error al guardar acción:', error);
-      toast.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No se pudo registrar la solicitud',
-        life: 4000
-      });
-      return;
-    }
-
-    toast.add({
-      severity: 'success',
-      summary: 'Solicitud registrada',
-      detail: 'La acción recomendada ha sido registrada exitosamente',
-      life: 4000
-    });
-  } catch (error) {
-    console.error('Error:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Ocurrió un error al procesar la solicitud',
-      life: 4000
-    });
-  } finally {
-    loadingAccion.value = false;
-  }
-};
-</script>
-
-<style scoped>
-/* Custom animations and effects */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-/* Gradient text effect */
-.gradient-text {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Enhanced hover effects */
-.group:hover .group-hover\:scale-110 {
-  transform: scale(1.1);
-}
-
-/* Custom shadows */
-.shadow-glow {
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-}
-
-/* Backdrop blur support */
-.backdrop-blur-sm {
-  backdrop-filter: blur(4px);
-}
-</style>

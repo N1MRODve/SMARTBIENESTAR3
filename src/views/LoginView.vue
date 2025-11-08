@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-// Asumimos que el store y el componente de botón están en estas rutas
 import { useAuthStore } from '@/stores/auth.store.js';
+import { supabase } from '@/lib/supabase';
 import Button from '@/components/ui/Button.vue';
 
 const authStore = useAuthStore();
@@ -15,11 +15,24 @@ const errorMsg = ref('');
 const handleLogin = async () => {
   errorMsg.value = '';
   try {
-    // Usamos el login del mock, asumiendo que sigue disponible
     await authStore.login(email.value, password.value);
 
-    // Redirección basada en el rol del mock
-    if (authStore.user?.role === 'administrador') {
+    // Verificar si necesita onboarding
+    if (authStore.isAdmin && authStore.empresaId) {
+      const { data: empresa } = await supabase
+        .from('empresas')
+        .select('onboarding_completado')
+        .eq('id', authStore.empresaId)
+        .maybeSingle();
+
+      if (empresa && !empresa.onboarding_completado) {
+        router.push('/admin/onboarding');
+        return;
+      }
+    }
+
+    // Redirección basada en el rol
+    if (authStore.userRole === 'admin') {
       router.push('/admin/dashboard');
     } else {
       router.push('/empleado/dashboard');

@@ -7,6 +7,11 @@ const adminRoutes = [
     meta: { requiresAuth: true, role: 'administrador' },
     children: [
       {
+        path: 'onboarding',
+        name: 'admin-onboarding',
+        component: () => import('@/views/admin/OnboardingView.vue'),
+      },
+      {
         path: 'dashboard',
         name: 'admin-dashboard',
         component: () => import('@/views/admin/DashboardView.vue'),

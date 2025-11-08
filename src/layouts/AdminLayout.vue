@@ -13,72 +13,72 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <div class="flex h-screen bg-background text-on-background">
-    <aside class="w-64 flex-shrink-0 bg-surface border-r border-surface-variant">
-      <div class="p-4 border-b border-surface-variant">
-        <h1 class="text-xl font-bold text-primary">SMART Bienestar</h1>
-        <span class="text-sm text-on-surface-variant">Panel de Admin</span>
+  <div class="flex h-screen bg-gray-50">
+    <aside class="w-64 flex-shrink-0 bg-white border-r border-gray-200">
+      <div class="p-4 border-b border-gray-200">
+        <h1 class="text-xl font-bold text-gray-900">SMART Bienestar</h1>
+        <span class="text-sm text-gray-600">Panel de Admin</span>
       </div>
       <nav class="p-4">
         <ul class="space-y-2">
           <li>
-            <router-link to="/admin/dashboard" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <LayoutDashboard class="w-5 h-5 text-on-surface-variant" />
-              <span class="ml-3">Dashboard</span>
+            <router-link to="/admin/dashboard" class="flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <LayoutDashboard class="w-5 h-5 text-gray-600" />
+              <span class="ml-3 text-gray-700">Dashboard</span>
             </router-link>
           </li>
           <li>
-            <router-link to="/admin/empleados" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <Users class="w-5 h-5 text-on-surface-variant" />
-              <span class="ml-3">Gestionar Empleados</span>
+            <router-link to="/admin/empleados" class="flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <Users class="w-5 h-5 text-gray-600" />
+              <span class="ml-3 text-gray-700">Gestionar Empleados</span>
             </router-link>
           </li>
           <li>
-            <router-link to="/admin/encuestas" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <FileText class="w-5 h-5 text-on-surface-variant" />
-              <span class="ml-3">Gestionar Encuestas</span>
+            <router-link to="/admin/encuestas" class="flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <FileText class="w-5 h-5 text-gray-600" />
+              <span class="ml-3 text-gray-700">Gestionar Encuestas</span>
             </router-link>
           </li>
           <li>
-            <router-link to="/admin/participacion" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <BarChart3 class="w-5 h-5 text-on-surface-variant" />
-              <span class="ml-3">Panel de Participación</span>
+            <router-link to="/admin/participacion" class="flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <BarChart3 class="w-5 h-5 text-gray-600" />
+              <span class="ml-3 text-gray-700">Panel de Participación</span>
             </router-link>
           </li>
           <li>
-            <router-link to="/admin/analitica" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <TrendingUp class="w-5 h-5 text-on-surface-variant" />
-              <span class="ml-3">Analítica Ejecutiva</span>
+            <router-link to="/admin/analitica" class="flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <TrendingUp class="w-5 h-5 text-gray-600" />
+              <span class="ml-3 text-gray-700">Analítica Ejecutiva</span>
             </router-link>
           </li>
           <li>
-            <router-link to="/admin/servicios" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <Briefcase class="w-5 h-5 text-on-surface-variant" />
-              <span class="ml-3">Servicios SMART</span>
+            <router-link to="/admin/servicios" class="flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <Briefcase class="w-5 h-5 text-gray-600" />
+              <span class="ml-3 text-gray-700">Servicios SMART</span>
             </router-link>
           </li>
           <li>
-            <router-link to="/admin/solicitudes" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <ClipboardList class="w-5 h-5 text-on-surface-variant" />
-              <span class="ml-3">Solicitudes de Servicios</span>
+            <router-link to="/admin/solicitudes" class="flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <ClipboardList class="w-5 h-5 text-gray-600" />
+              <span class="ml-3 text-gray-700">Solicitudes de Servicios</span>
             </router-link>
           </li>
           <li>
-            <router-link to="/admin/recompensas" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <Gift class="w-5 h-5 text-on-surface-variant" />
-              <span class="ml-3">Gestionar Recompensas</span>
+            <router-link to="/admin/recompensas" class="flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <Gift class="w-5 h-5 text-gray-600" />
+              <span class="ml-3 text-gray-700">Gestionar Recompensas</span>
             </router-link>
           </li>
           <li>
-            <router-link to="/admin/comunicacion" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <Megaphone class="w-5 h-5 text-on-surface-variant" />
-              <span class="ml-3">Comunicaciones</span>
+            <router-link to="/admin/comunicacion" class="flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <Megaphone class="w-5 h-5 text-gray-600" />
+              <span class="ml-3 text-gray-700">Comunicaciones</span>
             </router-link>
           </li>
           <li>
-            <router-link to="/admin/configuracion" class="flex items-center p-2 rounded-lg hover:bg-surface-variant">
-              <Settings class="w-5 h-5 text-on-surface-variant" />
-              <span class="ml-3">Configuración Global</span>
+            <router-link to="/admin/configuracion" class="flex items-center p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <Settings class="w-5 h-5 text-gray-600" />
+              <span class="ml-3 text-gray-700">Configuración Global</span>
             </router-link>
           </li>
         </ul>
@@ -86,10 +86,10 @@ const handleLogout = async () => {
     </aside>
 
     <div class="flex-1 flex flex-col overflow-hidden">
-      <header class="bg-surface border-b border-surface-variant p-4 shadow-sm flex justify-between items-center">
-         <h2 class="text-2xl font-bold text-on-surface">Panel de Administración</h2>
+      <header class="bg-white border-b border-gray-200 p-4 shadow-sm flex justify-between items-center">
+         <h2 class="text-2xl font-bold text-gray-900">Panel de Administración</h2>
         <div>
-           <button @click="handleLogout" class="text-lg font-semibold text-primary hover:underline">Cerrar Sesión</button>
+           <button @click="handleLogout" class="text-lg font-semibold text-gray-900 hover:text-gray-600 transition-colors">Cerrar Sesión</button>
         </div>
       </header>
 
@@ -102,8 +102,12 @@ const handleLogout = async () => {
 
 <style scoped>
 .router-link-exact-active {
-  background-color: hsl(180 40% 90%);
+  background-color: #f3f4f6;
   font-weight: 600;
-  color: var(--color-primary-dark);
+  color: #111827;
+}
+
+.router-link-exact-active .w-5 {
+  color: #111827;
 }
 </style>

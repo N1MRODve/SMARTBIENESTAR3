@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <Header subtitulo="Solicitudes de Servicios" />
 
     <div class="py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -343,7 +342,6 @@ import { useToast } from 'vue-toastification';
 import { useAuthStore } from '@/stores/auth.store';
 import { solicitudesService } from '@/services/solicitudes.service';
 import Dialog from 'primevue/dialog';
-import Header from '@/components/common/Header.vue';
 import {
   FileText,
   Clock,

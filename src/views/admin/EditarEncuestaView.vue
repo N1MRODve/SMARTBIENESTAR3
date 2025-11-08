@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <Header subtitulo="Editar Encuesta" />
     
     <!-- Main Content -->
     <div class="py-8">
@@ -311,7 +310,6 @@ import { useToast } from 'primevue/usetoast';
 import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import { getSurveyById } from '@/services/mock/encuestas.service';
-import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
 import { 
   ArrowLeft, 

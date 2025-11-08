@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <Header subtitulo="Vista Previa de Envío" />
 
     <div class="py-8">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -325,7 +324,6 @@ import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Button from '@/components/ui/Button.vue';
-import Header from '@/components/common/Header.vue';
 import {
   ArrowLeft,
   FileText,

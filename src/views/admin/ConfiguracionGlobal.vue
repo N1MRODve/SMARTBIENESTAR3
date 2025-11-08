@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <Header subtitulo="Configuración Global" />
 
     <div class="py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -407,7 +406,6 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import Header from '@/components/common/Header.vue';
 import {
   Building2,
   ClipboardList,

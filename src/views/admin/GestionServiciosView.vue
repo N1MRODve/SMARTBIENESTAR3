@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <Header subtitulo="Gestión de Servicios" />
     
     <!-- Main Content -->
     <div class="py-8">
@@ -303,7 +302,6 @@ import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { storeToRefs } from 'pinia';
 import { useSesionesStore } from '@/stores/sesiones.store';
-import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
 import Dialog from 'primevue/dialog';
 import { 

@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <Header subtitulo="Encuestas Programadas" />
     
     <!-- Main Content -->
     <div class="py-8">
@@ -203,7 +202,6 @@ import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { storeToRefs } from 'pinia';
 import { useSchedulingStore } from '@/stores/scheduling.store';
-import Header from '@/components/common/Header.vue';
 import Button from '@/components/common/Button.vue';
 import { 
   ArrowLeft, 

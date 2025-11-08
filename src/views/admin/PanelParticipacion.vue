@@ -2,7 +2,6 @@
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { supabase } from '@/lib/supabase';
-import Header from '@/components/common/Header.vue';
 import {
   TrendingUp,
   CheckCircle,
@@ -207,7 +206,6 @@ const getBorderColorClass = (tasa) => {
 
 <template>
   <div class="min-h-screen bg-gray-50">
-    <Header subtitulo="Panel de Participación" />
 
     <div class="py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <Header subtitulo="Crear Nueva Encuesta" />
     
     <!-- Main Content -->
     <div class="py-8">
@@ -688,7 +687,6 @@ import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useEncuestasStore } from '@/stores/encuestas.store';
 import Button from '@/components/ui/Button.vue';
-import Header from '@/components/common/Header.vue';
 import {
   ArrowLeft,
   Plus,

@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <Header subtitulo="Catálogo de Servicios" />
 
     <div class="py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -266,7 +265,6 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import Dialog from 'primevue/dialog';
-import Header from '@/components/common/Header.vue';
 import SolicitudServicio from '@/components/admin/SolicitudServicio.vue';
 import {
   Briefcase,

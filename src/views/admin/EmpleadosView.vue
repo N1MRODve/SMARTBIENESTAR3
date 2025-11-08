@@ -1,96 +1,95 @@
-<template>
-  <div class="p-4 md:p-8">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold text-gray-800">Gestión de Empleados</h1>
-      <button @click="isModalVisible = true" class="bg-primary text-white font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition-colors">
-        Invitar Empleados
-      </button>
-    </div>
-
-    <div v-if="isLoading" class="text-center py-10">
-      <p>Cargando empleados...</p>
-    </div>
-
-    <div v-else class="bg-white rounded-lg shadow-md">
-      <table class="w-full text-left">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="p-4 font-semibold">Nombre</th>
-            <th class="p-4 font-semibold">Email</th>
-            <th class="p-4 font-semibold">Departamento</th>
-            <th class="p-4 font-semibold">Estado</th>
-            <th class="p-4 font-semibold">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="empleado in empleados" :key="empleado.id" class="border-b">
-            <td class="p-4">{{ empleado.nombre }}</td>
-            <td class="p-4">{{ empleado.email }}</td>
-            <td class="p-4">
-              <span :class="getDepartamentoBadgeClass(empleado.departamento)" class="px-3 py-1 text-sm font-medium rounded-full inline-block">
-                {{ empleado.departamento || 'Sin asignar' }}
-              </span>
-            </td>
-            <td class="p-4">
-              <span :class="{
-                'bg-green-100 text-green-800': empleado.estado === 'Activo',
-                'bg-yellow-100 text-yellow-800': empleado.estado === 'Invitado'
-              }" class="px-2 py-1 text-sm font-medium rounded-full">
-                {{ empleado.estado }}
-              </span>
-            </td>
-            <td class="p-4">
-              <button @click="abrirModalEditar(empleado)" class="text-primary hover:underline">Editar</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <InvitarEmpleadosModal
-      v-if="isModalVisible"
-      @close="isModalVisible = false"
-      @submit="handleInvitar"
-    />
-
-    <EditarEmpleadoModal
-      v-if="isEditModalVisible"
-      :empleado="empleadoSeleccionado"
-      @close="isEditModalVisible = false"
-      @submit="handleActualizarEmpleado"
-    />
-  </div>
-</template>
-
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getEmpleados, invitarEmpleados, actualizarEmpleado } from '@/services/mock/empleados.service.js';
+import { ref, onMounted, computed } from 'vue';
+import { useAuthStore } from '@/stores/auth.store';
+import { supabase } from '@/lib/supabase';
+import { Users, Plus, Mail } from 'lucide-vue-next';
+import EmptyState from '@/components/common/EmptyState.vue';
 import InvitarEmpleadosModal from '@/components/admin/InvitarEmpleadosModal.vue';
 import EditarEmpleadoModal from '@/components/admin/EditarEmpleadoModal.vue';
 
+const authStore = useAuthStore();
+
 const empleados = ref([]);
+const departamentos = ref([]);
 const isLoading = ref(true);
 const isModalVisible = ref(false);
 const isEditModalVisible = ref(false);
 const empleadoSeleccionado = ref(null);
 
+const hasEmpleados = computed(() => empleados.value.length > 0);
+
+onMounted(async () => {
+  await Promise.all([
+    cargarEmpleados(),
+    cargarDepartamentos()
+  ]);
+});
+
 const cargarEmpleados = async () => {
   isLoading.value = true;
   try {
-    empleados.value = await getEmpleados();
+    const { data, error } = await supabase
+      .from('empleados')
+      .select(`
+        *,
+        departamentos(nombre)
+      `)
+      .eq('empresa_id', authStore.empresaId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    empleados.value = data.map(emp => ({
+      ...emp,
+      departamento: emp.departamentos?.nombre || null
+    }));
   } catch (error) {
-    console.error("Error al cargar los empleados:", error);
+    console.error('Error cargando empleados:', error);
   } finally {
     isLoading.value = false;
   }
 };
 
-onMounted(cargarEmpleados);
+const cargarDepartamentos = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('departamentos')
+      .select('*')
+      .eq('empresa_id', authStore.empresaId)
+      .order('nombre');
 
-const handleInvitar = async (data) => {
-  await invitarEmpleados(data.emails, data.departamento);
-  isModalVisible.value = false;
-  await cargarEmpleados();
+    if (error) throw error;
+    departamentos.value = data || [];
+  } catch (error) {
+    console.error('Error cargando departamentos:', error);
+  }
+};
+
+const handleInvitar = async (datosEmpleados) => {
+  try {
+    const empleadosParaInsertar = datosEmpleados.map(emp => ({
+      empresa_id: authStore.empresaId,
+      nombre: emp.nombre,
+      email: emp.email,
+      departamento_id: emp.departamento_id,
+      cargo: emp.cargo || '',
+      estado: 'Invitado',
+      puntos: 0,
+      es_admin: false
+    }));
+
+    const { error } = await supabase
+      .from('empleados')
+      .insert(empleadosParaInsertar);
+
+    if (error) throw error;
+
+    await cargarEmpleados();
+    isModalVisible.value = false;
+  } catch (error) {
+    console.error('Error invitando empleados:', error);
+    alert('Error al invitar empleados. Por favor intenta de nuevo.');
+  }
 };
 
 const abrirModalEditar = (empleado) => {
@@ -99,25 +98,188 @@ const abrirModalEditar = (empleado) => {
 };
 
 const handleActualizarEmpleado = async (datosActualizados) => {
-  await actualizarEmpleado(empleadoSeleccionado.value.id, datosActualizados);
-  isEditModalVisible.value = false;
-  await cargarEmpleados();
+  try {
+    const { error } = await supabase
+      .from('empleados')
+      .update({
+        nombre: datosActualizados.nombre,
+        email: datosActualizados.email,
+        departamento_id: datosActualizados.departamento_id,
+        cargo: datosActualizados.cargo,
+        estado: datosActualizados.estado
+      })
+      .eq('id', empleadoSeleccionado.value.id);
+
+    if (error) throw error;
+
+    await cargarEmpleados();
+    isEditModalVisible.value = false;
+  } catch (error) {
+    console.error('Error actualizando empleado:', error);
+    alert('Error al actualizar empleado. Por favor intenta de nuevo.');
+  }
 };
 
-// TODO: vincular con tabla "departamentos" y campo "empleados.departamento_id" en futuras iteraciones.
 const getDepartamentoBadgeClass = (departamento) => {
-  const colorMap = {
-    'RRHH': 'bg-purple-50 text-purple-800',
-    'Ventas': 'bg-blue-50 text-blue-800',
-    'Marketing': 'bg-pink-50 text-pink-800',
-    'Producción': 'bg-green-50 text-green-800',
-    'Atención al Cliente': 'bg-yellow-50 text-yellow-800',
-    'Desarrollo': 'bg-indigo-50 text-indigo-800',
-    'Finanzas': 'bg-emerald-50 text-emerald-800',
-    'Operaciones': 'bg-orange-50 text-orange-800',
-    'Calidad': 'bg-teal-50 text-teal-800',
-    'Administración': 'bg-gray-50 text-gray-800'
+  const clases = {
+    'RRHH': 'bg-blue-100 text-blue-800',
+    'Tecnología': 'bg-purple-100 text-purple-800',
+    'Ventas': 'bg-green-100 text-green-800',
+    'Marketing': 'bg-pink-100 text-pink-800',
+    'Operaciones': 'bg-yellow-100 text-yellow-800',
+    'Finanzas': 'bg-indigo-100 text-indigo-800'
   };
-  return colorMap[departamento] || 'bg-gray-100 text-gray-600';
+  return clases[departamento] || 'bg-gray-100 text-gray-800';
 };
 </script>
+
+<template>
+  <div class="space-y-6">
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+            <Users class="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-white">Gestión de Empleados</h1>
+            <p class="text-white/80 mt-1">
+              {{ empleados.length }} empleado{{ empleados.length !== 1 ? 's' : '' }} en tu organización
+            </p>
+          </div>
+        </div>
+        <button
+          @click="isModalVisible = true"
+          class="bg-white text-blue-600 font-semibold py-3 px-6 rounded-xl hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+        >
+          <Plus class="h-5 w-5" />
+          Invitar Empleados
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="isLoading" class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="!hasEmpleados" class="bg-white rounded-2xl shadow-lg border border-gray-100">
+      <EmptyState
+        :icon="Users"
+        title="No hay empleados aún"
+        description="Comienza invitando a los miembros de tu equipo. Ellos recibirán una invitación por email para unirse a la plataforma."
+        action-text="Invitar empleados"
+        :action-icon="Mail"
+        @action="isModalVisible = true"
+      />
+    </div>
+
+    <!-- Tabla de Empleados -->
+    <div v-else class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Nombre
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Email
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Cargo
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Departamento
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Estado
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Puntos
+              </th>
+              <th class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="empleado in empleados" :key="empleado.id" class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-semibold text-sm">
+                      {{ empleado.nombre.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() }}
+                    </span>
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ empleado.nombre }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                {{ empleado.email }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                {{ empleado.cargo || '-' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  v-if="empleado.departamento"
+                  :class="getDepartamentoBadgeClass(empleado.departamento)"
+                  class="px-3 py-1 text-xs font-medium rounded-full inline-block"
+                >
+                  {{ empleado.departamento }}
+                </span>
+                <span v-else class="text-sm text-gray-400">Sin asignar</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  :class="{
+                    'bg-green-100 text-green-800': empleado.estado === 'Activo',
+                    'bg-yellow-100 text-yellow-800': empleado.estado === 'Invitado',
+                    'bg-gray-100 text-gray-800': empleado.estado === 'Inactivo'
+                  }"
+                  class="px-3 py-1 text-xs font-medium rounded-full"
+                >
+                  {{ empleado.estado }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {{ empleado.puntos || 0 }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button
+                  @click="abrirModalEditar(empleado)"
+                  class="text-blue-600 hover:text-blue-900 font-medium transition-colors"
+                >
+                  Editar
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modales -->
+    <InvitarEmpleadosModal
+      v-if="isModalVisible"
+      :departamentos="departamentos"
+      @close="isModalVisible = false"
+      @submit="handleInvitar"
+    />
+
+    <EditarEmpleadoModal
+      v-if="isEditModalVisible"
+      :empleado="empleadoSeleccionado"
+      :departamentos="departamentos"
+      @close="isEditModalVisible = false"
+      @submit="handleActualizarEmpleado"
+    />
+
+  </div>
+</template>

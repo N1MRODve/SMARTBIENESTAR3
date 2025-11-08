@@ -12,7 +12,7 @@
             v-model="formData.nombre"
             type="text"
             required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
           />
         </div>
 
@@ -24,7 +24,7 @@
             v-model="formData.email"
             type="email"
             required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
           />
         </div>
 
@@ -33,20 +33,18 @@
             Departamento
           </label>
           <select
-            v-model="formData.departamento"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            v-model="formData.departamento_id"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
           >
             <option value="">Seleccionar departamento</option>
-            <option value="RRHH">RRHH</option>
-            <option value="Ventas">Ventas</option>
-            <option value="Marketing">Marketing</option>
-            <option value="Producción">Producción</option>
-            <option value="Atención al Cliente">Atención al Cliente</option>
-            <option value="Desarrollo">Desarrollo</option>
-            <option value="Finanzas">Finanzas</option>
-            <option value="Operaciones">Operaciones</option>
-            <option value="Calidad">Calidad</option>
-            <option value="Administración">Administración</option>
+            <option
+              v-for="dept in departamentos"
+              :key="dept.id"
+              :value="dept.id"
+            >
+              {{ dept.nombre }}
+            </option>
           </select>
         </div>
 
@@ -57,7 +55,7 @@
           <input
             v-model="formData.cargo"
             type="text"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
           />
         </div>
 
@@ -67,7 +65,7 @@
           </label>
           <select
             v-model="formData.estado"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
           >
             <option value="Activo">Activo</option>
             <option value="Invitado">Invitado</option>
@@ -85,7 +83,7 @@
           </button>
           <button
             type="submit"
-            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
+            class="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition-colors"
           >
             Guardar
           </button>
@@ -102,6 +100,10 @@ const props = defineProps({
   empleado: {
     type: Object,
     required: true
+  },
+  departamentos: {
+    type: Array,
+    required: true
   }
 });
 
@@ -110,13 +112,20 @@ const emit = defineEmits(['close', 'submit']);
 const formData = ref({
   nombre: '',
   email: '',
-  departamento: '',
+  departamento_id: '',
   cargo: '',
   estado: 'Activo'
 });
 
 onMounted(() => {
-  formData.value = { ...props.empleado };
+  // Copiar todos los datos del empleado
+  formData.value = {
+    nombre: props.empleado.nombre,
+    email: props.empleado.email,
+    departamento_id: props.empleado.departamento_id,
+    cargo: props.empleado.cargo || '',
+    estado: props.empleado.estado || 'Activo'
+  };
 });
 
 const handleSubmit = () => {

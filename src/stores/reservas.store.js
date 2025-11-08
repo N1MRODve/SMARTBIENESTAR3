@@ -1,7 +1,6 @@
-// /src/stores/reservas.store.js
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { getMisReservasAPI, crearReservaAPI } from '@/services/mock/reservas.service.js';
+import { reservasService } from '@/services/servicios.service';
 
 export const useReservasStore = defineStore('reservas', () => {
   // --- STATE ---

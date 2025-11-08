@@ -1,7 +1,6 @@
-// src/stores/comunicados.store.js
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { getComunicados, addComunicado } from '@/services/mock/comunicados.service';
+import { comunicadosService } from '@/services/comunicados.service';
 
 export const useComunicadosStore = defineStore('comunicados', () => {
   const comunicados = ref([]);
@@ -11,9 +10,9 @@ export const useComunicadosStore = defineStore('comunicados', () => {
   const cargarComunicados = async () => {
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const comunicadosData = await getComunicados();
+      const comunicadosData = await comunicadosService.getAll();
       comunicados.value = comunicadosData;
     } catch (err) {
       error.value = err.message || 'Error al cargar los comunicados';
@@ -26,16 +25,11 @@ export const useComunicadosStore = defineStore('comunicados', () => {
   const crearComunicado = async (datosComunicado) => {
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const response = await addComunicado(datosComunicado);
-      
-      if (response.success) {
-        // Añadir el nuevo comunicado al principio de la lista
-        comunicados.value.unshift(response.comunicado);
-        console.log('Comunicado creado exitosamente:', response.comunicado);
-        return { success: true, comunicado: response.comunicado };
-      }
+      const nuevoComunicado = await comunicadosService.create(datosComunicado);
+      comunicados.value.unshift(nuevoComunicado);
+      return { success: true, comunicado: nuevoComunicado };
     } catch (err) {
       error.value = err.message || 'Error al crear el comunicado';
       console.error('Error creando comunicado:', err);

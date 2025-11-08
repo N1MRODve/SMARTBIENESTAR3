@@ -1,16 +1,6 @@
-// src/stores/recompensas.store.js
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { 
-  getRecompensas, 
-  canjearRecompensa, 
-  getHistorialCanjes,
-  getEstadisticasCanjes,
-  getRecompensasPorCategoria,
-  addRecompensa,
-  updateRecompensa,
-  deleteRecompensa
-} from '@/services/mock/recompensas.service';
+import { recompensasService } from '@/services/recompensas.service';
 
 export const useRecompensasStore = defineStore('recompensas', () => {
   const recompensas = ref([]);
@@ -22,9 +12,9 @@ export const useRecompensasStore = defineStore('recompensas', () => {
   const cargarRecompensas = async () => {
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const recompensasData = await getRecompensas();
+      const recompensasData = await recompensasService.getAll();
       recompensas.value = recompensasData;
     } catch (err) {
       error.value = err.message || 'Error al cargar las recompensas';
@@ -37,9 +27,9 @@ export const useRecompensasStore = defineStore('recompensas', () => {
   const cargarRecompensasPorCategoria = async (categoria) => {
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const recompensasData = await getRecompensasPorCategoria(categoria);
+      const recompensasData = await recompensasService.getByCategoria(categoria);
       recompensas.value = recompensasData;
     } catch (err) {
       error.value = err.message || 'Error al cargar las recompensas';
@@ -52,19 +42,15 @@ export const useRecompensasStore = defineStore('recompensas', () => {
   const realizarCanje = async (usuarioId, recompensaId) => {
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const resultado = await canjearRecompensa(usuarioId, recompensaId);
-      
-      if (resultado.success) {
-        // Añadir al historial local
-        if (historialCanjes.value) {
-          historialCanjes.value.unshift(resultado.canje);
-        }
-        
-        console.log('Canje realizado exitosamente:', resultado);
-        return resultado;
+      const resultado = await recompensasService.canjear(usuarioId, recompensaId);
+
+      if (historialCanjes.value) {
+        historialCanjes.value.unshift(resultado);
       }
+
+      return { success: true, canje: resultado };
     } catch (err) {
       error.value = err.message || 'Error al realizar el canje';
       console.error('Error realizando canje:', err);
@@ -77,10 +63,9 @@ export const useRecompensasStore = defineStore('recompensas', () => {
   const cargarHistorial = async (usuarioId) => {
     loading.value = true;
     error.value = null;
-    
+
     try {
-      // Si no se especifica usuarioId, cargar historial completo para admin
-      const historialData = await getHistorialCanjes(usuarioId);
+      const historialData = await recompensasService.getHistorialCanjes(usuarioId);
       historialCanjes.value = historialData;
     } catch (err) {
       error.value = err.message || 'Error al cargar el historial';
@@ -93,10 +78,10 @@ export const useRecompensasStore = defineStore('recompensas', () => {
   const cargarEstadisticas = async (usuarioId) => {
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const estadisticasData = await getEstadisticasCanjes(usuarioId);
-      estadisticas.value = estadisticasData;
+      // TODO: Implementar servicio de estadísticas
+      estadisticas.value = {};
     } catch (err) {
       error.value = err.message || 'Error al cargar las estadísticas';
       console.error('Error cargando estadísticas:', err);
@@ -108,18 +93,11 @@ export const useRecompensasStore = defineStore('recompensas', () => {
   const crearRecompensa = async (nuevaRecompensa) => {
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const resultado = await addRecompensa(nuevaRecompensa);
-      
-      if (resultado.success) {
-        // Añadir la nueva recompensa al estado local
-        recompensas.value.push(resultado.recompensa);
-        
-        console.log('Recompensa creada exitosamente:', resultado.recompensa);
-        console.log('Estado local actualizado, total recompensas:', recompensas.value.length);
-        return resultado;
-      }
+      const resultado = await recompensasService.create(nuevaRecompensa);
+      recompensas.value.push(resultado);
+      return { success: true, recompensa: resultado };
     } catch (err) {
       error.value = err.message || 'Error al crear la recompensa';
       console.error('Error creando recompensa:', err);
@@ -132,20 +110,19 @@ export const useRecompensasStore = defineStore('recompensas', () => {
   const actualizarRecompensa = async (recompensaActualizada) => {
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const resultado = await updateRecompensa(recompensaActualizada);
-      
-      if (resultado.success) {
-        // Actualizar la recompensa en el estado local
-        const index = recompensas.value.findIndex(r => r.id === recompensaActualizada.id);
-        if (index !== -1) {
-          recompensas.value[index] = resultado.recompensa;
-        }
-        
-        console.log('Recompensa actualizada exitosamente:', resultado.recompensa);
-        return resultado;
+      const resultado = await recompensasService.update(
+        recompensaActualizada.id,
+        recompensaActualizada
+      );
+
+      const index = recompensas.value.findIndex(r => r.id === recompensaActualizada.id);
+      if (index !== -1) {
+        recompensas.value[index] = resultado;
       }
+
+      return { success: true, recompensa: resultado };
     } catch (err) {
       error.value = err.message || 'Error al actualizar la recompensa';
       console.error('Error actualizando recompensa:', err);
@@ -158,20 +135,16 @@ export const useRecompensasStore = defineStore('recompensas', () => {
   const eliminarRecompensa = async (recompensaId) => {
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const resultado = await deleteRecompensa(recompensaId);
-      
-      if (resultado.success) {
-        // Eliminar la recompensa del estado local
-        const index = recompensas.value.findIndex(r => r.id === recompensaId);
-        if (index !== -1) {
-          recompensas.value.splice(index, 1);
-        }
-        
-        console.log('Recompensa eliminada exitosamente');
-        return resultado;
+      await recompensasService.delete(recompensaId);
+
+      const index = recompensas.value.findIndex(r => r.id === recompensaId);
+      if (index !== -1) {
+        recompensas.value.splice(index, 1);
       }
+
+      return { success: true };
     } catch (err) {
       error.value = err.message || 'Error al eliminar la recompensa';
       console.error('Error eliminando recompensa:', err);

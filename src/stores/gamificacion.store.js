@@ -1,13 +1,8 @@
-// src/stores/gamificacion.store.js
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { 
-  getPuntos, 
-  addPuntos, 
-  getHistorialPuntos, 
-  getRankingPuntos,
-  PUNTOS_ACTIVIDADES 
-} from '@/services/mock/gamificacion.service';
+import { gamificacionService, PUNTOS_ACTIVIDADES } from '@/services/gamificacion.service';
+
+export { PUNTOS_ACTIVIDADES };
 
 export const useGamificacionStore = defineStore('gamificacion', () => {
   const puntosUsuario = ref(0);

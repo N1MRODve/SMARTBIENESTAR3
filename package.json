@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "npm run clean && vite build",
     "clean": "rm -rf dist node_modules/.vite",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify": "node verify-build.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",

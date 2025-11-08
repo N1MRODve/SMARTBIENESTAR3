@@ -19,16 +19,17 @@ export const useReservasStore = defineStore('reservas', () => {
     }
   }
 
-  async function crearReserva(empleadoId, sesion) {
+  async function crearReserva(sesion) {
     isLoading.value = true;
     try {
-      const resultado = await crearReservaAPI(empleadoId, sesion);
+      const resultado = await reservasService.create(sesion);
       if (resultado.success) {
-        // Si la reserva en el 'backend' fue exitosa, actualizamos el estado local.
         misReservas.value.push(resultado.reserva);
       }
+      return resultado;
     } catch (error) {
       console.error("Error en el store al crear reserva:", error);
+      throw error;
     } finally {
       isLoading.value = false;
     }

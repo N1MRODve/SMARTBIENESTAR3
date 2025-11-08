@@ -7,8 +7,6 @@ import { useReservasStore } from '@/stores/reservas.store.js';
 const route = useRoute();
 const router = useRouter();
 const reservasStore = useReservasStore();
-// Simulación del ID de usuario
-const usuarioIdDemo = 'user-empleado-01';
 const colaborador = ref(null);
 const disponibilidad = ref([]);
 const isLoading = ref(true);
@@ -54,10 +52,10 @@ const handleReservarClick = async (slot) => {
   const confirmacion = confirm(`¿Confirmas tu reserva para el ${sesionInfo.fecha} a las ${sesionInfo.hora}?`);
 
   if (confirmacion) {
-    await reservasStore.crearReserva(usuarioIdDemo, sesionInfo);
-    slot.disponible = false; // Actualiza la UI localmente
+    await reservasStore.crearReserva(sesionInfo);
+    slot.disponible = false;
     alert('¡Tu sesión ha sido reservada con éxito!');
-    router.push('/empleado/dashboard'); // Redirige al dashboard
+    router.push('/empleado/dashboard');
   }
 };
 </script>

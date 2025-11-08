@@ -28,18 +28,6 @@
             </div>
           </div>
 
-          <!-- Botón Reiniciar Demo -->
-          <Button
-            @click="handleResetDemo"
-            variant="outline"
-            :loading="resetting"
-            class="text-orange-600 border-orange-300 hover:bg-orange-50"
-          >
-            <RotateCcw class="h-4 w-4 mr-2" />
-            <span class="hidden sm:inline">Reiniciar Demo</span>
-            <span class="sm:hidden">Reset</span>
-          </Button>
-
           <!-- Botón Cerrar Sesión -->
           <Button
             @click="handleLogout"
@@ -57,13 +45,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useAuthStore } from '@/stores/auth.store';
-import { useDemoStore } from '@/stores/demo.store';
 import Button from './Button.vue';
-import { ActivitySquare, RotateCcw, LogOut } from 'lucide-vue-next';
+import { ActivitySquare, LogOut } from 'lucide-vue-next';
 
 const props = defineProps({
   subtitulo: {
@@ -75,13 +62,10 @@ const props = defineProps({
 const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
-const demoStore = useDemoStore();
-
-const resetting = ref(false);
 
 // Computed properties para información del usuario
 const nombreUsuario = computed(() => {
-  return authStore.user?.name || 'Usuario Demo';
+  return authStore.user?.name || 'Usuario';
 });
 
 const rolUsuario = computed(() => {
@@ -98,37 +82,6 @@ const iniciales = computed(() => {
 });
 
 // Métodos
-const handleResetDemo = async () => {
-  resetting.value = true;
-  
-  try {
-    await demoStore.resetDemo();
-    
-    toast.add({
-      severity: 'success',
-      summary: '¡Demo Reseteada!',
-      detail: 'La aplicación ha vuelto a su estado inicial',
-      life: 4000
-    });
-
-    // Recargar la página para reflejar los cambios
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
-    
-  } catch (error) {
-    console.error('Error al resetear demo:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error al resetear',
-      detail: 'No se pudo resetear la demo. Intenta de nuevo.',
-      life: 5000
-    });
-  } finally {
-    resetting.value = false;
-  }
-};
-
 const handleLogout = async () => {
   try {
     await authStore.logout();

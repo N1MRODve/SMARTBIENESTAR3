@@ -43,9 +43,9 @@ const handleLogin = async () => {
       <form @submit.prevent="handleLogin" class="space-y-6">
         <div>
           <label for="email" class="block text-sm font-medium text-on-surface-variant">Email</label>
-          <input 
-            id="email" 
-            type="email" 
+          <input
+            id="email"
+            type="email"
             v-model="email"
             required
             class="w-full px-3 py-2 mt-1 border border-outline rounded-lg focus:ring-primary focus:border-primary bg-surface"
@@ -54,9 +54,9 @@ const handleLogin = async () => {
 
         <div>
           <label for="password" class="block text-sm font-medium text-on-surface-variant">Contraseña</label>
-          <input 
-            id="password" 
-            type="password" 
+          <input
+            id="password"
+            type="password"
             v-model="password"
             required
             class="w-full px-3 py-2 mt-1 border border-outline rounded-lg focus:ring-primary focus:border-primary bg-surface"
@@ -73,6 +73,19 @@ const handleLogin = async () => {
           </Button>
         </div>
       </form>
+
+      <div class="mt-6 pt-6 border-t border-outline/30 text-center">
+        <p class="text-sm text-on-surface-variant">
+          ¿Tu empresa aún no está registrada?
+        </p>
+        <button
+          @click="router.push('/register')"
+          type="button"
+          class="mt-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+        >
+          Registra tu empresa aquí
+        </button>
+      </div>
     </div>
   </div>
 </template>

@@ -7,6 +7,7 @@ import adminRoutes from './routes/admin.routes.js';
 
 // Importar vistas del MVP
 import LoginView from '../views/LoginView.vue';
+import RegisterView from '../views/RegisterView.vue';
 import NotFoundView from '../views/NotFoundView.vue';
 import AccessDeniedView from '../views/AccessDeniedView.vue';
 
@@ -26,11 +27,19 @@ const routes = [
   },
   
   // Login - accesible sin autenticación
-  { 
-    path: '/login', 
-    name: 'login', 
-    component: LoginView, 
-    meta: { requiresAuth: false } 
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginView,
+    meta: { requiresAuth: false }
+  },
+
+  // Register - accesible sin autenticación
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterView,
+    meta: { requiresAuth: false }
   },
 
   // === RUTAS ADMIN ===
@@ -90,8 +99,8 @@ router.beforeEach(async (to, from) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const requiredRoles = to.meta.roles;
   
-  // Si la ruta es login y el usuario ya está autenticado, redirigir al dashboard correspondiente
-  if (to.name === 'login' && authStore.isAuthenticated) {
+  // Si la ruta es login o register y el usuario ya está autenticado, redirigir al dashboard correspondiente
+  if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
     const redirectPath = authStore.userRole === 'administrador' ? '/admin/dashboard' : '/empleado/dashboard';
     return redirectPath;
   }

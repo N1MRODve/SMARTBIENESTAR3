@@ -1,189 +1,54 @@
-<template>
-  <div class="space-y-8">
-    <!-- Header -->
-    <div class="flex justify-between items-center">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900">Gestión de Comunicados</h1>
-        <p class="mt-2 text-lg text-gray-600">Administra los comunicados para tus empleados</p>
-      </div>
-      <Button @click="crearNuevoComunicado">
-        <Plus class="h-5 w-5 mr-2" />
-        Nuevo Comunicado
-      </Button>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card class="text-center">
-        <template #header>
-          <h3 class="text-lg font-semibold text-gray-900">Total Comunicados</h3>
-        </template>
-        <p class="text-3xl font-bold text-primary">{{ comunicados.length }}</p>
-        <p class="text-sm text-gray-500">Comunicados publicados</p>
-      </Card>
-
-      <Card class="text-center">
-        <template #header>
-          <h3 class="text-lg font-semibold text-gray-900">Esta Semana</h3>
-        </template>
-        <p class="text-3xl font-bold text-green-600">{{ comunicadosEstaSemana }}</p>
-        <p class="text-sm text-gray-500">Nuevos comunicados</p>
-      </Card>
-
-      <Card class="text-center">
-        <template #header>
-          <h3 class="text-lg font-semibold text-gray-900">Último Comunicado</h3>
-        </template>
-        <p class="text-lg font-bold text-blue-600">{{ ultimoComunicado }}</p>
-        <p class="text-sm text-gray-500">Días desde publicación</p>
-      </Card>
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="loading" class="bg-white rounded-lg shadow-sm p-8 text-center">
-      <div class="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4"></div>
-      <p class="text-gray-600">Cargando comunicados...</p>
-    </div>
-
-    <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-      <AlertCircle class="h-12 w-12 text-red-500 mx-auto mb-4" />
-      <h3 class="text-lg font-medium text-red-800 mb-2">Error al cargar los comunicados</h3>
-      <p class="text-red-600 mb-4">{{ error }}</p>
-      <Button @click="cargarComunicados" variant="outline">
-        <RefreshCw class="h-4 w-4 mr-2" />
-        Reintentar
-      </Button>
-    </div>
-
-    <!-- Empty State -->
-    <div v-else-if="comunicados.length === 0" class="bg-white rounded-lg shadow-sm p-12 text-center">
-      <Megaphone class="h-16 w-16 text-gray-400 mx-auto mb-4" />
-      <h3 class="text-lg font-medium text-gray-900 mb-2">No hay comunicados</h3>
-      <p class="text-gray-500 mb-6">Comienza creando tu primer comunicado para los empleados</p>
-      <Button @click="crearNuevoComunicado">
-        <Plus class="h-4 w-4 mr-2" />
-        Crear Primer Comunicado
-      </Button>
-    </div>
-
-    <!-- Comunicados List -->
-    <div v-else class="space-y-6">
-      <div 
-        v-for="comunicado in comunicados" 
-        :key="comunicado.id"
-        class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200"
-      >
-        <!-- Header del Comunicado -->
-        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
-          <div class="flex justify-between items-start">
-            <div class="flex-1">
-              <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                {{ comunicado.titulo }}
-              </h3>
-              <div class="flex items-center space-x-4 text-sm text-gray-500">
-                <div class="flex items-center">
-                  <Calendar class="h-4 w-4 mr-1" />
-                  <span>{{ formatearFecha(comunicado.fechaCreacion) }}</span>
-                </div>
-                <div class="flex items-center">
-                  <Clock class="h-4 w-4 mr-1" />
-                  <span>{{ tiempoTranscurrido(comunicado.fechaCreacion) }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="flex space-x-2">
-              <Button 
-                @click="editarComunicado(comunicado.id)"
-                variant="outline"
-                class="text-blue-600 hover:text-blue-700"
-              >
-                <Edit class="h-4 w-4" />
-              </Button>
-              <Button 
-                @click="eliminarComunicado(comunicado.id, comunicado.titulo)"
-                variant="outline"
-                class="text-red-600 hover:text-red-700"
-              >
-                <Trash2 class="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Contenido del Comunicado -->
-        <div class="p-6">
-          <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">
-            {{ comunicado.contenido }}
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
-import { storeToRefs } from 'pinia';
-import { useComunicadosStore } from '@/stores/comunicados.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { supabase } from '@/lib/supabase';
+import { MessageSquare, Plus, AlertCircle, RefreshCw, Edit, Trash2, Eye } from 'lucide-vue-next';
+import Button from '@/components/common/Button.vue';
 import Card from '@/components/ui/Card.vue';
-import Button from '@/components/ui/Button.vue';
-import { Plus, AlertCircle, RefreshCw, Megaphone, Calendar, Clock, CreditCard as Edit, Trash2 } from 'lucide-vue-next';
+import EmptyState from '@/components/common/EmptyState.vue';
 
 const router = useRouter();
-const toast = useToast();
-const comunicadosStore = useComunicadosStore();
+const authStore = useAuthStore();
 
-// Store state
-const { comunicados, loading, error } = storeToRefs(comunicadosStore);
-const { cargarComunicados } = comunicadosStore;
+const comunicados = ref([]);
+const loading = ref(true);
+const error = ref(null);
 
-// Computed properties
 const comunicadosEstaSemana = computed(() => {
-  const unaSemanaAtras = new Date();
-  unaSemanaAtras.setDate(unaSemanaAtras.getDate() - 7);
-  
-  return comunicados.value.filter(c => 
-    new Date(c.fechaCreacion) >= unaSemanaAtras
-  ).length;
+  const semanaAtras = new Date();
+  semanaAtras.setDate(semanaAtras.getDate() - 7);
+  return comunicados.value.filter(c => new Date(c.created_at) >= semanaAtras).length;
 });
 
 const ultimoComunicado = computed(() => {
   if (comunicados.value.length === 0) return '-';
-  
-  const ultimaFecha = new Date(comunicados.value[0].fechaCreacion);
-  const ahora = new Date();
-  const diferencia = Math.floor((ahora - ultimaFecha) / (1000 * 60 * 60 * 24));
-  
-  return diferencia === 0 ? 'Hoy' : diferencia;
+  const ultimo = comunicados.value[0];
+  const dias = Math.floor((new Date() - new Date(ultimo.created_at)) / (1000 * 60 * 60 * 24));
+  return dias === 0 ? 'Hoy' : `${dias} día${dias !== 1 ? 's' : ''}`;
 });
 
-// Methods
-const formatearFecha = (fecha) => {
-  return new Date(fecha).toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
+onMounted(async () => {
+  await cargarComunicados();
+});
 
-const tiempoTranscurrido = (fecha) => {
-  const ahora = new Date();
-  const fechaComunicado = new Date(fecha);
-  const diferencia = ahora - fechaComunicado;
-  
-  const minutos = Math.floor(diferencia / (1000 * 60));
-  const horas = Math.floor(diferencia / (1000 * 60 * 60));
-  const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
-  
-  if (minutos < 60) {
-    return minutos <= 1 ? 'Hace un momento' : `Hace ${minutos}m`;
-  } else if (horas < 24) {
-    return `Hace ${horas}h`;
-  } else {
-    return `Hace ${dias}d`;
+const cargarComunicados = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const { data, error: err } = await supabase
+      .from('comunicados')
+      .select('*')
+      .eq('empresa_id', authStore.empresaId)
+      .order('created_at', { ascending: false });
+
+    if (err) throw err;
+    comunicados.value = data || [];
+  } catch (err) {
+    console.error('Error cargando comunicados:', err);
+    error.value = 'No se pudieron cargar los comunicados';
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -191,40 +56,224 @@ const crearNuevoComunicado = () => {
   router.push('/admin/comunicados/crear');
 };
 
-const editarComunicado = (comunicadoId) => {
-  toast.add({
-    severity: 'info',
-    summary: 'Función en desarrollo',
-    detail: 'La edición de comunicados estará disponible próximamente',
-    life: 4000
-  });
+const editarComunicado = (id) => {
+  router.push(`/admin/comunicados/${id}/editar`);
 };
 
-const eliminarComunicado = (comunicadoId, titulo) => {
-  const confirmacion = confirm(
-    `¿Estás seguro de que quieres eliminar el comunicado "${titulo}"?\n\nEsta acción no se puede deshacer.`
-  );
-  
-  if (confirmacion) {
-    toast.add({
-      severity: 'info',
-      summary: 'Función en desarrollo',
-      detail: 'La eliminación de comunicados estará disponible próximamente',
-      life: 4000
-    });
+const confirmarEliminar = async (id) => {
+  if (!confirm('¿Estás seguro de eliminar este comunicado?')) return;
+
+  try {
+    const { error: err } = await supabase
+      .from('comunicados')
+      .delete()
+      .eq('id', id);
+
+    if (err) throw err;
+    await cargarComunicados();
+  } catch (err) {
+    console.error('Error eliminando comunicado:', err);
+    alert('Error al eliminar el comunicado');
   }
 };
 
-// Load data on mount
-onMounted(() => {
-  cargarComunicados();
-});
+const getTipoColor = (tipo) => {
+  const colores = {
+    informativo: 'bg-blue-100 text-blue-800',
+    urgente: 'bg-red-100 text-red-800',
+    anuncio: 'bg-green-100 text-green-800',
+    celebracion: 'bg-purple-100 text-purple-800'
+  };
+  return colores[tipo] || 'bg-gray-100 text-gray-800';
+};
+
+const getEstadoColor = (estado) => {
+  const colores = {
+    borrador: 'bg-yellow-100 text-yellow-800',
+    programado: 'bg-blue-100 text-blue-800',
+    enviado: 'bg-green-100 text-green-800'
+  };
+  return colores[estado] || 'bg-gray-100 text-gray-800';
+};
+
+const getPrioridadIcon = (prioridad) => {
+  const iconos = {
+    alta: '🔴',
+    media: '🟡',
+    baja: '🟢'
+  };
+  return iconos[prioridad] || '⚪';
+};
+
+const formatearFecha = (fecha) => {
+  return new Date(fecha).toLocaleDateString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
 </script>
 
-<style scoped>
-.truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-</style>
+<template>
+  <div class="space-y-8">
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl shadow-xl p-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+            <MessageSquare class="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-white">Gestión de Comunicados</h1>
+            <p class="text-white/80 mt-1">Administra los mensajes para tu equipo</p>
+          </div>
+        </div>
+        <Button
+          @click="crearNuevoComunicado"
+          class="bg-white text-green-600 font-semibold hover:bg-green-50"
+        >
+          <Plus class="h-5 w-5 mr-2" />
+          Nuevo Comunicado
+        </Button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Total Comunicados</h3>
+        <p class="text-4xl font-bold text-green-600">{{ comunicados.length }}</p>
+        <p class="text-sm text-gray-500 mt-1">Publicados</p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Esta Semana</h3>
+        <p class="text-4xl font-bold text-blue-600">{{ comunicadosEstaSemana }}</p>
+        <p class="text-sm text-gray-500 mt-1">Nuevos</p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Último Comunicado</h3>
+        <p class="text-4xl font-bold text-purple-600">{{ ultimoComunicado }}</p>
+        <p class="text-sm text-gray-500 mt-1">Publicación</p>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+      <AlertCircle class="h-12 w-12 text-red-500 mx-auto mb-4" />
+      <h3 class="text-lg font-medium text-red-800 mb-2">Error al cargar los comunicados</h3>
+      <p class="text-red-600 mb-4">{{ error }}</p>
+      <Button @click="cargarComunicados">
+        <RefreshCw class="h-4 w-4 mr-2" />
+        Reintentar
+      </Button>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="comunicados.length === 0" class="bg-white rounded-xl shadow-lg border border-gray-200">
+      <EmptyState
+        :icon="MessageSquare"
+        title="No hay comunicados"
+        description="Crea tu primer comunicado para mantener informado a tu equipo."
+        action-text="Crear comunicado"
+        :action-icon="Plus"
+        @action="crearNuevoComunicado"
+      />
+    </div>
+
+    <!-- Lista de Comunicados -->
+    <div v-else class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Comunicado
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Tipo
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Prioridad
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Estado
+              </th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Fecha
+              </th>
+              <th class="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="comunicado in comunicados" :key="comunicado.id" class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="max-w-md">
+                  <div class="text-sm font-medium text-gray-900 mb-1">{{ comunicado.titulo }}</div>
+                  <div class="text-xs text-gray-500 line-clamp-2">
+                    {{ comunicado.contenido }}
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  :class="getTipoColor(comunicado.tipo)"
+                  class="px-3 py-1 text-xs font-medium rounded-full capitalize"
+                >
+                  {{ comunicado.tipo }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-lg mr-1">{{ getPrioridadIcon(comunicado.prioridad) }}</span>
+                <span class="text-sm font-medium text-gray-900 capitalize">
+                  {{ comunicado.prioridad }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  :class="getEstadoColor(comunicado.estado)"
+                  class="px-3 py-1 text-xs font-medium rounded-full capitalize"
+                >
+                  {{ comunicado.estado }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                {{ formatearFecha(comunicado.created_at) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end gap-2">
+                  <button
+                    @click="editarComunicado(comunicado.id)"
+                    class="text-blue-600 hover:text-blue-900 transition-colors"
+                    title="Editar"
+                  >
+                    <Edit class="h-4 w-4" />
+                  </button>
+                  <button
+                    @click="confirmarEliminar(comunicado.id)"
+                    class="text-red-600 hover:text-red-900 transition-colors"
+                    title="Eliminar"
+                  >
+                    <Trash2 class="h-4 w-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</template>

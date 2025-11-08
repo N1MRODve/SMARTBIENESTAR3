@@ -1,21 +1,20 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { BarChart3, CreditCard as Edit3, Plus, Play } from 'lucide-vue-next';
-import Card from '@/components/ui/Card.vue';
+import { useAuthStore } from '@/stores/auth.store';
+import { supabase } from '@/lib/supabase';
+import { FileText, Plus, BarChart3, Edit, Trash2, Eye } from 'lucide-vue-next';
+import EmptyState from '@/components/common/EmptyState.vue';
 import Button from '@/components/ui/Button.vue';
-import { getEncuestas } from '@/services/mock/encuestas.service.js';
-import DemoClima360 from '@/components/admin/DemoClima360.vue';
-import SeleccionTipoEncuesta from '@/components/admin/SeleccionTipoEncuesta.vue';
 
-// --- Inicialización ---
+const router = useRouter();
+const authStore = useAuthStore();
+
 const encuestas = ref([]);
 const isLoading = ref(true);
-const router = useRouter();
-const mostrarDemoClima360 = ref(false);
-const mostrarModalCreacion = ref(false);
 
-// Métodos para categorías
+const hasEncuestas = computed(() => encuestas.value.length > 0);
+
 const getCategoriaLabel = (categoria) => {
   const labels = {
     'salud-mental': 'Salud Mental',
@@ -29,207 +28,231 @@ const getCategoriaLabel = (categoria) => {
   return labels[categoria] || 'General';
 };
 
-const getCategoriaIcon = (categoria) => {
-  const icons = {
-    'salud-mental': '🧠',
-    'carga-laboral': '⚖️',
-    'comunicacion': '💬',
-    'ergonomia': '🪑',
-    'desarrollo': '📈',
-    'general': '📊',
-    'clima-laboral': '🌡️'
+const getCategoriaColor = (categoria) => {
+  const colores = {
+    'salud-mental': 'bg-purple-100 text-purple-800',
+    'carga-laboral': 'bg-orange-100 text-orange-800',
+    'comunicacion': 'bg-blue-100 text-blue-800',
+    'ergonomia': 'bg-green-100 text-green-800',
+    'desarrollo': 'bg-indigo-100 text-indigo-800',
+    'general': 'bg-gray-100 text-gray-800',
+    'clima-laboral': 'bg-pink-100 text-pink-800'
   };
-  return icons[categoria] || '📊';
+  return colores[categoria] || 'bg-gray-100 text-gray-800';
 };
 
-// --- Carga de Datos ---
+const getEstadoColor = (estado) => {
+  const colores = {
+    'Activa': 'bg-green-100 text-green-800',
+    'borrador': 'bg-yellow-100 text-yellow-800',
+    'Finalizada': 'bg-gray-100 text-gray-800',
+    'Programada': 'bg-blue-100 text-blue-800'
+  };
+  return colores[estado] || 'bg-gray-100 text-gray-800';
+};
+
 onMounted(async () => {
+  await cargarEncuestas();
+});
+
+const cargarEncuestas = async () => {
   isLoading.value = true;
   try {
-    encuestas.value = await getEncuestas();
+    const { data, error } = await supabase
+      .from('encuestas')
+      .select('*, preguntas:preguntas_encuesta(count)')
+      .eq('empresa_id', authStore.empresaId)
+      .order('fecha_creacion', { ascending: false });
+
+    if (error) throw error;
+
+    encuestas.value = (data || []).map(enc => ({
+      ...enc,
+      totalPreguntas: enc.preguntas[0]?.count || 0
+    }));
+
   } catch (error) {
-    console.error("Error al cargar las encuestas:", error);
+    console.error('Error cargando encuestas:', error);
   } finally {
     isLoading.value = false;
   }
-});
+};
 
 const verResultados = (encuestaId) => {
-  // Usamos el nombre de la ruta que definimos para una navegación más robusta
-  router.push({ name: 'admin-encuesta-resultados', params: { encuestaId: encuestaId } });
+  router.push({ name: 'admin-encuesta-resultados', params: { encuestaId } });
 };
 
 const editarEncuesta = (encuestaId) => {
-  // Navegar a la vista de edición de encuesta
-  router.push({ name: 'admin-editar-encuesta', params: { encuestaId: encuestaId } });
+  router.push({ name: 'admin-editar-encuesta', params: { encuestaId } });
 };
 
-const probarPlantilla = () => {
-  mostrarDemoClima360.value = true;
-};
-
-const abrirModalCreacion = () => {
-  mostrarModalCreacion.value = true;
-};
-
-const handleSeleccionDesdeCero = () => {
-  mostrarModalCreacion.value = false;
+const crearEncuesta = () => {
   router.push('/admin/encuestas/crear');
 };
 
-const handleSeleccionPlantilla = (plantilla) => {
-  mostrarModalCreacion.value = false;
-  router.push({
-    name: 'admin-crear-encuesta',
-    query: { plantilla: plantilla.id }
+const confirmarEliminar = async (id) => {
+  if (!confirm('¿Estás seguro de eliminar esta encuesta?')) return;
+
+  try {
+    const { error } = await supabase
+      .from('encuestas')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    await cargarEncuestas();
+  } catch (error) {
+    console.error('Error eliminando encuesta:', error);
+    alert('Error al eliminar la encuesta');
+  }
+};
+
+const formatearFecha = (fecha) => {
+  if (!fecha) return '-';
+  return new Date(fecha).toLocaleDateString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
   });
 };
 </script>
 
 <template>
   <div class="space-y-6">
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div>
-        <h1 class="text-3xl font-bold text-on-background">Gestión de Encuestas</h1>
-        <p class="text-on-surface-variant">Crea, gestiona y analiza todas las encuestas de tu organización.</p>
-      </div>
-      <Button @click="abrirModalCreacion" variant="primary" class="shadow-lg hover:shadow-xl transition-shadow duration-200">
-        <Plus class="h-5 w-5 mr-2" />
-        Crear Nueva Encuesta
-      </Button>
-    </header>
 
-    <div v-if="isLoading" class="text-center py-10">
-      <p>Cargando encuestas...</p>
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-xl p-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+            <FileText class="h-8 w-8 text-white" />
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-white">Gestión de Encuestas</h1>
+            <p class="text-white/80 mt-1">
+              {{ encuestas.length }} encuesta{{ encuestas.length !== 1 ? 's' : '' }} creada{{ encuestas.length !== 1 ? 's' : '' }}
+            </p>
+          </div>
+        </div>
+        <Button
+          @click="crearEncuesta"
+          class="bg-white text-purple-600 font-semibold hover:bg-purple-50"
+        >
+          <Plus class="h-5 w-5 mr-2" />
+          Nueva Encuesta
+        </Button>
+      </div>
     </div>
 
-    <div v-else class="space-y-4">
-      <div 
-        v-for="encuesta in encuestas" 
+    <!-- Loading State -->
+    <div v-if="isLoading" class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="!hasEncuestas" class="bg-white rounded-2xl shadow-lg border border-gray-100">
+      <EmptyState
+        :icon="FileText"
+        title="No hay encuestas aún"
+        description="Crea tu primera encuesta para medir el clima laboral y bienestar de tu equipo."
+        action-text="Crear encuesta"
+        :action-icon="Plus"
+        @action="crearEncuesta"
+      />
+    </div>
+
+    <!-- Lista de Encuestas -->
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div
+        v-for="encuesta in encuestas"
         :key="encuesta.id"
-        :class="[
-          'bg-white rounded-xl shadow-sm border hover:shadow-md transition-all duration-200 overflow-hidden',
-          encuesta.esPlantilla ? 'border-blue-300 bg-blue-50/30' : 'border-gray-100'
-        ]"
+        class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all"
       >
-        <!-- Header with title and status -->
-        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-          <div class="flex justify-between items-start">
+        <!-- Header de la Card -->
+        <div class="p-6 border-b border-gray-200">
+          <div class="flex items-start justify-between mb-3">
             <div class="flex-1">
-              <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ encuesta.titulo }}</h2>
-              <div class="flex items-center">
-                <span 
-                  :class="[
-                    'px-3 py-1 rounded-full text-xs font-medium',
-                    encuesta.estado === 'Activa' ? 'bg-green-100 text-green-800' :
-                    encuesta.estado === 'Finalizada' ? 'bg-blue-100 text-blue-800' :
-                    encuesta.estado === 'Borrador' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  ]"
-                >
-                  {{ encuesta.estado }}
-                </span>
-                <span v-if="encuesta.categoria" class="ml-2 px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-                  {{ getCategoriaIcon(encuesta.categoria) }} {{ getCategoriaLabel(encuesta.categoria) }}
-                </span>
-              </div>
+              <h3 class="text-xl font-bold text-gray-900 mb-2">
+                {{ encuesta.titulo }}
+              </h3>
+              <p class="text-sm text-gray-600 line-clamp-2">
+                {{ encuesta.descripcion || 'Sin descripción' }}
+              </p>
             </div>
-            
-            <!-- Action Links -->
-            <div class="flex items-center space-x-4">
-              <!-- Probar Plantilla (solo para plantillas) -->
-              <button
-                v-if="encuesta.esPlantilla"
-                @click="probarPlantilla"
-                class="flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-200 shadow-sm"
-              >
-                <Play class="h-4 w-4 mr-2" />
-                Probar Plantilla
-              </button>
+            <span
+              :class="getEstadoColor(encuesta.estado)"
+              class="px-3 py-1 text-xs font-medium rounded-full capitalize whitespace-nowrap ml-3"
+            >
+              {{ encuesta.estado }}
+            </span>
+          </div>
 
-              <template v-else>
-                <!-- Ver Resultados Link -->
-                <button
-                  @click="verResultados(encuesta.id)"
-                  :disabled="encuesta.estado === 'Borrador'"
-                  :class="[
-                    'flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                    encuesta.estado === 'Borrador'
-                      ? 'text-gray-400 cursor-not-allowed'
-                      : 'text-primary hover:bg-primary/10 hover:text-primary-dark'
-                  ]"
-                >
-                  <BarChart3 class="h-4 w-4 mr-2" />
-                  Ver Resultados
-                </button>
+          <div class="flex flex-wrap gap-2">
+            <span
+              :class="getCategoriaColor(encuesta.categoria)"
+              class="px-3 py-1 text-xs font-medium rounded-full"
+            >
+              {{ getCategoriaLabel(encuesta.categoria) }}
+            </span>
+            <span class="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+              {{ encuesta.totalPreguntas }} pregunta{{ encuesta.totalPreguntas !== 1 ? 's' : '' }}
+            </span>
+          </div>
+        </div>
 
-                <!-- Editar Link -->
-                <button
-                  @click="editarEncuesta(encuesta.id)"
-                  class="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200"
-                >
-                  <Edit3 class="h-4 w-4 mr-2" />
-                  Editar
-                </button>
-              </template>
+        <!-- Info -->
+        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span class="text-gray-500 block">Creada</span>
+              <span class="font-medium text-gray-900">
+                {{ formatearFecha(encuesta.fecha_creacion) }}
+              </span>
+            </div>
+            <div>
+              <span class="text-gray-500 block">Privacidad</span>
+              <span class="font-medium text-gray-900 capitalize">
+                {{ encuesta.privacidad_nivel.replace('_', ' ') }}
+              </span>
+            </div>
+          </div>
+
+          <div v-if="encuesta.fecha_inicio || encuesta.fecha_fin" class="mt-3 pt-3 border-t border-gray-200">
+            <div class="text-sm">
+              <span class="text-gray-500">Periodo: </span>
+              <span class="font-medium text-gray-900">
+                {{ formatearFecha(encuesta.fecha_inicio) }} - {{ formatearFecha(encuesta.fecha_fin) }}
+              </span>
             </div>
           </div>
         </div>
 
-        <!-- Content with stats -->
-        <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <!-- Participantes -->
-            <div class="text-center">
-              <div class="text-2xl font-bold text-gray-900">{{ encuesta.totalParticipantes }}</div>
-              <div class="text-sm text-gray-500">Participantes</div>
-            </div>
-
-            <!-- Tasa de Participación -->
-            <div class="text-center">
-              <div class="text-2xl font-bold text-primary">{{ encuesta.tasaParticipacion }}</div>
-              <div class="text-sm text-gray-500">Tasa de Participación</div>
-            </div>
-
-            <!-- Preguntas -->
-            <div class="text-center">
-              <div class="text-2xl font-bold text-gray-900">{{ encuesta.preguntas?.length || 0 }}</div>
-              <div class="text-sm text-gray-500">Preguntas</div>
-            </div>
-
-            <!-- Origen -->
-            <div class="text-center">
-              <div class="flex justify-center mb-1">
-                <span
-                  :class="[
-                    'px-3 py-1 rounded-full text-xs font-medium',
-                    encuesta.creada_desde === 'plantilla'
-                      ? 'bg-indigo-50 text-indigo-800'
-                      : 'bg-gray-50 text-gray-800'
-                  ]"
-                >
-                  {{ encuesta.creada_desde === 'plantilla' ? 'Desde plantilla' : 'Desde cero' }}
-                </span>
-              </div>
-              <div class="text-sm text-gray-500">Origen</div>
-            </div>
-          </div>
+        <!-- Actions -->
+        <div class="p-4 bg-white flex gap-2">
+          <button
+            v-if="encuesta.estado === 'Activa'"
+            @click="verResultados(encuesta.id)"
+            class="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+          >
+            <BarChart3 class="h-4 w-4" />
+            Ver Resultados
+          </button>
+          <button
+            @click="editarEncuesta(encuesta.id)"
+            class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+          >
+            <Edit class="h-4 w-4" />
+            Editar
+          </button>
+          <button
+            @click="confirmarEliminar(encuesta.id)"
+            class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            <Trash2 class="h-4 w-4" />
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Demo Clima360 Modal -->
-    <DemoClima360
-      v-if="mostrarDemoClima360"
-      @close="mostrarDemoClima360 = false"
-    />
-
-    <!-- Modal Selección Tipo Encuesta -->
-    <SeleccionTipoEncuesta
-      v-if="mostrarModalCreacion"
-      @close="mostrarModalCreacion = false"
-      @seleccionar-desde-cero="handleSeleccionDesdeCero"
-      @seleccionar-plantilla="handleSeleccionPlantilla"
-    />
   </div>
 </template>

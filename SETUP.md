@@ -59,13 +59,26 @@ VITE_SUPABASE_URL=https://vrmxccuklpnysvtnmfja.supabase.co
 VITE_SUPABASE_ANON_KEY=(ya configurada)
 ```
 
-## Iniciar la Aplicación
+## Visualizar la Plataforma
 
+El servidor de desarrollo **se inicia automáticamente** en este entorno.
+
+### La plataforma está disponible y se actualiza automáticamente:
+- ✅ Los cambios se reflejan **inmediatamente** (Hot Module Replacement)
+- ✅ No necesitas reiniciar el servidor manualmente
+- ✅ El navegador se actualiza solo cuando guardas archivos
+
+### Si necesitas refrescar manualmente:
+1. En el navegador: `Ctrl + R` (o `Cmd + R` en Mac)
+2. Recarga forzada sin caché: `Ctrl + Shift + R`
+
+### Después de hacer un build:
 ```bash
-npm run dev
+npm run build      # Construye para producción
+npm run verify     # Verifica que el build sea correcto
 ```
 
-La aplicación estará disponible en: http://localhost:5173
+**Importante:** El build es para verificar que todo compila correctamente. En desarrollo, los cambios se ven automáticamente sin necesidad de hacer build.
 
 ## Funcionalidades Conectadas
 
@@ -78,18 +91,57 @@ La aplicación estará disponible en: http://localhost:5173
 ✅ Servicios de Bienestar
 ✅ Reservas de Sesiones
 
+## 🎨 Diseño Actualizado (Minimalista Blanco y Negro)
+
+### Vistas Actualizadas:
+✅ **DashboardView** - Panel principal con diseño limpio
+✅ **EncuestasView** - Gestión de encuestas minimalista
+
+### Características del Nuevo Diseño:
+- Sin emojis
+- Solo blanco, negro y escala de grises
+- Sombras suaves (`shadow-sm`, `shadow-md`)
+- Bordes sutiles (`border-gray-200`, `border-gray-300`)
+- Jerarquía visual clara
+- Transiciones suaves en interacciones
+
 ## Próximos Pasos
 
 1. Crear tu primer usuario
 2. Iniciar sesión
-3. Explorar el dashboard
+3. Explorar el dashboard actualizado ✨
 4. Crear empleados
-5. Configurar servicios
-6. Crear tu primera encuesta
+5. Gestionar encuestas ✨
+6. Configurar servicios
+
+## 🔧 Comandos Útiles
+
+```bash
+npm run build      # Limpia caché y construye
+npm run verify     # Verifica integridad del build
+npm run clean      # Solo limpia caché
+```
 
 ## Notas Importantes
 
-- Todos los datos se guardan en Supabase (no más mocks)
-- Row Level Security (RLS) está habilitado en todas las tablas
-- Los puntos se actualizan automáticamente con triggers
-- Las respuestas de encuestas previenen duplicados por IP
+- ✅ Todos los datos se guardan en Supabase (no más mocks)
+- ✅ Row Level Security (RLS) habilitado en todas las tablas
+- ✅ Los puntos se actualizan automáticamente con triggers
+- ✅ Las respuestas de encuestas previenen duplicados por IP
+- ✅ Build optimizado con code splitting
+- ✅ Cache busting automático con hashes únicos
+
+## 🐛 Problemas Comunes
+
+### Error de Service Worker
+Si ves errores de Service Worker en la consola:
+- Es normal en el entorno WebContainer
+- No afecta la funcionalidad de la aplicación
+- No aparecerá en producción
+
+Ver `TROUBLESHOOTING.md` para más detalles.
+
+### La plataforma no se actualiza
+1. Refresca con `Ctrl + Shift + R`
+2. Verifica la consola del navegador (F12)
+3. Limpia caché: `npm run clean && npm run build`

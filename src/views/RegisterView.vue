@@ -83,7 +83,40 @@ const handleRegister = async () => {
   loading.value = true;
 
   try {
-    // 1. Crear usuario en Supabase Auth
+    // 1. Verificar si ya existe una empresa con este dominio
+    const { data: empresaExistente, error: checkError } = await supabase
+      .from('empresas')
+      .select('id')
+      .eq('dominio', emailDomain.value)
+      .maybeSingle();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      throw checkError;
+    }
+
+    if (empresaExistente) {
+      throw new Error('Ya existe una empresa con este dominio. Un compañero de tu empresa debe invitarte.');
+    }
+
+    // 2. Crear empresa PRIMERO (antes del usuario)
+    const { data: empresaData, error: empresaError } = await supabase.rpc('crear_empresa_completa', {
+      p_email: adminEmail.value,
+      p_razon_social: razonSocial.value,
+      p_dominio: emailDomain.value,
+      p_ruc: ruc.value || null,
+      p_telefono: telefono.value || null,
+      p_direccion: direccion.value || null,
+      p_pais: pais.value || null,
+      p_ciudad: ciudad.value || null,
+      p_industria: industria.value || null,
+      p_num_empleados: numEmpleados.value ? parseInt(numEmpleados.value) : null,
+      p_sitio_web: sitioWeb.value || null,
+      p_admin_user_id: null
+    });
+
+    if (empresaError) throw empresaError;
+
+    // 3. Ahora crear el usuario (el trigger lo asignará a la empresa automáticamente)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: adminEmail.value,
       password: adminPassword.value,
@@ -101,40 +134,23 @@ const handleRegister = async () => {
       throw new Error('No se pudo crear el usuario');
     }
 
-    // 2. Crear empresa con datos completos
-    const { data: empresaData, error: empresaError } = await supabase.rpc('crear_empresa_completa', {
-      p_email: adminEmail.value,
-      p_razon_social: razonSocial.value,
-      p_dominio: emailDomain.value,
-      p_ruc: ruc.value || null,
-      p_telefono: telefono.value || null,
-      p_direccion: direccion.value || null,
-      p_pais: pais.value || null,
-      p_ciudad: ciudad.value || null,
-      p_industria: industria.value || null,
-      p_num_empleados: numEmpleados.value ? parseInt(numEmpleados.value) : null,
-      p_sitio_web: sitioWeb.value || null,
-      p_admin_user_id: authData.user.id
-    });
+    // 4. Actualizar empresa con admin_user_id
+    const { error: updateEmpresaError } = await supabase
+      .from('empresas')
+      .update({ admin_user_id: authData.user.id })
+      .eq('dominio', emailDomain.value);
 
-    if (empresaError) throw empresaError;
+    if (updateEmpresaError) {
+      console.warn('No se pudo actualizar admin_user_id:', updateEmpresaError);
+    }
 
-    // 3. Actualizar empleado como admin
-    const { error: empleadoError } = await supabase
-      .from('empleados')
-      .update({
-        nombre: adminNombre.value,
-        es_admin: true,
-        cargo: 'Administrador'
-      })
-      .eq('auth_user_id', authData.user.id);
+    // 5. Esperar un momento para que el trigger procese
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    if (empleadoError) throw empleadoError;
-
-    // 4. Iniciar sesión automáticamente
+    // 6. Iniciar sesión automáticamente
     await authStore.login(adminEmail.value, adminPassword.value);
 
-    // 5. Redirigir al dashboard de admin
+    // 7. Redirigir al dashboard de admin
     router.push('/admin/dashboard');
 
   } catch (error) {
@@ -146,6 +162,8 @@ const handleRegister = async () => {
       errorMsg.value = 'Este correo ya está registrado. Intenta iniciar sesión.';
     } else if (error.message?.includes('Ya existe una empresa')) {
       errorMsg.value = 'Ya existe una empresa con este dominio. Un compañero de tu empresa debe invitarte.';
+    } else if (error.message?.includes('Database error')) {
+      errorMsg.value = 'Error en la base de datos. Por favor verifica tus datos e intenta de nuevo.';
     } else {
       errorMsg.value = error.message || 'Error al registrar. Por favor intenta de nuevo.';
     }

@@ -116,7 +116,7 @@ const handleRegister = async () => {
 
     if (empresaError) throw empresaError;
 
-    // 3. Ahora crear el usuario (el trigger lo asignará a la empresa automáticamente)
+    // 3. Ahora crear el usuario (sin trigger automático)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: adminEmail.value,
       password: adminPassword.value,
@@ -144,13 +144,40 @@ const handleRegister = async () => {
       console.warn('No se pudo actualizar admin_user_id:', updateEmpresaError);
     }
 
-    // 5. Esperar un momento para que el trigger procese
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // 5. Obtener departamento RRHH o el primero disponible
+    const { data: departamentos } = await supabase
+      .from('departamentos')
+      .select('id')
+      .eq('empresa_id', empresaData)
+      .order('nombre')
+      .limit(1);
 
-    // 6. Iniciar sesión automáticamente
+    const departamentoId = departamentos && departamentos.length > 0 ? departamentos[0].id : null;
+
+    // 6. Crear empleado manualmente
+    const { error: empleadoError } = await supabase
+      .from('empleados')
+      .insert({
+        auth_user_id: authData.user.id,
+        empresa_id: empresaData,
+        nombre: adminNombre.value,
+        email: adminEmail.value,
+        departamento_id: departamentoId,
+        cargo: 'Administrador',
+        es_admin: true,
+        estado: 'Activo',
+        puntos: 0
+      });
+
+    if (empleadoError) {
+      console.error('Error al crear empleado:', empleadoError);
+      throw new Error('No se pudo crear el perfil de empleado');
+    }
+
+    // 7. Iniciar sesión automáticamente
     await authStore.login(adminEmail.value, adminPassword.value);
 
-    // 7. Redirigir al dashboard de admin
+    // 8. Redirigir al dashboard de admin
     router.push('/admin/dashboard');
 
   } catch (error) {

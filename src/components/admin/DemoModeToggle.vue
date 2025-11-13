@@ -2,8 +2,8 @@
   <div class="demo-mode-toggle" :class="{ 'demo-active': isDemoMode }">
     <div class="toggle-container">
       <button @click="toggleDemoMode" class="toggle-button">
-        <monitor-icon v-if="isDemoMode" class="icon" />
-        <shield-icon v-else class="icon" />
+        <Monitor v-if="isDemoMode" class="icon" />
+        <Shield v-else class="icon" />
         <span>{{ isDemoMode ? 'Modo Demo ACTIVO' : 'Activar Modo Demo' }}</span>
       </button>
 
@@ -25,12 +25,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { Monitor as MonitorIcon, Shield as ShieldIcon } from 'lucide-vue-next';
+import { ref, watch } from 'vue';
+import { Monitor, Shield } from 'lucide-vue-next';
 import { DEMO_MODE, enableDemoMode, disableDemoMode } from '@/utils/demoData';
 
 const isDemoMode = ref(DEMO_MODE.enabled);
 const copied = ref(false);
+
+// Watch for changes in DEMO_MODE
+watch(() => DEMO_MODE.enabled, (newVal) => {
+  isDemoMode.value = newVal;
+});
 
 const toggleDemoMode = () => {
   if (isDemoMode.value) {
@@ -83,24 +88,24 @@ Departamentos: 6
   padding: 12px 20px;
   background: white;
   border: 2px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 14px;
   color: #374151;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .toggle-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 12px -1px rgba(0, 0, 0, 0.15);
-  border-color: #3b82f6;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  border-color: #111827;
 }
 
 .demo-active .toggle-button {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  border-color: #f59e0b;
+  background: #111827;
+  border-color: #111827;
   color: white;
   animation: pulse 2s infinite;
 }
@@ -116,10 +121,10 @@ Departamentos: 6
   right: 0;
   width: 320px;
   background: white;
-  border: 2px solid #f59e0b;
-  border-radius: 12px;
+  border: 2px solid #111827;
+  border-radius: 8px;
   padding: 16px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
   animation: slideUp 0.3s ease;
 }
 
@@ -140,7 +145,7 @@ Departamentos: 6
 
 .banner-text strong {
   display: block;
-  color: #d97706;
+  color: #111827;
   font-size: 14px;
   margin-bottom: 4px;
 }
@@ -173,10 +178,10 @@ Departamentos: 6
 
 @keyframes pulse {
   0%, 100% {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(245, 158, 11, 0.4);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(17, 24, 39, 0.4);
   }
   50% {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 0 0 8px rgba(245, 158, 11, 0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 0 8px rgba(17, 24, 39, 0);
   }
 }
 

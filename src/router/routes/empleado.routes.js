@@ -4,7 +4,7 @@ const empleadoRoutes = [
   {
     path: '/empleado',
     component: EmpleadoLayout,
-    meta: { requiresAuth: true, role: 'empleado' }, // Asegura que solo empleados entren aquí
+    meta: { requiresAuth: true, roles: ['empleado'] }, // Asegura que solo empleados entren aquí
     children: [
       {
         path: 'dashboard',

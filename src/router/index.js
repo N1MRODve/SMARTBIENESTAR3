@@ -47,9 +47,9 @@ const routes = [
     path: '/admin/dashboard',
     name: 'admin-dashboard',
     component: AdminDashboardView,
-    meta: { 
-      requiresAuth: true, 
-      roles: ['administrador'] 
+    meta: {
+      requiresAuth: true,
+      roles: ['admin']
     }
   },
 
@@ -101,7 +101,7 @@ router.beforeEach(async (to, from) => {
   
   // Si la ruta es login o register y el usuario ya está autenticado, redirigir al dashboard correspondiente
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
-    const redirectPath = authStore.userRole === 'administrador' ? '/admin/dashboard' : '/empleado/dashboard';
+    const redirectPath = authStore.userRole === 'admin' ? '/admin/dashboard' : '/empleado/dashboard';
     return redirectPath;
   }
   

@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { Monitor as MonitorIcon, Shield as ShieldIcon } from 'lucide-vue-next';
 import { DEMO_MODE, enableDemoMode, disableDemoMode } from '@/utils/demoData';
 
@@ -35,13 +35,11 @@ const copied = ref(false);
 const toggleDemoMode = () => {
   if (isDemoMode.value) {
     disableDemoMode();
-    isDemoMode.value = false;
-    window.location.reload();
   } else {
     enableDemoMode();
-    isDemoMode.value = true;
-    window.location.reload();
   }
+
+  location.reload();
 };
 
 const copyDemoInfo = async () => {

@@ -1,13 +1,31 @@
+const getDemoModeFromStorage = () => {
+  try {
+    return localStorage.getItem('demo_mode') === 'true';
+  } catch {
+    return false;
+  }
+};
+
 export const DEMO_MODE = {
-  enabled: false
+  enabled: getDemoModeFromStorage()
 };
 
 export const enableDemoMode = () => {
   DEMO_MODE.enabled = true;
+  try {
+    localStorage.setItem('demo_mode', 'true');
+  } catch (err) {
+    console.error('Error saving demo mode:', err);
+  }
 };
 
 export const disableDemoMode = () => {
   DEMO_MODE.enabled = false;
+  try {
+    localStorage.removeItem('demo_mode');
+  } catch (err) {
+    console.error('Error removing demo mode:', err);
+  }
 };
 
 export const demoData = {

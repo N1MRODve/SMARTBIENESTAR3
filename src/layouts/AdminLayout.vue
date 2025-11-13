@@ -2,6 +2,7 @@
 import { LayoutDashboard, Users, FileText, Gift, Megaphone, BarChart3, Settings, TrendingUp, Briefcase, ClipboardList } from 'lucide-vue-next';
 import { useAuthStore } from '@/stores/auth.store.js';
 import { useRouter } from 'vue-router';
+import DemoModeToggle from '@/components/admin/DemoModeToggle.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -97,6 +98,8 @@ const handleLogout = async () => {
         <router-view />
       </main>
     </div>
+
+    <DemoModeToggle />
   </div>
 </template>
 

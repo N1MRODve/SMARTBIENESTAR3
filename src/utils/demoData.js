@@ -1,3 +1,5 @@
+import { reactive } from 'vue';
+
 const getDemoModeFromStorage = () => {
   try {
     return localStorage.getItem('demo_mode') === 'true';
@@ -6,9 +8,9 @@ const getDemoModeFromStorage = () => {
   }
 };
 
-export const DEMO_MODE = {
+export const DEMO_MODE = reactive({
   enabled: getDemoModeFromStorage()
-};
+});
 
 export const enableDemoMode = () => {
   DEMO_MODE.enabled = true;

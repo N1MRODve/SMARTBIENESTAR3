@@ -1,131 +1,56 @@
-// /src/services/mock/encuestas.service.js
+// Servicio Mock de Encuestas - SportLife Performance
 import { ref } from 'vue';
+import {
+  plantillasEncuestas,
+  encuestasDemo,
+  estadisticasEncuestas,
+  comentariosRecientes,
+  accionesRecomendadas,
+  getEncuestaById as getEncuestaFromData,
+  getPlantillaById,
+  calcularEstadisticasActuales
+} from '@/utils/encuestasDemoData';
 
-// --- Base de Datos Simulada ---
-
-// Usamos una lista de empleados simple para los cálculos.
-const totalEmpleados = 50; 
-
-const encuestasDb = ref([
-  {
-    id: 'enc-01',
-    titulo: 'Encuesta de Pulso de Bienestar (Q3)',
-    categoria: 'general',
-    estado: 'Finalizada',
-    totalParticipantes: 42,
-    privacidadNivel: 'anonimato_parcial',
-    creada_desde: 'custom',
-    fecha_envio: new Date('2025-09-15'),
-    departamentos_destinatarios: [1, 2, 3, 4, 5, 6],
-    total_destinatarios: 70,
-    preguntas: [
-      {
-        id: 'p1',
-        texto: '¿Cómo calificarías tu nivel de estrés esta semana?',
-        resultados: { labels: ['Bajo', 'Medio', 'Alto'], data: [10, 20, 12] },
-        resultadosPorGrupo: [
-          { departamento: 'Desarrollo', total_respuestas: 8, promedio: '2.1 (Medio)' },
-          { departamento: 'Marketing', total_respuestas: 6, promedio: '2.8 (Alto)' },
-          { departamento: 'Ventas', total_respuestas: 7, promedio: '1.9 (Bajo-Medio)' },
-          { departamento: 'RRHH', total_respuestas: 3, promedio: '1.7 (Bajo)' },
-          { departamento: 'Finanzas', total_respuestas: 5, promedio: '2.2 (Medio)' },
-          { departamento: 'Operaciones', total_respuestas: 8, promedio: '2.4 (Medio)' },
-          { departamento: 'Atención al Cliente', total_respuestas: 5, promedio: '2.6 (Medio-Alto)' }
-        ],
-        insight: 'Un 28% del equipo reporta un nivel de estrés alto.',
-        recomendacion: {
-          id: 'serv-01',
-          titulo: 'Taller de Mindfulness y Gestión del Estrés',
-          descripcion: 'Ideal para dar herramientas contra el estrés.'
-        }
-      },
-      {
-        id: 'p2',
-        texto: '¿Sientes que tienes las herramientas adecuadas?',
-        resultados: { labels: ['Sí', 'No'], data: [35, 7] },
-        resultadosPorGrupo: [
-          { departamento: 'Desarrollo', total_respuestas: 8, promedio: '87.5% Sí' },
-          { departamento: 'Marketing', total_respuestas: 6, promedio: '83.3% Sí' },
-          { departamento: 'Ventas', total_respuestas: 7, promedio: '71.4% Sí' },
-          { departamento: 'RRHH', total_respuestas: 3, promedio: '100% Sí' },
-          { departamento: 'Finanzas', total_respuestas: 5, promedio: '80% Sí' },
-          { departamento: 'Operaciones', total_respuestas: 8, promedio: '87.5% Sí' },
-          { departamento: 'Atención al Cliente', total_respuestas: 5, promedio: '60% Sí' }
-        ],
-        insight: 'La mayoría se siente equipada para su trabajo.',
-        recomendacion: null
-      }
-    ]
-  },
-  {
-    id: 'enc-02',
-    titulo: 'Encuesta de Clima Laboral 2025',
-    categoria: 'comunicacion',
-    estado: 'Activa',
-    totalParticipantes: 35,
-    privacidadNivel: 'anonimato_completo',
-    creada_desde: 'plantilla',
-    fecha_envio: new Date('2025-10-01'),
-    departamentos_destinatarios: [2, 3, 5],
-    total_destinatarios: 45
-  },
-  // TODO: conectar con tabla "encuestas" y "respuestas_encuestas" cuando la BD esté activa.
-  {
-    id: 'clima360',
-    titulo: 'Clima360 Insight',
-    descripcion: 'Diagnóstico integral del clima laboral y bienestar organizacional.',
-    categoria: 'clima-laboral',
-    estado: 'Plantilla',
-    totalParticipantes: 0,
-    privacidadNivel: 'anonimato_completo',
-    esPlantilla: true,
-    preguntas: [
-      { id: 1, texto: 'La tasa de rotación está dentro de los estándares aceptables.', variable: 'rotacion', tipo: 'escala' },
-      { id: 2, texto: 'El absentismo no afecta significativamente la productividad.', variable: 'absentismo', tipo: 'escala' },
-      { id: 3, texto: 'Los empleados alcanzan consistentemente los objetivos de productividad establecidos.', variable: 'productividad', tipo: 'escala' },
-      { id: 4, texto: 'El liderazgo contribuye positivamente a la retención de talento.', variable: 'liderazgo', tipo: 'escala' },
-      { id: 5, texto: 'La comunicación interna es clara, transparente y efectiva.', variable: 'comunicacion', tipo: 'escala' },
-      { id: 6, texto: 'Ofrecemos oportunidades de desarrollo profesional y movilidad interna.', variable: 'desarrollo', tipo: 'escala' },
-      { id: 7, texto: 'Los empleados reciben reconocimiento oportuno y feedback constructivo.', variable: 'reconocimiento', tipo: 'escala' },
-      { id: 8, texto: 'Promovemos una cultura de bienestar y equilibrio vida-trabajo.', variable: 'bienestar', tipo: 'escala' },
-      { id: 9, texto: 'La empresa se adapta eficazmente a los cambios.', variable: 'adaptabilidad', tipo: 'escala' },
-      { id: 10, texto: 'Los empleados muestran sentido de pertenencia y compromiso.', variable: 'pertenencia', tipo: 'escala' }
-    ],
-    metricas: [
-      { id: 11, texto: 'Tasa de rotación anual', opciones: ['<5%', '5–10%', '11–15%', '>15%'], valores: [5, 4, 3, 1] },
-      { id: 12, texto: 'Tasa de absentismo', opciones: ['Bajo', 'Medio', 'Alto'], valores: [5, 3, 1] },
-      { id: 13, texto: 'Índice de productividad', opciones: ['Muy alta', 'Alta', 'Media', 'Baja', 'Muy baja'], valores: [5, 4, 3, 2, 1] }
-    ]
-  }
-]);
-
-// --- Funciones del Servicio ---
+// Base de datos reactiva
+const encuestasDb = ref([...encuestasDemo]);
+const plantillasDb = ref([...plantillasEncuestas]);
+const comentariosDb = ref([...comentariosRecientes]);
+const accionesDb = ref([...accionesRecomendadas]);
 
 /**
- * Devuelve una lista de todas las encuestas con metadatos calculados.
+ * Obtiene todas las encuestas con metadatos
  */
 export const getEncuestas = async () => {
-  const encuestasConMetadatos = encuestasDb.value.map(encuesta => {
-    const tasaParticipacion = Math.round((encuesta.totalParticipantes / totalEmpleados) * 100);
-    return {
-      ...encuesta,
-      tasaParticipacion: `${tasaParticipacion}%`
-    };
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const encuestasConMetadatos = encuestasDb.value.map(encuesta => ({
+        ...encuesta,
+        tasaParticipacion: `${encuesta.participacion.porcentaje.toFixed(1)}%`,
+        estado_label: encuesta.estado.charAt(0).toUpperCase() + encuesta.estado.slice(1)
+      }));
+      resolve(encuestasConMetadatos);
+    }, 300);
   });
-  return new Promise(resolve => setTimeout(() => resolve(encuestasConMetadatos), 300));
 };
 
-// Alias para compatibilidad con otros módulos
+// Alias para compatibilidad
 export const getSurveys = getEncuestas;
+
 /**
- * Devuelve los detalles y resultados de una sola encuesta por su ID.
- * @param {string} encuestaId - El ID de la encuesta a buscar.
+ * Obtiene una encuesta por ID con todos sus resultados
  */
 export const getResultadosEncuestaById = async (encuestaId) => {
-  const encuesta = encuestasDb.value.find(e => e.id === encuestaId);
   return new Promise((resolve, reject) => {
     setTimeout(() => {
+      const encuesta = encuestasDb.value.find(e => e.id === encuestaId);
       if (encuesta) {
+        // Si la encuesta tiene plantilla, agregar las preguntas
+        if (encuesta.plantilla_id) {
+          const plantilla = plantillasDb.value.find(p => p.id === encuesta.plantilla_id);
+          if (plantilla) {
+            encuesta.preguntas = plantilla.preguntas;
+          }
+        }
         resolve(encuesta);
       } else {
         reject(new Error('Encuesta no encontrada'));
@@ -134,15 +59,24 @@ export const getResultadosEncuestaById = async (encuestaId) => {
   });
 };
 
-// Alias para compatibilidad con otros módulos
+// Alias
+export const getSurveyById = getResultadosEncuestaById;
+
 /**
- * Devuelve la encuesta activa actual.
+ * Obtiene la encuesta activa actual
  */
 export const getActiveSurvey = async () => {
-  const encuestaActiva = encuestasDb.value.find(e => e.estado === 'Activa');
   return new Promise((resolve, reject) => {
     setTimeout(() => {
+      const encuestaActiva = encuestasDb.value.find(e => e.estado === 'activa');
       if (encuestaActiva) {
+        // Agregar preguntas de la plantilla
+        if (encuestaActiva.plantilla_id) {
+          const plantilla = plantillasDb.value.find(p => p.id === encuestaActiva.plantilla_id);
+          if (plantilla) {
+            encuestaActiva.preguntas = plantilla.preguntas;
+          }
+        }
         resolve(encuestaActiva);
       } else {
         reject(new Error('No hay encuesta activa'));
@@ -152,55 +86,78 @@ export const getActiveSurvey = async () => {
 };
 
 /**
- * Simula agregar una nueva encuesta a la base de datos.
- * @param {Object} nuevaEncuesta - Los datos de la nueva encuesta.
+ * Obtiene todas las plantillas disponibles
+ */
+export const getPlantillas = async () => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(plantillasDb.value);
+    }, 200);
+  });
+};
+
+/**
+ * Obtiene una plantilla por ID
+ */
+export const getPlantillaDetails = async (plantillaId) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const plantilla = plantillasDb.value.find(p => p.id === plantillaId);
+      if (plantilla) {
+        resolve(plantilla);
+      } else {
+        reject(new Error('Plantilla no encontrada'));
+      }
+    }, 200);
+  });
+};
+
+/**
+ * Crea una nueva encuesta
  */
 export const addSurvey = async (nuevaEncuesta) => {
-  const encuestaConId = {
-    ...nuevaEncuesta,
-    id: `enc-${Date.now()}`,
-    categoria: nuevaEncuesta.categoria || 'general',
-    totalParticipantes: 0,
-    estado: 'Borrador'
-  };
-  
   return new Promise((resolve) => {
     setTimeout(() => {
+      const encuestaConId = {
+        ...nuevaEncuesta,
+        id: `enc-${Date.now()}`,
+        fecha_creacion: new Date().toISOString().split('T')[0],
+        participacion: {
+          total_empleados: 120,
+          respuestas: 0,
+          porcentaje: 0,
+          por_departamento: {}
+        },
+        resultados: null
+      };
+
       encuestasDb.value.push(encuestaConId);
       resolve(encuestaConId);
     }, 300);
   });
 };
-export const getSurveyById = getResultadosEncuestaById;
 
 /**
- * Simula la actualización de una encuesta existente.
- * @param {Object} encuestaActualizada - Los datos actualizados de la encuesta.
+ * Actualiza una encuesta existente
  */
 export const updateSurvey = async (encuestaActualizada) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       const index = encuestasDb.value.findIndex(e => e.id === encuestaActualizada.id);
-      
+
       if (index === -1) {
         reject(new Error('Encuesta no encontrada'));
         return;
       }
-      
-      // Actualizar la encuesta manteniendo algunos campos originales
+
       encuestasDb.value[index] = {
         ...encuestasDb.value[index],
-        titulo: encuestaActualizada.titulo,
-        descripcion: encuestaActualizada.descripcion || '',
-        categoria: encuestaActualizada.categoria || 'general',
-        estado: encuestaActualizada.estado,
-        preguntas: encuestaActualizada.preguntas || [],
-        fechaActualizacion: new Date().toISOString()
+        ...encuestaActualizada,
+        fecha_actualizacion: new Date().toISOString().split('T')[0]
       };
-      
-      console.log('Encuesta actualizada:', encuestasDb.value[index]);
-      resolve({ 
-        success: true, 
+
+      resolve({
+        success: true,
         encuesta: encuestasDb.value[index],
         message: 'Encuesta actualizada correctamente'
       });
@@ -209,23 +166,277 @@ export const updateSurvey = async (encuestaActualizada) => {
 };
 
 /**
- * Simula el proceso de enviar respuestas a una encuesta.
- * @param {string} encuestaId - El ID de la encuesta.
- * @param {Object} respuestas - Las respuestas del usuario.
+ * Elimina una encuesta
  */
-export const addAnswer = async (encuestaId, respuestas) => {
-  const encuesta = encuestasDb.value.find(e => e.id === encuestaId);
+export const deleteSurvey = async (encuestaId) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      if (encuesta && encuesta.estado === 'Activa') {
-        // Simular incremento de participantes
-        encuesta.totalParticipantes += 1;
-        resolve({ success: true, message: 'Respuestas enviadas correctamente' });
-      } else if (!encuesta) {
-        reject(new Error('Encuesta no encontrada'));
+      const index = encuestasDb.value.findIndex(e => e.id === encuestaId);
+      if (index !== -1) {
+        encuestasDb.value.splice(index, 1);
+        resolve({ success: true, message: 'Encuesta eliminada correctamente' });
       } else {
-        reject(new Error('La encuesta no está activa'));
+        reject(new Error('Encuesta no encontrada'));
       }
     }, 300);
   });
 };
+
+/**
+ * Envía respuestas a una encuesta
+ */
+export const addAnswer = async (encuestaId, respuestas) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const encuesta = encuestasDb.value.find(e => e.id === encuestaId);
+
+      if (!encuesta) {
+        reject(new Error('Encuesta no encontrada'));
+        return;
+      }
+
+      if (encuesta.estado !== 'activa') {
+        reject(new Error('La encuesta no está activa'));
+        return;
+      }
+
+      // Simular incremento de participantes
+      encuesta.participacion.respuestas += 1;
+      encuesta.participacion.porcentaje =
+        (encuesta.participacion.respuestas / encuesta.participacion.total_empleados) * 100;
+
+      resolve({
+        success: true,
+        message: 'Respuestas enviadas correctamente. ¡Gracias por tu participación!'
+      });
+    }, 300);
+  });
+};
+
+/**
+ * Obtiene estadísticas generales del sistema de encuestas
+ */
+export const getEstadisticasGenerales = async () => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const stats = calcularEstadisticasActuales();
+      resolve({
+        ...estadisticasEncuestas,
+        ...stats
+      });
+    }, 200);
+  });
+};
+
+/**
+ * Obtiene comentarios recientes de todas las encuestas
+ */
+export const getComentariosRecientes = async (limite = 10) => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const comentarios = comentariosDb.value
+        .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+        .slice(0, limite);
+      resolve(comentarios);
+    }, 200);
+  });
+};
+
+/**
+ * Obtiene comentarios de una encuesta específica
+ */
+export const getComentariosPorEncuesta = async (encuestaId) => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const comentarios = comentariosDb.value.filter(c => c.encuesta_id === encuestaId);
+      resolve(comentarios);
+    }, 200);
+  });
+};
+
+/**
+ * Obtiene acciones recomendadas basadas en resultados
+ */
+export const getAccionesRecomendadas = async (encuestaId = null) => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      let acciones = accionesDb.value;
+      if (encuestaId) {
+        acciones = acciones.filter(a => a.encuesta_id === encuestaId);
+      }
+      resolve(acciones.sort((a, b) => {
+        const prioridades = { alta: 3, media: 2, baja: 1 };
+        return prioridades[b.prioridad] - prioridades[a.prioridad];
+      }));
+    }, 200);
+  });
+};
+
+/**
+ * Obtiene estadísticas de participación por departamento
+ */
+export const getParticipacionPorDepartamento = async (encuestaId) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const encuesta = encuestasDb.value.find(e => e.id === encuestaId);
+      if (encuesta && encuesta.participacion) {
+        const participacion = Object.entries(encuesta.participacion.por_departamento).map(
+          ([nombre, datos]) => ({
+            departamento: nombre,
+            ...datos
+          })
+        );
+        resolve(participacion);
+      } else {
+        reject(new Error('Datos de participación no disponibles'));
+      }
+    }, 200);
+  });
+};
+
+/**
+ * Obtiene evolución temporal de scores
+ */
+export const getEvolucionScores = async () => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(estadisticasEncuestas.evolucion_trimestral);
+    }, 200);
+  });
+};
+
+/**
+ * Obtiene análisis por dimensiones
+ */
+export const getAnalisisDimensiones = async (encuestaId) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const encuesta = encuestasDb.value.find(e => e.id === encuestaId);
+      if (encuesta && encuesta.resultados && encuesta.resultados.dimensiones) {
+        const dimensiones = Object.entries(encuesta.resultados.dimensiones).map(
+          ([nombre, score]) => ({
+            dimension: nombre,
+            score: score,
+            color: score >= 4.0 ? 'green' : score >= 3.5 ? 'yellow' : 'red'
+          })
+        );
+        resolve(dimensiones);
+      } else {
+        reject(new Error('Análisis de dimensiones no disponible'));
+      }
+    }, 200);
+  });
+};
+
+/**
+ * Duplica una encuesta existente
+ */
+export const duplicarEncuesta = async (encuestaId) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const original = encuestasDb.value.find(e => e.id === encuestaId);
+      if (!original) {
+        reject(new Error('Encuesta no encontrada'));
+        return;
+      }
+
+      const duplicada = {
+        ...original,
+        id: `enc-${Date.now()}`,
+        titulo: `${original.titulo} (Copia)`,
+        estado: 'borrador',
+        fecha_creacion: new Date().toISOString().split('T')[0],
+        fecha_inicio: null,
+        fecha_fin: null,
+        participacion: {
+          total_empleados: 120,
+          respuestas: 0,
+          porcentaje: 0,
+          por_departamento: {}
+        },
+        resultados: null
+      };
+
+      encuestasDb.value.push(duplicada);
+      resolve(duplicada);
+    }, 300);
+  });
+};
+
+/**
+ * Programa una encuesta para envío futuro
+ */
+export const programarEncuesta = async (encuestaId, fechaInicio, fechaFin) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const encuesta = encuestasDb.value.find(e => e.id === encuestaId);
+      if (!encuesta) {
+        reject(new Error('Encuesta no encontrada'));
+        return;
+      }
+
+      encuesta.estado = 'programada';
+      encuesta.fecha_inicio = fechaInicio;
+      encuesta.fecha_fin = fechaFin;
+
+      resolve({
+        success: true,
+        message: 'Encuesta programada correctamente',
+        encuesta
+      });
+    }, 300);
+  });
+};
+
+/**
+ * Activa una encuesta programada
+ */
+export const activarEncuesta = async (encuestaId) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const encuesta = encuestasDb.value.find(e => e.id === encuestaId);
+      if (!encuesta) {
+        reject(new Error('Encuesta no encontrada'));
+        return;
+      }
+
+      encuesta.estado = 'activa';
+      if (!encuesta.fecha_inicio) {
+        encuesta.fecha_inicio = new Date().toISOString().split('T')[0];
+      }
+
+      resolve({
+        success: true,
+        message: 'Encuesta activada correctamente',
+        encuesta
+      });
+    }, 300);
+  });
+};
+
+/**
+ * Finaliza una encuesta activa
+ */
+export const finalizarEncuesta = async (encuestaId) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const encuesta = encuestasDb.value.find(e => e.id === encuestaId);
+      if (!encuesta) {
+        reject(new Error('Encuesta no encontrada'));
+        return;
+      }
+
+      encuesta.estado = 'completada';
+      encuesta.fecha_fin = new Date().toISOString().split('T')[0];
+
+      resolve({
+        success: true,
+        message: 'Encuesta finalizada correctamente',
+        encuesta
+      });
+    }, 300);
+  });
+};
+
+// Exportar datos adicionales para uso directo
+export { plantillasEncuestas, estadisticasEncuestas, comentariosRecientes, accionesRecomendadas };

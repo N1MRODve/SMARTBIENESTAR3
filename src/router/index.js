@@ -2,8 +2,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth.store.js';
+import { enableDemoMode } from '@/utils/demoData';
 import empleadoRoutes from './routes/empleado.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import demoRoutes from './routes/demo.routes.js';
 
 // Importar vistas del MVP
 import LoginView from '../views/LoginView.vue';
@@ -57,15 +59,17 @@ const routes = [
   ...adminRoutes,
   // === RUTAS EMPLEADO (ANIDADAS) ===
   ...empleadoRoutes,
-  
+  // === RUTAS DEMO ===
+  ...demoRoutes,
+
   // === RUTA EMPLEADO LEGACY (MANTENER TEMPORALMENTE) ===
   {
     path: '/empleado/encuesta',
     name: 'empleado-encuesta',
     component: ResponderEncuestaView,
-    meta: { 
-      requiresAuth: true, 
-      roles: ['empleado'] 
+    meta: {
+      requiresAuth: true,
+      roles: ['empleado']
     }
   },
 
@@ -89,6 +93,24 @@ const router = createRouter({
 
 // Guard de navegación global
 router.beforeEach(async (to, from) => {
+  const isDemoRoute = to.matched.some(record => record.meta.requiresDemo);
+  const isDemoUser = localStorage.getItem('demo_user') === 'admin';
+
+  // Si es una ruta demo, verificar acceso demo
+  if (isDemoRoute) {
+    if (!isDemoUser) {
+      return { name: 'login' };
+    }
+    // Asegurar que el modo demo esté activo
+    enableDemoMode();
+    return true;
+  }
+
+  // Si el usuario demo intenta acceder a rutas normales, redirigir a demo
+  if (isDemoUser && !isDemoRoute) {
+    return '/demo/dashboard';
+  }
+
   const authStore = useAuthStore();
 
   // Esperamos a que la tienda se inicialice si no lo ha hecho
@@ -98,23 +120,23 @@ router.beforeEach(async (to, from) => {
 
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const requiredRoles = to.meta.roles;
-  
+
   // Si la ruta es login o register y el usuario ya está autenticado, redirigir al dashboard correspondiente
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
     const redirectPath = authStore.userRole === 'admin' ? '/admin/dashboard' : '/empleado/dashboard';
     return redirectPath;
   }
-  
+
   // Si la ruta requiere autenticación y el usuario no está autenticado
   if (requiresAuth && !authStore.isAuthenticated) {
     return { name: 'login' };
   }
-  
+
   // Si la ruta requiere roles específicos y el usuario no tiene el rol adecuado
   if (requiredRoles && authStore.isAuthenticated && !authStore.hasRole(requiredRoles)) {
     return { name: 'access-denied' };
   }
-  
+
   return true;
 });
 

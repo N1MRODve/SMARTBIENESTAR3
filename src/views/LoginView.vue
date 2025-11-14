@@ -42,6 +42,13 @@ const handleLogin = async () => {
     console.error("Error de login:", error);
   }
 };
+
+const handleDemoAccess = () => {
+  // Activar modo demo y redirigir
+  localStorage.setItem('demo_mode', 'true');
+  localStorage.setItem('demo_user', 'admin');
+  router.push('/demo/dashboard');
+};
 </script>
 
 <template>
@@ -87,17 +94,40 @@ const handleLogin = async () => {
         </div>
       </form>
 
-      <div class="mt-6 pt-6 border-t border-outline/30 text-center">
-        <p class="text-sm text-on-surface-variant">
-          ¿Tu empresa aún no está registrada?
-        </p>
-        <button
-          @click="router.push('/register')"
-          type="button"
-          class="mt-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
-        >
-          Registra tu empresa aquí
-        </button>
+      <div class="mt-6 pt-6 border-t border-outline/30 space-y-4">
+        <!-- Demo Access -->
+        <div class="text-center">
+          <button
+            @click="handleDemoAccess"
+            type="button"
+            class="w-full px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg hover:from-gray-900 hover:to-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <path d="M7 7h10"/>
+              <path d="M7 12h10"/>
+              <path d="M7 17h10"/>
+            </svg>
+            Explorar Demo Interactiva
+          </button>
+          <p class="mt-2 text-xs text-on-surface-variant">
+            Prueba todas las funciones sin necesidad de registro
+          </p>
+        </div>
+
+        <!-- Register -->
+        <div class="text-center">
+          <p class="text-sm text-on-surface-variant">
+            ¿Tu empresa aún no está registrada?
+          </p>
+          <button
+            @click="router.push('/register')"
+            type="button"
+            class="mt-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+          >
+            Registra tu empresa aquí
+          </button>
+        </div>
       </div>
     </div>
   </div>

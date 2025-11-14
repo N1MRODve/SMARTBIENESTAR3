@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { supabase } from '@/lib/supabase';
+import { DEMO_MODE, demoData } from '@/utils/demoData';
 import { Users, Plus, Mail } from 'lucide-vue-next';
 import EmptyState from '@/components/common/EmptyState.vue';
 import InvitarEmpleadosModal from '@/components/admin/InvitarEmpleadosModal.vue';
@@ -28,21 +29,29 @@ onMounted(async () => {
 const cargarEmpleados = async () => {
   isLoading.value = true;
   try {
-    const { data, error } = await supabase
-      .from('empleados')
-      .select(`
-        *,
-        departamentos(nombre)
-      `)
-      .eq('empresa_id', authStore.empresaId)
-      .order('created_at', { ascending: false });
+    if (DEMO_MODE.enabled) {
+      console.log('[DEMO MODE] Cargando empleados demo:', demoData.empleados.length);
+      empleados.value = demoData.empleados.map(emp => ({
+        ...emp,
+        departamento: emp.departamentos?.nombre || null
+      }));
+    } else {
+      const { data, error } = await supabase
+        .from('empleados')
+        .select(`
+          *,
+          departamentos(nombre)
+        `)
+        .eq('empresa_id', authStore.empresaId)
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    empleados.value = data.map(emp => ({
-      ...emp,
-      departamento: emp.departamentos?.nombre || null
-    }));
+      empleados.value = data.map(emp => ({
+        ...emp,
+        departamento: emp.departamentos?.nombre || null
+      }));
+    }
   } catch (error) {
     console.error('Error cargando empleados:', error);
   } finally {
@@ -52,20 +61,30 @@ const cargarEmpleados = async () => {
 
 const cargarDepartamentos = async () => {
   try {
-    const { data, error } = await supabase
-      .from('departamentos')
-      .select('*')
-      .eq('empresa_id', authStore.empresaId)
-      .order('nombre');
+    if (DEMO_MODE.enabled) {
+      departamentos.value = demoData.departamentos;
+    } else {
+      const { data, error } = await supabase
+        .from('departamentos')
+        .select('*')
+        .eq('empresa_id', authStore.empresaId)
+        .order('nombre');
 
-    if (error) throw error;
-    departamentos.value = data || [];
+      if (error) throw error;
+      departamentos.value = data || [];
+    }
   } catch (error) {
     console.error('Error cargando departamentos:', error);
   }
 };
 
 const handleInvitar = async (datosEmpleados) => {
+  if (DEMO_MODE.enabled) {
+    console.log('[DEMO MODE] Simulando invitación de empleados');
+    isModalVisible.value = false;
+    return;
+  }
+
   try {
     const empleadosParaInsertar = datosEmpleados.map(emp => ({
       empresa_id: authStore.empresaId,
@@ -98,6 +117,12 @@ const abrirModalEditar = (empleado) => {
 };
 
 const handleActualizarEmpleado = async (datosActualizados) => {
+  if (DEMO_MODE.enabled) {
+    console.log('[DEMO MODE] Simulando actualización de empleado');
+    isEditModalVisible.value = false;
+    return;
+  }
+
   try {
     const { error } = await supabase
       .from('empleados')
@@ -127,7 +152,13 @@ const getDepartamentoBadgeClass = (departamento) => {
     'Ventas': 'bg-green-100 text-green-800',
     'Marketing': 'bg-pink-100 text-pink-800',
     'Operaciones': 'bg-yellow-100 text-yellow-800',
-    'Finanzas': 'bg-indigo-100 text-indigo-800'
+    'Finanzas': 'bg-indigo-100 text-indigo-800',
+    'Entrenamiento Personal': 'bg-orange-100 text-orange-800',
+    'Nutrición Deportiva': 'bg-green-100 text-green-800',
+    'Fisioterapia': 'bg-blue-100 text-blue-800',
+    'Recepción y Atención': 'bg-purple-100 text-purple-800',
+    'Clases Grupales': 'bg-pink-100 text-pink-800',
+    'Dirección': 'bg-gray-800 text-white'
   };
   return clases[departamento] || 'bg-gray-100 text-gray-800';
 };

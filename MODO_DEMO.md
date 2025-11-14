@@ -1,121 +1,215 @@
-# Modo Demo - Presentación Comercial
-
-Este documento explica cómo usar el **Modo Demo** para realizar capturas de pantalla y demostraciones comerciales de la plataforma sin afectar los datos reales en la base de datos.
+# 📸 Modo Demo - Guía de Uso
 
 ## ¿Qué es el Modo Demo?
 
-El Modo Demo es una característica especial que reemplaza temporalmente los datos reales de la base de datos con datos ficticios de demostración. Esto te permite:
+El Modo Demo es una funcionalidad que permite mostrar la plataforma con datos simulados realistas de **SportLife Performance**, un centro deportivo de alto rendimiento, sin modificar ni acceder a la base de datos real.
 
-- Hacer capturas de pantalla profesionales para presentaciones
-- Mostrar la plataforma con datos realistas y consistentes
-- No afectar ni modificar la base de datos real
-- Cambiar fácilmente entre datos reales y demo
+## ✨ Características
 
-## Empresa de Demostración
+- ✅ **120 empleados** distribuidos en 6 departamentos
+- ✅ **5 comunicados** de diferentes tipos y prioridades
+- ✅ **2 encuestas** (1 activa con 87 respuestas, 72.5% participación)
+- ✅ **5 recompensas** disponibles con stock
+- ✅ **5 canjes** históricos (completados y pendientes)
+- ✅ **3 servicios** de bienestar corporativo
+- ✅ **Métricas completas** de clima laboral y participación
+- ✅ **NO modifica** la base de datos real
+- ✅ **Datos coherentes** entre todas las vistas
 
-Los datos demo simulan una empresa del sector deportivo:
+## 🎯 Cómo Activar el Modo Demo
 
-**SportLife Performance**
-- Sector: Deportes y Fitness
-- Centro deportivo de alto rendimiento
-- 120 empleados activos
-- 6 departamentos operativos
+### Paso 1: Iniciar Sesión
+- Inicia sesión en la plataforma como administrador
+- Accede al dashboard principal
 
-### Departamentos
+### Paso 2: Activar Modo Demo
+- Busca el botón en la esquina inferior derecha: **"Activar Modo Demo"**
+- Haz clic en el botón
+- La página se recargará automáticamente
 
-1. **Entrenamiento Personal** (35 empleados)
-2. **Nutrición Deportiva** (15 empleados)
-3. **Fisioterapia** (12 empleados)
-4. **Recepción y Atención** (18 empleados)
-5. **Clases Grupales** (28 empleados)
-6. **Dirección** (12 empleados)
+### Paso 3: Verificar Activación
+- Verás un botón negro que dice: **"Modo Demo ACTIVO"**
+- Aparecerá un banner flotante con información de la empresa demo
+- El dashboard mostrará: **"SportLife Performance"**
 
-### Datos Incluidos
+## 📊 Datos Demo Incluidos
 
-El modo demo incluye:
+### Empresa: SportLife Performance
+- **Sector:** Deportes y Fitness
+- **Tipo:** Centro deportivo de alto rendimiento
+- **Empleados:** 120 activos
+- **Logo:** Imagen profesional de centro deportivo
 
-- ✅ 12 empleados con perfiles completos
-- ✅ 6 departamentos activos
-- ✅ 5 comunicados recientes
-- ✅ 2 encuestas (1 activa, 1 finalizada)
-- ✅ 5 recompensas disponibles
-- ✅ 3 servicios de bienestar
-- ✅ Estadísticas y métricas realistas
-- ✅ Datos de participación por departamento
-- ✅ Respuestas de encuestas generadas
+### Departamentos (6)
+```
+🏋️ Entrenamiento Personal (35 empleados)
+🥗 Nutrición Deportiva (15 empleados)
+💪 Fisioterapia (12 empleados)
+📞 Recepción y Atención (18 empleados)
+🤸 Clases Grupales (28 empleados)
+�� Dirección (12 empleados)
+```
 
-## Cómo Activar el Modo Demo
+### Estadísticas Dashboard
+```
+👥 Empleados: 120
+📢 Comunicados: 5
+📋 Encuestas activas: 1
+🎁 Recompensas: 5
+```
 
-1. **Inicia sesión** en el panel de administración
-2. En la esquina inferior derecha verás un botón **"Activar Modo Demo"**
-3. Haz clic en el botón
-4. La página se recargará automáticamente
-5. Verás un banner naranja indicando que el modo demo está activo
-6. El botón ahora dirá **"Modo Demo ACTIVO"** con un ícono de monitor
+### Métricas de Bienestar
+```
+🧠 Salud Mental: 8.6/10
+💪 Ergonomía: 8.9/10
+❤️ Satisfacción Laboral: 8.4/10
+⚖️ Balance Vida-Trabajo: 8.3/10
+🛡️ Ambiente Laboral: 8.7/10
+```
 
-### Banner de Información
+### Participación por Departamento
+```
+🥇 Dirección: 100%
+🥈 Entrenamiento Personal: 92%
+🥉 Clases Grupales: 90%
+📊 Nutrición Deportiva: 88%
+📊 Fisioterapia: 85%
+📊 Recepción: 82%
+```
 
-Cuando el modo demo está activo, aparece un banner flotante que muestra:
-- Empresa: SportLife Performance (Sector Deportivo)
-- Botón para copiar información rápidamente
+## 🖼️ Pantallazos Recomendados
 
-## Cómo Desactivar el Modo Demo
+### 1. Dashboard Principal
+**Muestra:**
+- Métricas generales (120 empleados, 87.5% participación)
+- 5 métricas de bienestar con valores altos
+- Acciones rápidas con estadísticas
 
-1. Haz clic en el botón **"Modo Demo ACTIVO"**
-2. La página se recargará automáticamente
-3. Volverás a ver los datos reales de tu base de datos
+### 2. Gestión de Empleados
+**Muestra:**
+- 12 empleados detallados
+- Diferentes cargos y departamentos
+- Sistema de puntos activo
 
-## Pantallazos Recomendados
-
-### Dashboard Principal
-- Muestra métricas generales de la empresa
-- Estadísticas de participación
-- Actividad reciente
-
-### Gestión de Empleados
-- Lista de 12 empleados con diferentes roles
-- Datos organizados por departamentos
-- Información de contacto y puntos
-
-### Encuestas
-- Encuesta activa de Clima Laboral Q4 2024
-- 87 respuestas (72.5% participación)
-- Resultados y análisis por dimensiones
-
-### Comunicaciones
+### 3. Centro de Comunicación
+**Muestra:**
 - 5 comunicados de diferentes tipos
-- Estadísticas de lectura
-- Prioridades y categorías
+- Lecturas entre 78-112 empleados
+- Prioridades variadas (alta, media, baja)
 
-### Recompensas
-- 5 recompensas en diferentes categorías
-- Sistema de puntos
-- Stock y disponibilidad
+### 4. Encuestas
+**Muestra:**
+- Encuesta activa: "Clima Laboral Q4 2024"
+- 87 respuestas (72.5% participación)
+- Progreso visual y métricas
 
-### Analítica
-- Datos de participación por departamento
-- Tendencias mensuales
-- Dimensiones de clima laboral con scores
+### 5. Analítica Ejecutiva
+**Muestra:**
+- 6 dimensiones de clima laboral
+- Participación por departamento
+- Tendencia mensual creciente
+- Departamentos destacados
 
-## Notas Importantes
+### 6. Recompensas
+**Muestra:**
+- 5 recompensas atractivas con imágenes
+- Puntos requeridos variados (200-500)
+- Diferentes categorías
 
-⚠️ **Cambios no persistentes**: Cualquier acción que realices en modo demo (crear, editar, eliminar) NO se guardará en la base de datos. Los cambios son solo visuales y temporales.
+### 7. Historial de Canjes
+**Muestra:**
+- 5 canjes con estados variados
+- Empleados y fechas reales
+- Puntos gastados
 
-⚠️ **Recarga de página**: Al activar/desactivar el modo demo, la página se recarga automáticamente para aplicar los cambios.
+## 🔧 Operaciones en Modo Demo
 
-💡 **Consistencia**: Los datos demo son consistentes y están diseñados para mostrar un caso de uso realista del sector deportivo.
+### ✅ Lo que puedes hacer:
+- **Ver** todos los datos simulados
+- **Crear** comunicados, encuestas, recompensas (no se guardan)
+- **Editar** cualquier elemento (cambios solo visuales)
+- **Eliminar** items (no afecta nada)
+- **Navegar** por todas las vistas
+- **Tomar** pantallazos profesionales
 
-🎯 **Presentaciones**: Ideal para demos comerciales, capacitaciones, y presentaciones a clientes potenciales.
+### ❌ Lo que NO hace:
+- **NO modifica** la base de datos real
+- **NO guarda** cambios permanentes
+- **NO afecta** datos de producción
+- **NO requiere** permisos especiales
 
-## Personalización
+## 🎬 Desactivar Modo Demo
 
-Los datos demo se encuentran en:
+### Opción 1: Desde el botón
+- Haz clic en **"Modo Demo ACTIVO"** (botón negro)
+- La página se recargará
+- Volverás a ver tus datos reales
+
+### Opción 2: Desde el navegador
+- Abre las herramientas de desarrollo (F12)
+- Ve a Console
+- Ejecuta: `localStorage.removeItem('demo_mode')`
+- Recarga la página
+
+## 💡 Tips para Pantallazos
+
+### 1. Timing
+- Activa el modo demo **antes** de la demo
+- Practica la navegación con datos demo
+- Ten claro qué vistas mostrarás
+
+### 2. Presentación
+- Destaca las métricas altas (8.4-8.9/10)
+- Muestra la participación activa (87.5%)
+- Resalta los departamentos con mejor clima
+
+### 3. Storytelling
+- "SportLife es un centro deportivo exitoso..."
+- "Con 120 empleados altamente satisfechos..."
+- "92% de participación en Entrenamiento Personal..."
+
+### 4. Detalles
+- Todos los nombres son realistas
+- Las fechas son recientes
+- Los números son coherentes
+- Las imágenes son profesionales
+
+## 🐛 Solución de Problemas
+
+### No veo datos demo
+- Verifica que el botón diga "Modo Demo ACTIVO"
+- Refresca la página (F5)
+- Revisa la consola por errores `[DEMO MODE]`
+
+### Los datos siguen siendo míos
+- Asegúrate de hacer clic en "Activar Modo Demo"
+- Espera a que la página se recargue completamente
+- Verifica que aparezca "SportLife Performance"
+
+### El botón no aparece
+- Solo visible en vistas de administrador
+- Debe estar en esquina inferior derecha
+- Verifica que estés logueado como admin
+
+## 📝 Logs en Consola
+
+Cuando el modo demo está activo, verás logs como:
 ```
-src/utils/demoData.js
+[DEMO MODE] Creando comunicados: {...}
+[DEMO MODE] Actualizando empleados: {...}
+[DEMO MODE] Eliminando recompensas con id: demo-rec-1
+[DEMO MODE] Canjeando recompensa: Día libre adicional
 ```
 
-Si necesitas modificar los datos para una presentación específica, puedes editar este archivo manteniendo la estructura existente.
+Estos logs confirman que las operaciones se están simulando correctamente.
 
-## Soporte Técnico
+## 🎉 ¡Listo para Demos Profesionales!
 
-Si encuentras algún problema con el modo demo o necesitas datos específicos para tu presentación, contacta al equipo de desarrollo.
+Con el Modo Demo activado, puedes:
+- ✅ Mostrar la plataforma con datos realistas
+- ✅ Demostrar todas las funcionalidades
+- ✅ Tomar pantallazos de calidad
+- ✅ Hacer presentaciones en vivo
+- ✅ Sin riesgo de modificar datos reales
+
+**¡Todo sin tocar la base de datos!** 🚀

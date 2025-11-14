@@ -395,6 +395,10 @@ export const demoData = {
 
   estadisticas: {
     dashboard: {
+      totalEmpleados: 120,
+      comunicadosActivos: 5,
+      encuestasActivas: 1,
+      recompensasDisponibles: 5,
       empleadosActivos: 120,
       tasaParticipacion: 87.5,
       puntosOtorgados: 45670,

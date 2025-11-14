@@ -3,6 +3,11 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { supabase } from '@/lib/supabase';
+import { DEMO_MODE, demoData } from '@/utils/demoData';
+import { empleadosService } from '@/services/empleados.service';
+import { comunicadosService } from '@/services/comunicados.service';
+import { encuestasService } from '@/services/encuestas.service';
+import { recompensasService } from '@/services/recompensas.service';
 import {
   LayoutDashboard,
   Users,
@@ -52,22 +57,34 @@ const loadDashboardData = async () => {
   loading.value = true;
 
   try {
-    const { data: empresaData } = await supabase
-      .from('empresas')
-      .select('*')
-      .eq('id', authStore.empresaId)
-      .maybeSingle();
+    if (DEMO_MODE.enabled) {
+      empresa.value = demoData.empresa;
+      stats.value = demoData.estadisticas.dashboard;
 
-    empresa.value = empresaData;
+      metrics.value = {
+        saludMental: 8.6,
+        ergonomia: 8.9,
+        satisfaccionLaboral: 8.4,
+        balanceVidaTrabajo: 8.3,
+        ambienteLaboral: 8.7
+      };
+    } else {
+      const { data: empresaData } = await supabase
+        .from('empresas')
+        .select('*')
+        .eq('id', authStore.empresaId)
+        .maybeSingle();
 
-    await Promise.all([
-      loadEmpleadosCount(),
-      loadComunicadosCount(),
-      loadEncuestasCount(),
-      loadRecompensasCount(),
-      loadMetrics()
-    ]);
+      empresa.value = empresaData;
 
+      await Promise.all([
+        loadEmpleadosCount(),
+        loadComunicadosCount(),
+        loadEncuestasCount(),
+        loadRecompensasCount(),
+        loadMetrics()
+      ]);
+    }
   } catch (error) {
     console.error('Error cargando dashboard:', error);
   } finally {
@@ -76,6 +93,11 @@ const loadDashboardData = async () => {
 };
 
 const loadEmpleadosCount = async () => {
+  if (DEMO_MODE.enabled) {
+    stats.value.totalEmpleados = demoData.empleados.length;
+    return;
+  }
+
   const { count } = await supabase
     .from('empleados')
     .select('*', { count: 'exact', head: true })
@@ -86,6 +108,11 @@ const loadEmpleadosCount = async () => {
 };
 
 const loadComunicadosCount = async () => {
+  if (DEMO_MODE.enabled) {
+    stats.value.comunicadosActivos = demoData.comunicados.length;
+    return;
+  }
+
   const { count } = await supabase
     .from('comunicados')
     .select('*', { count: 'exact', head: true })
@@ -95,6 +122,11 @@ const loadComunicadosCount = async () => {
 };
 
 const loadEncuestasCount = async () => {
+  if (DEMO_MODE.enabled) {
+    stats.value.encuestasActivas = demoData.encuestas.filter(e => e.estado === 'activa').length;
+    return;
+  }
+
   const { count } = await supabase
     .from('encuestas')
     .select('*', { count: 'exact', head: true })
@@ -105,6 +137,11 @@ const loadEncuestasCount = async () => {
 };
 
 const loadRecompensasCount = async () => {
+  if (DEMO_MODE.enabled) {
+    stats.value.recompensasDisponibles = demoData.recompensas.length;
+    return;
+  }
+
   const { count } = await supabase
     .from('recompensas')
     .select('*', { count: 'exact', head: true })

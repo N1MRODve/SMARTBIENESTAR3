@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
   const session = ref(null);
   const loading = ref(true);
   const initializationDone = ref(false);
+  const authListenerSetup = ref(false);
 
   const isAuthenticated = computed(() => !!user.value && !!session.value);
   const empresaId = computed(() => empleado.value?.empresa_id || null);
@@ -16,6 +17,33 @@ export const useAuthStore = defineStore('auth', () => {
     if (!empleado.value) return null;
     return empleado.value.es_admin ? 'admin' : 'empleado';
   });
+
+  const setupAuthListener = () => {
+    if (authListenerSetup.value) return;
+
+    authService.onAuthStateChange(async (event, newSession) => {
+      console.log('Auth state changed:', event);
+
+      if (event === 'SIGNED_IN' && newSession) {
+        try {
+          const currentUser = await authService.getCurrentUser();
+          if (currentUser) {
+            user.value = currentUser.user;
+            empleado.value = currentUser.empleado;
+            session.value = newSession;
+          }
+        } catch (error) {
+          console.error('Error updating user on auth change:', error);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        user.value = null;
+        empleado.value = null;
+        session.value = null;
+      }
+    });
+
+    authListenerSetup.value = true;
+  };
 
   const initialize = async () => {
     if (initializationDone.value) return;
@@ -32,6 +60,8 @@ export const useAuthStore = defineStore('auth', () => {
           session.value = currentSession;
         }
       }
+
+      setupAuthListener();
     } catch (e) {
       console.error('Error initializing auth:', e);
       user.value = null;
@@ -78,22 +108,6 @@ export const useAuthStore = defineStore('auth', () => {
     if (!userRole.value) return false;
     return Array.isArray(roles) ? roles.includes(userRole.value) : userRole.value === roles;
   };
-
-  // Escuchar cambios en el estado de autenticación
-  authService.onAuthStateChange(async (event, newSession) => {
-    if (event === 'SIGNED_IN' && newSession) {
-      const currentUser = await authService.getCurrentUser();
-      if (currentUser) {
-        user.value = currentUser.user;
-        empleado.value = currentUser.empleado;
-        session.value = newSession;
-      }
-    } else if (event === 'SIGNED_OUT') {
-      user.value = null;
-      empleado.value = null;
-      session.value = null;
-    }
-  });
 
   return {
     user,

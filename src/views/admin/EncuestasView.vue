@@ -145,22 +145,22 @@ const formatearFecha = (fecha) => {
   <div class="space-y-6">
 
     <!-- Header -->
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+    <div class="card p-6 mb-6">
       <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 border border-gray-300 rounded-lg flex items-center justify-center">
-            <FileText class="h-5 w-5 text-gray-900" />
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center">
+            <FileText class="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 class="text-xl font-semibold text-gray-900">Encuestas</h1>
-            <p class="text-sm text-gray-600 mt-0.5">
-              {{ encuestas.length }} registrada{{ encuestas.length !== 1 ? 's' : '' }}
+            <h1 class="text-2xl font-bold text-gray-900">Encuestas de Bienestar</h1>
+            <p class="text-sm text-gray-600 mt-1">
+              {{ encuestas.length }} encuesta{{ encuestas.length !== 1 ? 's' : '' }} en el sistema
             </p>
           </div>
         </div>
         <button
           @click="crearEncuesta"
-          class="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+          class="btn btn-primary"
         >
           <Plus class="h-4 w-4 mr-2" />
           Nueva Encuesta
@@ -169,34 +169,34 @@ const formatearFecha = (fecha) => {
     </div>
 
     <!-- Loading State -->
-    <div v-if="isLoading" class="flex items-center justify-center py-20">
-      <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-300 border-t-gray-900"></div>
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner h-12 w-12"></div>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="!hasEncuestas" class="bg-white border border-gray-200 rounded-lg shadow-sm p-12 text-center">
-      <div class="w-16 h-16 mx-auto mb-4 border border-gray-300 rounded-lg flex items-center justify-center">
-        <FileText class="h-8 w-8 text-gray-400" />
+    <div v-else-if="!hasEncuestas" class="card empty-state">
+      <div class="empty-state-icon">
+        <FileText class="h-16 w-16 text-gray-400" />
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Sin encuestas</h3>
-      <p class="text-gray-600 mb-6 max-w-md mx-auto">
-        Crea tu primera encuesta para medir el clima laboral
+      <h3 class="empty-state-title">Sin encuestas creadas</h3>
+      <p class="empty-state-description">
+        Crea tu primera encuesta para comenzar a medir el bienestar de tu equipo
       </p>
       <button
         @click="crearEncuesta"
-        class="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+        class="btn btn-primary"
       >
         <Plus class="h-4 w-4 mr-2" />
-        Crear encuesta
+        Crear primera encuesta
       </button>
     </div>
 
     <!-- Lista de Encuestas -->
-    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div
         v-for="encuesta in encuestas"
         :key="encuesta.id"
-        class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all overflow-hidden"
+        class="card-hover overflow-hidden"
       >
         <!-- Content -->
         <div class="p-6">
@@ -210,12 +210,12 @@ const formatearFecha = (fecha) => {
               </p>
             </div>
             <span
-              class="px-2.5 py-1 text-xs font-medium rounded border whitespace-nowrap"
+              class="badge"
               :class="{
-                'bg-green-50 text-green-700 border-green-200': encuesta.estado === 'Activa' || encuesta.estado === 'activa',
-                'bg-yellow-50 text-yellow-700 border-yellow-200': encuesta.estado === 'borrador' || encuesta.estado === 'Borrador',
-                'bg-blue-50 text-blue-700 border-blue-200': encuesta.estado === 'programada' || encuesta.estado === 'Programada',
-                'bg-gray-50 text-gray-700 border-gray-200': encuesta.estado === 'completada' || encuesta.estado === 'Completada' || encuesta.estado === 'Finalizada'
+                'badge-success': encuesta.estado === 'Activa' || encuesta.estado === 'activa',
+                'badge-warning': encuesta.estado === 'borrador' || encuesta.estado === 'Borrador',
+                'badge-info': encuesta.estado === 'programada' || encuesta.estado === 'Programada',
+                'badge-light': encuesta.estado === 'completada' || encuesta.estado === 'Completada' || encuesta.estado === 'Finalizada'
               }"
             >
               {{ encuesta.estado }}
@@ -249,21 +249,21 @@ const formatearFecha = (fecha) => {
               <button
                 v-if="encuesta.estado === 'Activa' || encuesta.estado === 'activa' || encuesta.estado === 'Completada' || encuesta.estado === 'completada'"
                 @click="verResultados(encuesta.id)"
-                class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                class="flex-1 btn btn-primary text-xs py-2"
               >
                 <BarChart3 class="h-3.5 w-3.5 mr-1.5" />
                 Resultados
               </button>
               <button
                 @click="editarEncuesta(encuesta.id)"
-                class="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-900 text-xs font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                class="flex-1 btn btn-outline text-xs py-2"
               >
                 <Edit class="h-3.5 w-3.5 mr-1.5" />
                 Editar
               </button>
               <button
                 @click="confirmarEliminar(encuesta.id)"
-                class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-900 rounded-lg hover:bg-gray-50 transition-colors"
+                class="btn btn-ghost text-xs py-2 px-3 text-red-600 hover:bg-red-50"
               >
                 <Trash2 class="h-3.5 w-3.5" />
               </button>

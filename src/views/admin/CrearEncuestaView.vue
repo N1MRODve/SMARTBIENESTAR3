@@ -90,11 +90,12 @@
                     @change="actualizarPreguntasSugeridas"
                   >
                     <option value="">Selecciona una categoría</option>
+                    <option value="clima-laboral">Clima Laboral Deportivo</option>
+                    <option value="bienestar">Salud y Bienestar Personal</option>
+                    <option value="desempeno">Carga Laboral y Desempeño</option>
+                    <option value="integral">Evaluación Trimestral 360</option>
                     <option value="salud-mental">Salud Mental</option>
-                    <option value="carga-laboral">Carga Laboral</option>
                     <option value="comunicacion">Comunicación</option>
-                    <option value="ergonomia">Ergonomía</option>
-                    <option value="desarrollo">Desarrollo Profesional</option>
                     <option value="general">Bienestar General</option>
                   </select>
                   <p class="mt-1 text-sm text-gray-500">
@@ -705,7 +706,9 @@ import {
   AlertTriangle,
   Heart
 } from 'lucide-vue-next';
-import { plantillas } from '@/utils/plantillasMock.js';
+import { plantillasEncuestas } from '@/utils/encuestasDemoData.js';
+import { DEMO_MODE } from '@/utils/demoData';
+import * as mockEncuestasService from '@/services/mock/encuestas.service';
 
 const router = useRouter();
 const route = useRoute();
@@ -743,14 +746,14 @@ onMounted(() => {
 });
 
 const cargarPlantilla = (plantillaId) => {
-  const plantilla = plantillas.find(p => p.id === plantillaId);
+  const plantilla = plantillasEncuestas.find(p => p.id === plantillaId);
   if (plantilla) {
     plantillaUsada.value = plantilla;
 
     // Cargar datos de la plantilla
     nuevaEncuesta.value.titulo = plantilla.nombre;
     nuevaEncuesta.value.descripcion = plantilla.descripcion;
-    nuevaEncuesta.value.categoria = mapearCategoria(plantilla.categoria);
+    nuevaEncuesta.value.categoria = plantilla.categoria;
     nuevaEncuesta.value.creada_desde = 'plantilla';
 
     // Cargar preguntas

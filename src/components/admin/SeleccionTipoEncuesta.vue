@@ -140,7 +140,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { X, Check, FileText, ArrowRight, Pencil, Blocks } from 'lucide-vue-next';
-import { plantillas } from '@/utils/plantillasMock.js';
+import { plantillasEncuestas as plantillas } from '@/utils/encuestasDemoData.js';
 
 const emit = defineEmits(['close', 'seleccionar-desde-cero', 'seleccionar-plantilla']);
 

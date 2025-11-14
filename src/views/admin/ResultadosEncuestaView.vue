@@ -535,6 +535,7 @@ import { ref, onMounted, nextTick, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { getResultadosEncuestaById } from '@/services/mock/encuestas.service.js';
+import { DEMO_MODE } from '@/utils/demoData';
 import Button from '@/components/common/Button.vue';
 import ModalAccionRecomendada from '@/components/admin/ModalAccionRecomendada.vue';
 import ResultadosPorDepartamento from '@/components/admin/results/ResultadosPorDepartamento.vue';

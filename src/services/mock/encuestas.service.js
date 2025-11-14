@@ -56,11 +56,42 @@ export const getResultadosEncuestaById = async (encuestaId) => {
     setTimeout(() => {
       const encuesta = encuestasDb.value.find(e => e.id === encuestaId);
       if (encuesta) {
-        // Si la encuesta tiene plantilla, agregar las preguntas
+        // Si la encuesta tiene plantilla, agregar las preguntas con resultados
         if (encuesta.plantilla_id) {
           const plantilla = plantillasDb.value.find(p => p.id === encuesta.plantilla_id);
           if (plantilla) {
-            encuesta.preguntas = plantilla.preguntas;
+            // Mapear preguntas con resultados formateados para gráficos
+            const preguntasConResultados = plantilla.preguntas.map((pregunta, index) => {
+              const preguntaId = `p${index + 1}`;
+              let resultados = null;
+
+              // Si hay distribución de respuestas, generar datos para gráficos
+              if (encuesta.resultados?.distribucion_respuestas?.[preguntaId]) {
+                const distribucion = encuesta.resultados.distribucion_respuestas[preguntaId];
+
+                if (pregunta.tipo === 'escala') {
+                  const labels = [];
+                  const data = [];
+                  Object.entries(distribucion).forEach(([key, value]) => {
+                    labels.push(`${key}★`);
+                    data.push(value);
+                  });
+                  resultados = { labels, data };
+                } else if (pregunta.tipo === 'opcion_multiple') {
+                  const labels = Object.keys(distribucion);
+                  const data = Object.values(distribucion);
+                  resultados = { labels, data };
+                }
+              }
+
+              return {
+                ...pregunta,
+                resultados,
+                resultadosPorGrupo: [] // Podríamos agregar esto después
+              };
+            });
+
+            encuesta.preguntas = preguntasConResultados;
           }
         }
         resolve(encuesta);

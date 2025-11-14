@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { supabase } from '@/lib/supabase';
-import { MessageSquare, Plus, AlertCircle, RefreshCw, Edit, Trash2, Eye } from 'lucide-vue-next';
+import { MessageSquare, Plus, AlertCircle, RefreshCw, Edit, Trash2, Eye, AlertOctagon, AlertTriangle, CheckCircle, Circle } from 'lucide-vue-next';
 import Button from '@/components/common/Button.vue';
 import Card from '@/components/ui/Card.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
@@ -98,11 +98,20 @@ const getEstadoColor = (estado) => {
 
 const getPrioridadIcon = (prioridad) => {
   const iconos = {
-    alta: '🔴',
-    media: '🟡',
-    baja: '🟢'
+    alta: AlertOctagon,
+    media: AlertTriangle,
+    baja: CheckCircle
   };
-  return iconos[prioridad] || '⚪';
+  return iconos[prioridad] || Circle;
+};
+
+const getPrioridadColor = (prioridad) => {
+  const colores = {
+    alta: 'text-red-500',
+    media: 'text-yellow-500',
+    baja: 'text-green-500'
+  };
+  return colores[prioridad] || 'text-gray-400';
 };
 
 const formatearFecha = (fecha) => {
@@ -235,10 +244,16 @@ const formatearFecha = (fecha) => {
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-lg mr-1">{{ getPrioridadIcon(comunicado.prioridad) }}</span>
-                <span class="text-sm font-medium text-gray-900 capitalize">
-                  {{ comunicado.prioridad }}
-                </span>
+                <div class="flex items-center gap-2">
+                  <component
+                    :is="getPrioridadIcon(comunicado.prioridad)"
+                    :class="getPrioridadColor(comunicado.prioridad)"
+                    class="h-5 w-5"
+                  />
+                  <span class="text-sm font-medium text-gray-900 capitalize">
+                    {{ comunicado.prioridad }}
+                  </span>
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span

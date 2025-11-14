@@ -25,8 +25,8 @@
             :class="opcionSeleccionada === 'desde-cero' ? 'border-primary ring-2 ring-primary ring-opacity-20' : 'border-gray-200'"
           >
             <div class="flex flex-col items-center text-center">
-              <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-4xl mb-4 group-hover:bg-primary group-hover:bg-opacity-10 transition-colors">
-                🧱
+              <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Pencil class="h-10 w-10 text-white" />
               </div>
               <h3 class="text-xl font-bold text-gray-900 mb-2">Crear desde cero</h3>
               <p class="text-sm text-gray-600">
@@ -48,8 +48,8 @@
             :class="opcionSeleccionada === 'plantilla' ? 'border-primary ring-2 ring-primary ring-opacity-20' : 'border-gray-200'"
           >
             <div class="flex flex-col items-center text-center">
-              <div class="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center text-4xl mb-4 group-hover:bg-primary group-hover:bg-opacity-10 transition-colors">
-                🧩
+              <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Blocks class="h-10 w-10 text-white" />
               </div>
               <h3 class="text-xl font-bold text-gray-900 mb-2">Usar plantilla prediseñada</h3>
               <p class="text-sm text-gray-600">
@@ -139,7 +139,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { X, Check, FileText, ArrowRight } from 'lucide-vue-next';
+import { X, Check, FileText, ArrowRight, Pencil, Blocks } from 'lucide-vue-next';
 import { plantillas } from '@/utils/plantillasMock.js';
 
 const emit = defineEmits(['close', 'seleccionar-desde-cero', 'seleccionar-plantilla']);

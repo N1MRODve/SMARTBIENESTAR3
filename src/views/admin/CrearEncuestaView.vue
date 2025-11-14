@@ -90,12 +90,12 @@
                     @change="actualizarPreguntasSugeridas"
                   >
                     <option value="">Selecciona una categoría</option>
-                    <option value="salud-mental">🧠 Salud Mental</option>
-                    <option value="carga-laboral">⚖️ Carga Laboral</option>
-                    <option value="comunicacion">💬 Comunicación</option>
-                    <option value="ergonomia">🪑 Ergonomía</option>
-                    <option value="desarrollo">📈 Desarrollo Profesional</option>
-                    <option value="general">📊 Bienestar General</option>
+                    <option value="salud-mental">Salud Mental</option>
+                    <option value="carga-laboral">Carga Laboral</option>
+                    <option value="comunicacion">Comunicación</option>
+                    <option value="ergonomia">Ergonomía</option>
+                    <option value="desarrollo">Desarrollo Profesional</option>
+                    <option value="general">Bienestar General</option>
                   </select>
                   <p class="mt-1 text-sm text-gray-500">
                     Selecciona el área principal que evaluará esta encuesta

@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { supabase } from '@/lib/supabase';
 import { FileText, Plus, BarChart3, Edit, Trash2, ArrowRight } from 'lucide-vue-next';
+import { DEMO_MODE } from '@/utils/demoData';
+import * as mockEncuestasService from '@/services/mock/encuestas.service';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -21,7 +23,10 @@ const getCategoriaLabel = (categoria) => {
     'ergonomia': 'Ergonomía',
     'desarrollo': 'Desarrollo Profesional',
     'general': 'Bienestar General',
-    'clima-laboral': 'Clima Laboral'
+    'clima-laboral': 'Clima Laboral',
+    'bienestar': 'Bienestar Personal',
+    'desempeno': 'Carga y Desempeño',
+    'integral': 'Evaluación 360'
   };
   return labels[categoria] || 'General';
 };
@@ -33,19 +38,27 @@ onMounted(async () => {
 const cargarEncuestas = async () => {
   isLoading.value = true;
   try {
-    const { data, error } = await supabase
-      .from('encuestas')
-      .select('*, preguntas:preguntas_encuesta(count)')
-      .eq('empresa_id', authStore.empresaId)
-      .order('fecha_creacion', { ascending: false });
+    if (DEMO_MODE.enabled) {
+      const data = await mockEncuestasService.getEncuestas();
+      encuestas.value = (data || []).map(enc => ({
+        ...enc,
+        totalPreguntas: enc.preguntas?.length || 0,
+        estado: enc.estado_label || enc.estado
+      }));
+    } else {
+      const { data, error } = await supabase
+        .from('encuestas')
+        .select('*, preguntas:preguntas_encuesta(count)')
+        .eq('empresa_id', authStore.empresaId)
+        .order('fecha_creacion', { ascending: false });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    encuestas.value = (data || []).map(enc => ({
-      ...enc,
-      totalPreguntas: enc.preguntas[0]?.count || 0
-    }));
-
+      encuestas.value = (data || []).map(enc => ({
+        ...enc,
+        totalPreguntas: enc.preguntas[0]?.count || 0
+      }));
+    }
   } catch (error) {
     console.error('Error cargando encuestas:', error);
   } finally {
@@ -69,12 +82,16 @@ const confirmarEliminar = async (id) => {
   if (!confirm('¿Estás seguro de eliminar esta encuesta?')) return;
 
   try {
-    const { error } = await supabase
-      .from('encuestas')
-      .delete()
-      .eq('id', id);
+    if (DEMO_MODE.enabled) {
+      await mockEncuestasService.deleteSurvey(id);
+    } else {
+      const { error } = await supabase
+        .from('encuestas')
+        .delete()
+        .eq('id', id);
 
-    if (error) throw error;
+      if (error) throw error;
+    }
     await cargarEncuestas();
   } catch (error) {
     console.error('Error eliminando encuesta:', error);
@@ -163,9 +180,10 @@ const formatearFecha = (fecha) => {
             <span
               class="px-2.5 py-1 text-xs font-medium rounded border whitespace-nowrap"
               :class="{
-                'bg-gray-50 text-gray-900 border-gray-900': encuesta.estado === 'Activa',
-                'bg-gray-50 text-gray-600 border-gray-300': encuesta.estado === 'borrador',
-                'bg-gray-50 text-gray-500 border-gray-200': encuesta.estado === 'Finalizada'
+                'bg-green-50 text-green-700 border-green-200': encuesta.estado === 'Activa' || encuesta.estado === 'activa',
+                'bg-yellow-50 text-yellow-700 border-yellow-200': encuesta.estado === 'borrador' || encuesta.estado === 'Borrador',
+                'bg-blue-50 text-blue-700 border-blue-200': encuesta.estado === 'programada' || encuesta.estado === 'Programada',
+                'bg-gray-50 text-gray-700 border-gray-200': encuesta.estado === 'completada' || encuesta.estado === 'Completada' || encuesta.estado === 'Finalizada'
               }"
             >
               {{ encuesta.estado }}
@@ -197,7 +215,7 @@ const formatearFecha = (fecha) => {
             <!-- Actions -->
             <div class="flex gap-2">
               <button
-                v-if="encuesta.estado === 'Activa'"
+                v-if="encuesta.estado === 'Activa' || encuesta.estado === 'activa' || encuesta.estado === 'Completada' || encuesta.estado === 'completada'"
                 @click="verResultados(encuesta.id)"
                 class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
               >

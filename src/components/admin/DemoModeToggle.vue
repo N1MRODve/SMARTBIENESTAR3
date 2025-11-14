@@ -1,28 +1,50 @@
 <template>
-  <div class="demo-mode-toggle" :class="{ 'demo-active': isDemoMode }">
-    <div class="toggle-container">
-      <button @click="toggleDemoMode" class="toggle-button">
-        <Presentation v-if="isDemoMode" class="icon" />
-        <Eye v-else class="icon" />
-        <span>{{ isDemoMode ? 'Modo Demo ACTIVO' : 'Activar Modo Demo' }}</span>
-      </button>
+  <div class="fixed bottom-6 right-6 z-[1000]">
+    <button
+      @click="toggleDemoMode"
+      :class="[
+        'flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-bold text-sm text-white cursor-pointer transition-all duration-300 shadow-lg',
+        isDemoMode
+          ? 'bg-gradient-to-r from-pink-400 via-pink-500 to-rose-500 hover:shadow-2xl hover:scale-105 animate-pulse-slow'
+          : 'bg-gradient-to-r from-indigo-500 via-purple-500 to-purple-600 hover:shadow-xl hover:-translate-y-1'
+      ]"
+    >
+      <Presentation v-if="isDemoMode" class="w-5 h-5" />
+      <Eye v-else class="w-5 h-5" />
+      <span>{{ isDemoMode ? 'Modo Demo ACTIVO' : 'Activar Modo Demo' }}</span>
+    </button>
 
-      <div v-if="isDemoMode" class="demo-banner">
-        <div class="banner-content">
-          <div class="banner-icon-wrapper">
-            <Sparkles class="banner-icon" />
+    <Transition
+      enter-active-class="transition-all duration-300"
+      enter-from-class="opacity-0 translate-y-4"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition-all duration-200"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 translate-y-4"
+    >
+      <div
+        v-if="isDemoMode"
+        class="absolute bottom-full right-0 mb-4 w-[340px] bg-gradient-to-br from-indigo-500 via-purple-600 to-purple-700 rounded-2xl shadow-2xl p-5"
+      >
+        <div class="flex items-start gap-3.5">
+          <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-lg flex items-center justify-center flex-shrink-0">
+            <Sparkles class="w-6 h-6 text-white" />
           </div>
-          <div class="banner-text">
-            <strong>Datos de demostración activos</strong>
-            <p>Empresa: SportLife Performance (Sector Deportivo)</p>
+          <div class="flex-1 min-w-0">
+            <strong class="block text-white text-[15px] font-bold mb-1.5">Datos de demostración activos</strong>
+            <p class="text-white/90 text-[13px] leading-relaxed m-0">Empresa: SportLife Performance (Sector Deportivo)</p>
           </div>
-          <button @click="copyDemoInfo" class="copy-button" title="Copiar información">
-            <Copy v-if="!copied" class="copy-icon" />
-            <Check v-else class="copy-icon check-icon" />
+          <button
+            @click="copyDemoInfo"
+            class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-lg border border-white/30 flex items-center justify-center cursor-pointer transition-all duration-200 hover:bg-white/30 hover:scale-110 flex-shrink-0"
+            title="Copiar información"
+          >
+            <Copy v-if="!copied" class="w-[18px] h-[18px] text-white" />
+            <Check v-else class="w-[18px] h-[18px] text-green-400" />
           </button>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -76,152 +98,16 @@ Departamentos: 6
 </script>
 
 <style scoped>
-.demo-mode-toggle {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 1000;
-}
-
-.toggle-button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 14px;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.toggle-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-}
-
-.demo-active .toggle-button {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  animation: pulse 2s infinite;
-  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
-}
-
-.demo-active .toggle-button:hover {
-  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.5);
-}
-
-.icon {
-  width: 20px;
-  height: 20px;
-}
-
-.demo-banner {
-  position: absolute;
-  bottom: calc(100% + 16px);
-  right: 0;
-  width: 340px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.3);
-  animation: slideUp 0.3s ease;
-}
-
-.banner-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-}
-
-.banner-icon-wrapper {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.banner-icon {
-  width: 24px;
-  height: 24px;
-  color: white;
-}
-
-.banner-text {
-  flex: 1;
-}
-
-.banner-text strong {
-  display: block;
-  color: white;
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.banner-text p {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.copy-button {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.copy-button:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
-}
-
-.copy-icon {
-  width: 18px;
-  height: 18px;
-  color: white;
-}
-
-.check-icon {
-  color: #10b981;
-}
-
-@keyframes pulse {
+@keyframes pulse-slow {
   0%, 100% {
-    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4), 0 0 0 0 rgba(245, 87, 108, 0.4);
+    opacity: 1;
   }
   50% {
-    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4), 0 0 0 12px rgba(245, 87, 108, 0);
+    opacity: 0.85;
   }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.animate-pulse-slow {
+  animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 </style>

@@ -23,11 +23,23 @@ const accionesDb = ref([...accionesRecomendadas]);
 export const getEncuestas = async () => {
   return new Promise(resolve => {
     setTimeout(() => {
-      const encuestasConMetadatos = encuestasDb.value.map(encuesta => ({
-        ...encuesta,
-        tasaParticipacion: `${encuesta.participacion.porcentaje.toFixed(1)}%`,
-        estado_label: encuesta.estado.charAt(0).toUpperCase() + encuesta.estado.slice(1)
-      }));
+      const encuestasConMetadatos = encuestasDb.value.map(encuesta => {
+        // Obtener preguntas de la plantilla si existe
+        let preguntas = [];
+        if (encuesta.plantilla_id) {
+          const plantilla = plantillasDb.value.find(p => p.id === encuesta.plantilla_id);
+          if (plantilla) {
+            preguntas = plantilla.preguntas;
+          }
+        }
+
+        return {
+          ...encuesta,
+          preguntas: preguntas,
+          tasaParticipacion: `${encuesta.participacion.porcentaje.toFixed(1)}%`,
+          estado_label: encuesta.estado.charAt(0).toUpperCase() + encuesta.estado.slice(1)
+        };
+      });
       resolve(encuestasConMetadatos);
     }, 300);
   });

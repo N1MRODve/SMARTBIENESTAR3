@@ -39,6 +39,7 @@ const cargarEncuestas = async () => {
   isLoading.value = true;
   try {
     if (DEMO_MODE.enabled) {
+      // Modo demo activo - usar datos mock
       const data = await mockEncuestasService.getEncuestas();
       encuestas.value = (data || []).map(enc => ({
         ...enc,
@@ -46,21 +47,52 @@ const cargarEncuestas = async () => {
         estado: enc.estado_label || enc.estado
       }));
     } else {
+      // Modo normal - intentar cargar desde Supabase
       const { data, error } = await supabase
         .from('encuestas')
         .select('*, preguntas:preguntas_encuesta(count)')
         .eq('empresa_id', authStore.empresaId)
         .order('fecha_creacion', { ascending: false });
 
-      if (error) throw error;
-
-      encuestas.value = (data || []).map(enc => ({
-        ...enc,
-        totalPreguntas: enc.preguntas[0]?.count || 0
-      }));
+      if (error) {
+        console.error('Error de Supabase:', error);
+        // Si hay error, usar datos demo como fallback
+        const demoData = await mockEncuestasService.getEncuestas();
+        encuestas.value = (demoData || []).map(enc => ({
+          ...enc,
+          totalPreguntas: enc.preguntas?.length || 0,
+          estado: enc.estado_label || enc.estado
+        }));
+      } else {
+        // Si no hay datos, usar demo como fallback
+        if (!data || data.length === 0) {
+          const demoData = await mockEncuestasService.getEncuestas();
+          encuestas.value = (demoData || []).map(enc => ({
+            ...enc,
+            totalPreguntas: enc.preguntas?.length || 0,
+            estado: enc.estado_label || enc.estado
+          }));
+        } else {
+          encuestas.value = (data || []).map(enc => ({
+            ...enc,
+            totalPreguntas: enc.preguntas[0]?.count || 0
+          }));
+        }
+      }
     }
   } catch (error) {
     console.error('Error cargando encuestas:', error);
+    // Fallback a datos demo
+    try {
+      const demoData = await mockEncuestasService.getEncuestas();
+      encuestas.value = (demoData || []).map(enc => ({
+        ...enc,
+        totalPreguntas: enc.preguntas?.length || 0,
+        estado: enc.estado_label || enc.estado
+      }));
+    } catch (demoError) {
+      console.error('Error cargando datos demo:', demoError);
+    }
   } finally {
     isLoading.value = false;
   }

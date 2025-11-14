@@ -30,7 +30,7 @@ export const disableDemoMode = () => {
   }
 };
 
-// Generadores de datos masivos
+// Generadores de datos
 const nombres = ['Carlos', 'Laura', 'Javier', 'Ana', 'Miguel', 'Patricia', 'Roberto', 'Carmen', 'David', 'Elena', 'Fernando', 'Sofía', 'Antonio', 'Isabel', 'José', 'María', 'Manuel', 'Rosa', 'Francisco', 'Teresa', 'Pedro', 'Lucía', 'Ángel', 'Marta', 'Luis', 'Cristina', 'Raúl', 'Pilar', 'Sergio', 'Beatriz', 'Alberto', 'Silvia', 'Jorge', 'Natalia', 'Daniel', 'Paula', 'Alejandro', 'Andrea', 'Víctor', 'Sara'];
 const apellidos = ['Martínez', 'González', 'Ruiz', 'Morales', 'Sánchez', 'Fernández', 'Díaz', 'López', 'Torres', 'Ramírez', 'Ortiz', 'Jiménez', 'Vega', 'Castro', 'Romero', 'Navarro', 'Gil', 'Serrano', 'Blanco', 'Suárez', 'Molina', 'Vázquez', 'Ramos', 'Cruz', 'Flores', 'Herrera', 'Mendoza', 'Guerrero', 'Medina', 'Cortés'];
 
@@ -52,7 +52,6 @@ const departamentosConfig = [
   { id: 'demo-dept-6', nombre: 'Dirección', codigo: 'DIR', cantidad: 12 }
 ];
 
-// Generar 120 empleados dinámicamente
 function generarEmpleados() {
   const empleados = [];
   let empleadoIndex = 1;
@@ -66,9 +65,7 @@ function generarEmpleados() {
       const nombre = nombres[nombreIndex];
       const apellido = apellidos[apellidoIndex];
       const nombreCompleto = `${nombre} ${apellido}`;
-      const emailNombre = nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      const emailApellido = apellido.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      const email = `${emailNombre}.${emailApellido}${empleadoIndex}@sportlife.com`;
+      const email = `${nombre.toLowerCase()}.${apellido.toLowerCase()}${empleadoIndex}@sportlife.com`;
       const cargoIndex = i % cargosDisponibles.length;
       const cargo = cargosDisponibles[cargoIndex];
       const diasDesdeFundacion = Math.floor((empleadoIndex - 1) * 365 / 120);
@@ -91,7 +88,7 @@ function generarEmpleados() {
         es_admin: esAdmin,
         estado: 'Activo',
         activo: true,
-        telefono: `+34 6${String(10 + empleadoIndex).padStart(2, '0')} ${String(100 + (empleadoIndex % 900)).padStart(3, '0')} ${String(100 + ((empleadoIndex * 7) % 900)).padStart(3, '0')}`
+        telefono: `+34 6${(10 + empleadoIndex).toString().padStart(2, '0')} ${(100 + (empleadoIndex % 900)).toString().padStart(3, '0')} ${(100 + ((empleadoIndex * 7) % 900)).toString().padStart(3, '0')}`
       });
       empleadoIndex++;
     }
@@ -99,53 +96,42 @@ function generarEmpleados() {
   return empleados;
 }
 
-// Generar respuestas de encuesta (87 de 120 empleados = 72.5%)
+// Generar respuestas de encuesta para los 120 empleados
 function generarRespuestasEncuesta() {
   const respuestas = [];
   const empleados = generarEmpleados();
+  // 87 respuestas (72.5% de 120)
   const empleadosQueResponden = empleados.slice(0, 87);
 
   empleadosQueResponden.forEach((emp, idx) => {
-    // Pregunta 1: Ambiente laboral (escala 1-10)
+    // Pregunta 1: Escala 1-10
     respuestas.push({
       id: `demo-resp-${idx * 3 + 1}`,
       encuesta_id: 'demo-enc-1',
       pregunta_id: 'demo-preg-1',
       empleado_id: emp.id,
-      respuesta: String(7 + Math.floor(Math.random() * 4)),
+      respuesta: String(7 + Math.floor(Math.random() * 4)), // 7-10
       fecha_respuesta: '2024-11-12T10:00:00Z'
     });
 
-    // Pregunta 2: Satisfacción instalaciones (opción múltiple)
+    // Pregunta 2: Opción múltiple
     const opciones = ['muy_satisfecho', 'satisfecho', 'neutral'];
-    const pesos = [0.5, 0.4, 0.1]; // 50% muy satisfecho, 40% satisfecho, 10% neutral
-    const random = Math.random();
-    let opcionSeleccionada = opciones[2];
-    let acumulado = 0;
-    for (let i = 0; i < pesos.length; i++) {
-      acumulado += pesos[i];
-      if (random < acumulado) {
-        opcionSeleccionada = opciones[i];
-        break;
-      }
-    }
-
     respuestas.push({
       id: `demo-resp-${idx * 3 + 2}`,
       encuesta_id: 'demo-enc-1',
       pregunta_id: 'demo-preg-2',
       empleado_id: emp.id,
-      respuesta: opcionSeleccionada,
+      respuesta: opciones[Math.floor(Math.random() * opciones.length)],
       fecha_respuesta: '2024-11-12T10:00:00Z'
     });
 
-    // Pregunta 3: Comunicación (escala 1-10)
+    // Pregunta 3: Escala 1-10
     respuestas.push({
       id: `demo-resp-${idx * 3 + 3}`,
       encuesta_id: 'demo-enc-1',
       pregunta_id: 'demo-preg-3',
       empleado_id: emp.id,
-      respuesta: String(7 + Math.floor(Math.random() * 4)),
+      respuesta: String(7 + Math.floor(Math.random() * 4)), // 7-10
       fecha_respuesta: '2024-11-12T10:00:00Z'
     });
   });
@@ -153,7 +139,6 @@ function generarRespuestasEncuesta() {
   return respuestas;
 }
 
-// Data demo completa
 export const demoData = {
   empresa: {
     id: 'demo-empresa-1',
@@ -198,7 +183,7 @@ export const demoData = {
       fecha_inicio: '2024-10-01',
       fecha_fin: '2024-10-15',
       empresa_id: 'demo-empresa-1',
-      creador_id: 'demo-emp-36',
+      creador_id: 'demo-emp-2',
       es_anonima: true,
       respuestas_count: 98,
       total_empleados: 120,
@@ -222,13 +207,7 @@ export const demoData = {
       encuesta_id: 'demo-enc-1',
       texto: '¿Qué tan satisfecho estás con las instalaciones y equipamiento?',
       tipo: 'opcion_multiple',
-      opciones: JSON.stringify([
-        { valor: 'muy_satisfecho', etiqueta: 'Muy Satisfecho' },
-        { valor: 'satisfecho', etiqueta: 'Satisfecho' },
-        { valor: 'neutral', etiqueta: 'Neutral' },
-        { valor: 'insatisfecho', etiqueta: 'Insatisfecho' },
-        { valor: 'muy_insatisfecho', etiqueta: 'Muy Insatisfecho' }
-      ]),
+      opciones: ['muy_satisfecho', 'satisfecho', 'neutral', 'insatisfecho', 'muy_insatisfecho'],
       requerida: true,
       orden: 2,
       categoria: 'Recursos y Equipamiento'
@@ -399,7 +378,7 @@ export const demoData = {
       recompensasDisponibles: 5,
       empleadosActivos: 120,
       tasaParticipacion: 87.5,
-      puntosOtorgados: 187420,
+      puntosOtorgados: 45670,
       comunicadosEsteMes: 12,
       satisfaccionGeneral: 8.4
     },
@@ -440,6 +419,3 @@ export const demoData = {
     { id: 'demo-serv-3', nombre: 'Coaching Deportivo', descripcion: 'Mentoría para alcanzar tus objetivos deportivos', categoria: 'entrenamiento', duracion_minutos: 90, disponible: true, imagen_url: 'https://images.pexels.com/photos/4162491/pexels-photo-4162491.jpeg?auto=compress&cs=tinysrgb&w=400' }
   ]
 };
-
-// Exportar también los generadores para uso dinámico
-export { generarEmpleados, generarRespuestasEncuesta };

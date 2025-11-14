@@ -21,8 +21,8 @@
           <!-- Crear desde cero -->
           <button
             @click="seleccionarOpcion('desde-cero')"
-            class="group relative bg-white rounded-xl shadow-sm border-2 hover:border-primary hover:shadow-md transition-all duration-200 p-8 text-left"
-            :class="opcionSeleccionada === 'desde-cero' ? 'border-primary ring-2 ring-primary ring-opacity-20' : 'border-gray-200'"
+            class="group relative bg-white rounded-xl shadow-sm border-2 hover:border-gray-900 hover:shadow-md transition-all duration-200 p-8 text-left"
+            :class="opcionSeleccionada === 'desde-cero' ? 'border-gray-900 ring-2 ring-gray-900 ring-opacity-20' : 'border-gray-200'"
           >
             <div class="flex flex-col items-center text-center">
               <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -35,7 +35,7 @@
             </div>
             <div
               v-if="opcionSeleccionada === 'desde-cero'"
-              class="absolute top-4 right-4 w-6 h-6 bg-primary rounded-full flex items-center justify-center"
+              class="absolute top-4 right-4 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center"
             >
               <Check class="h-4 w-4 text-white" />
             </div>
@@ -44,8 +44,8 @@
           <!-- Usar plantilla -->
           <button
             @click="seleccionarOpcion('plantilla')"
-            class="group relative bg-white rounded-xl shadow-sm border-2 hover:border-primary hover:shadow-md transition-all duration-200 p-8 text-left"
-            :class="opcionSeleccionada === 'plantilla' ? 'border-primary ring-2 ring-primary ring-opacity-20' : 'border-gray-200'"
+            class="group relative bg-white rounded-xl shadow-sm border-2 hover:border-gray-900 hover:shadow-md transition-all duration-200 p-8 text-left"
+            :class="opcionSeleccionada === 'plantilla' ? 'border-gray-900 ring-2 ring-gray-900 ring-opacity-20' : 'border-gray-200'"
           >
             <div class="flex flex-col items-center text-center">
               <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -58,7 +58,7 @@
             </div>
             <div
               v-if="opcionSeleccionada === 'plantilla'"
-              class="absolute top-4 right-4 w-6 h-6 bg-primary rounded-full flex items-center justify-center"
+              class="absolute top-4 right-4 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center"
             >
               <Check class="h-4 w-4 text-white" />
             </div>
@@ -77,8 +77,8 @@
               v-for="plantilla in plantillas"
               :key="plantilla.id"
               @click="seleccionarPlantilla(plantilla)"
-              class="bg-white rounded-xl p-6 border-2 cursor-pointer hover:border-primary hover:shadow-md transition-all duration-200"
-              :class="plantillaSeleccionada?.id === plantilla.id ? 'border-primary ring-2 ring-primary ring-opacity-20' : 'border-gray-200'"
+              class="bg-white rounded-xl p-6 border-2 cursor-pointer hover:border-gray-900 hover:shadow-md transition-all duration-200"
+              :class="plantillaSeleccionada?.id === plantilla.id ? 'border-gray-900 ring-2 ring-gray-900 ring-opacity-20' : 'border-gray-200'"
             >
               <div class="flex items-start justify-between">
                 <div class="flex items-start flex-1">
@@ -99,7 +99,7 @@
                 </div>
                 <div
                   v-if="plantillaSeleccionada?.id === plantilla.id"
-                  class="flex-shrink-0 w-6 h-6 bg-primary rounded-full flex items-center justify-center ml-4"
+                  class="flex-shrink-0 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center ml-4"
                 >
                   <Check class="h-4 w-4 text-white" />
                 </div>
@@ -114,19 +114,15 @@
         <div class="flex justify-between items-center">
           <button
             @click="$emit('close')"
-            class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
+            class="btn btn-outline"
           >
             Cancelar
           </button>
           <button
             @click="continuar"
             :disabled="!puedeContinuar"
-            :class="[
-              'px-6 py-2 rounded-lg font-medium transition-colors',
-              puedeContinuar
-                ? 'bg-primary text-white hover:bg-primary-dark'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            ]"
+            class="btn"
+            :class="puedeContinuar ? 'btn-primary' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
           >
             Continuar
             <ArrowRight class="h-4 w-4 inline-block ml-2" />

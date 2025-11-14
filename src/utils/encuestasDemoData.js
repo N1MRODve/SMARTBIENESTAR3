@@ -8,6 +8,7 @@ export const plantillasEncuestas = [
     nombre: 'Clima Laboral Deportivo',
     descripcion: 'Evaluación completa del ambiente de trabajo en centros deportivos',
     categoria: 'clima-laboral',
+    icon: '🏢',
     preguntas: [
       {
         id: 'p1',
@@ -101,6 +102,7 @@ export const plantillasEncuestas = [
     ],
     duracion_estimada: 5,
     icono: 'heart',
+    icon: '💚',
     color: 'green'
   },
   {
@@ -144,6 +146,7 @@ export const plantillasEncuestas = [
     ],
     duracion_estimada: 4,
     icono: 'trending-up',
+    icon: '📊',
     color: 'orange'
   },
   {
@@ -209,6 +212,7 @@ export const plantillasEncuestas = [
     ],
     duracion_estimada: 8,
     icono: 'clipboard-check',
+    icon: '📋',
     color: 'purple'
   }
 ];

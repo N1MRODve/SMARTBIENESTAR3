@@ -461,5 +461,62 @@ export const demoData = {
       disponible: true,
       imagen_url: 'https://images.pexels.com/photos/4162491/pexels-photo-4162491.jpeg?auto=compress&cs=tinysrgb&w=400'
     }
+  ],
+
+  canjes: [
+    {
+      id: 'demo-canje-1',
+      empleado_id: 'demo-emp-1',
+      recompensa_id: 'demo-rec-1',
+      puntos_gastados: 500,
+      estado: 'completado',
+      fecha_canje: '2024-11-05T10:30:00Z',
+      fecha_procesado: '2024-11-06T14:20:00Z',
+      empleado: { id: 'demo-emp-1', nombre: 'Carlos Martínez' },
+      recompensa: { id: 'demo-rec-1', nombre: 'Día libre adicional', categoria: 'tiempo' }
+    },
+    {
+      id: 'demo-canje-2',
+      empleado_id: 'demo-emp-2',
+      recompensa_id: 'demo-rec-3',
+      puntos_gastados: 200,
+      estado: 'completado',
+      fecha_canje: '2024-11-08T09:15:00Z',
+      fecha_procesado: '2024-11-08T16:45:00Z',
+      empleado: { id: 'demo-emp-2', nombre: 'Laura González' },
+      recompensa: { id: 'demo-rec-3', nombre: 'Masaje deportivo 60min', categoria: 'bienestar' }
+    },
+    {
+      id: 'demo-canje-3',
+      empleado_id: 'demo-emp-4',
+      recompensa_id: 'demo-rec-2',
+      puntos_gastados: 300,
+      estado: 'pendiente',
+      fecha_canje: '2024-11-10T11:00:00Z',
+      empleado: { id: 'demo-emp-4', nombre: 'Ana Morales' },
+      recompensa: { id: 'demo-rec-2', nombre: 'Pack suplementos deportivos', categoria: 'bienestar' }
+    },
+    {
+      id: 'demo-canje-4',
+      empleado_id: 'demo-emp-7',
+      recompensa_id: 'demo-rec-5',
+      puntos_gastados: 250,
+      estado: 'completado',
+      fecha_canje: '2024-11-03T13:30:00Z',
+      fecha_procesado: '2024-11-04T10:00:00Z',
+      empleado: { id: 'demo-emp-7', nombre: 'Roberto Díaz' },
+      recompensa: { id: 'demo-rec-5', nombre: 'Vale comida saludable', categoria: 'alimentacion' }
+    },
+    {
+      id: 'demo-canje-5',
+      empleado_id: 'demo-emp-12',
+      recompensa_id: 'demo-rec-4',
+      puntos_gastados: 400,
+      estado: 'completado',
+      fecha_canje: '2024-11-01T15:45:00Z',
+      fecha_procesado: '2024-11-02T09:30:00Z',
+      empleado: { id: 'demo-emp-12', nombre: 'Sofía Jiménez' },
+      recompensa: { id: 'demo-rec-4', nombre: 'Ropa deportiva premium', categoria: 'material' }
+    }
   ]
 };

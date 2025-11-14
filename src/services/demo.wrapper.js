@@ -29,12 +29,18 @@ const handleDemoRequest = async (methodName, dataKey, args) => {
       if (!item) throw new Error('No encontrado');
       return item;
 
+    case 'getByCategoria':
+      const categoria = args[0];
+      const allItems = demoData[dataKey] || [];
+      return allItems.filter(i => i.categoria === categoria);
+
     case 'create':
       const newItem = {
         id: `demo-${dataKey}-${Date.now()}`,
         ...args[0],
         fecha_creacion: new Date().toISOString()
       };
+      console.log(`[DEMO MODE] Creando ${dataKey}:`, newItem);
       return newItem;
 
     case 'update':
@@ -43,9 +49,12 @@ const handleDemoRequest = async (methodName, dataKey, args) => {
       const existingItems = demoData[dataKey] || [];
       const existingItem = existingItems.find(i => i.id === updateId);
       if (!existingItem) throw new Error('No encontrado');
-      return { ...existingItem, ...updates };
+      const updatedItem = { ...existingItem, ...updates };
+      console.log(`[DEMO MODE] Actualizando ${dataKey}:`, updatedItem);
+      return updatedItem;
 
     case 'delete':
+      console.log(`[DEMO MODE] Eliminando ${dataKey} con id:`, args[0]);
       return { success: true };
 
     case 'getByAuthUserId':
@@ -60,13 +69,56 @@ const handleDemoRequest = async (methodName, dataKey, args) => {
       return comunicado ? generateDemoLecturas(comunicado) : [];
 
     case 'marcarComoLeido':
+      console.log('[DEMO MODE] Marcando comunicado como leído');
       return { success: true };
 
     case 'getActive':
       const activeEncuesta = demoData.encuestas.find(e => e.estado === 'activa');
       return activeEncuesta || null;
 
+    case 'submitRespuesta':
+      console.log('[DEMO MODE] Enviando respuestas de encuesta:', args);
+      return { success: true, message: 'Respuestas guardadas (modo demo)' };
+
+    case 'canjear':
+      const [empleadoId, recompensaId] = args;
+      const recompensa = demoData.recompensas.find(r => r.id === recompensaId);
+      if (!recompensa) throw new Error('Recompensa no encontrada');
+
+      console.log('[DEMO MODE] Canjeando recompensa:', recompensa.nombre);
+      return {
+        id: `demo-canje-${Date.now()}`,
+        empleado_id: empleadoId,
+        recompensa_id: recompensaId,
+        puntos_gastados: recompensa.costo_puntos,
+        estado: 'pendiente',
+        fecha_canje: new Date().toISOString()
+      };
+
+    case 'getHistorialCanjes':
+      return demoData.canjes || [];
+
+    case 'updateEstadoCanje':
+      const [canjeId, estado, notas] = args;
+      console.log(`[DEMO MODE] Actualizando estado de canje a:`, estado);
+      return {
+        id: canjeId,
+        estado,
+        fecha_procesado: new Date().toISOString(),
+        notas
+      };
+
+    case 'getEstadisticasParticipacion':
+      return demoData.estadisticas?.participacion || null;
+
+    case 'getEstadisticasDashboard':
+      return demoData.estadisticas?.dashboard || null;
+
+    case 'getEstadisticasEncuestas':
+      return demoData.estadisticas?.encuestas || null;
+
     default:
+      console.log(`[DEMO MODE] Método no manejado: ${methodName}`);
       return [];
   }
 };

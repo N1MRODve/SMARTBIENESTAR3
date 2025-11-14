@@ -1,7 +1,26 @@
 import { supabase } from '@/lib/supabase';
+import { DEMO_MODE, demoData } from '@/utils/demoData';
 
-export const analiticaService = {
+const baseService = {
   async getAnalytics(empresaId) {
+    if (DEMO_MODE.enabled) {
+      return {
+        bienestar_global: 8.4,
+        variacion_trimestral: 0.5,
+        participacion_global: 87.5,
+        alertas_activas: 0,
+        encuestas_activas: 2,
+        encuestas_completadas: 5,
+        empleados_totales: 120,
+        departamentos_fuertes: [
+          { nombre: 'Dirección', empleados: 12, promedio: 9.2, tendencia: 'up' },
+          { nombre: 'Entrenamiento Personal', empleados: 35, promedio: 8.9, tendencia: 'up' },
+          { nombre: 'Clases Grupales', empleados: 28, promedio: 8.7, tendencia: 'up' }
+        ],
+        departamentos_criticos: []
+      };
+    }
+
     try {
       // Obtener todas las encuestas completadas
       const { data: encuestas, error: encuestasError } = await supabase
@@ -119,6 +138,10 @@ export const analiticaService = {
   },
 
   async getEvolution(empresaId, meses = 6) {
+    if (DEMO_MODE.enabled) {
+      return demoData.estadisticas.participacion.tendenciaMensual;
+    }
+
     try {
       const fechaInicio = new Date();
       fechaInicio.setMonth(fechaInicio.getMonth() - meses);
@@ -178,6 +201,10 @@ export const analiticaService = {
   },
 
   async getCategorias(empresaId) {
+    if (DEMO_MODE.enabled) {
+      return demoData.estadisticas.encuestas.dimensiones;
+    }
+
     try {
       // Por ahora retornamos categorías mock
       // TODO: Implementar lógica de categorización basada en preguntas
@@ -194,3 +221,5 @@ export const analiticaService = {
     }
   }
 };
+
+export const analiticaService = baseService;

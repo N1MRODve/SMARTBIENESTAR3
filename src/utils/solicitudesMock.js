@@ -25,8 +25,7 @@ export const solicitudesMock = [
     fecha_solicitud: "2024-11-26",
     solicitante: "Carlos Mendoza - Director Deportivo",
     encuestaRelacionada: "Clima Laboral - Noviembre 2024",
-    prioridad: "Alta",
-    presupuestoEstimado: "$8,500"
+    prioridad: "Alta"
   },
   {
     id: 2,
@@ -43,8 +42,7 @@ export const solicitudesMock = [
     fecha_solicitud: "2024-11-24",
     solicitante: "Dra. Patricia Ruiz - Psicología Deportiva",
     encuestaRelacionada: "Clima Laboral - Noviembre 2024",
-    prioridad: "Alta",
-    presupuestoEstimado: "$4,200"
+    prioridad: "Alta"
   },
   {
     id: 3,
@@ -61,8 +59,7 @@ export const solicitudesMock = [
     fecha_solicitud: "2024-11-25",
     solicitante: "Laura Fernández - Gerente de Operaciones",
     encuestaRelacionada: "Clima Laboral - Noviembre 2024",
-    prioridad: "Media",
-    presupuestoEstimado: "$2,800"
+    prioridad: "Media"
   },
   {
     id: 4,
@@ -79,8 +76,7 @@ export const solicitudesMock = [
     fecha_solicitud: "2024-11-27",
     solicitante: "Diego Torres - Coordinador de Innovación",
     encuestaRelacionada: "Evaluación de Servicios Deportivos",
-    prioridad: "Media",
-    presupuestoEstimado: "$6,500"
+    prioridad: "Media"
   },
   {
     id: 5,
@@ -97,8 +93,7 @@ export const solicitudesMock = [
     fecha_solicitud: "2024-11-26",
     solicitante: "Lic. Andrea Gómez - Jefa de Nutrición",
     encuestaRelacionada: "Evaluación de Servicios Deportivos",
-    prioridad: "Media",
-    presupuestoEstimado: "$3,800"
+    prioridad: "Media"
   },
   {
     id: 6,
@@ -115,8 +110,7 @@ export const solicitudesMock = [
     fecha_solicitud: "2024-11-28",
     solicitante: "Ft. Roberto Vega - Coordinador de Fisioterapia",
     encuestaRelacionada: "Clima Laboral - Noviembre 2024",
-    prioridad: "Media",
-    presupuestoEstimado: "$7,200"
+    prioridad: "Media"
   }
 ];
 

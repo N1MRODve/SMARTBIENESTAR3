@@ -126,40 +126,71 @@ onMounted(async () => {
 const cargarDatos = async () => {
   isLoading.value = true;
   try {
-    const [encuestasRes, empleadosRes, departamentosRes, respuestasRes] = await Promise.all([
-      supabase
-        .from('encuestas')
-        .select('*')
-        .eq('empresa_id', authStore.empresaId)
-        .order('fecha_creacion', { ascending: false }),
+    if (authStore.isDemoMode) {
+      const { FITCORP_MOCK_DATA } = await import('@/services/mockData.js');
 
-      supabase
-        .from('empleados')
-        .select('id, departamento_id')
-        .eq('empresa_id', authStore.empresaId)
-        .eq('estado', 'Activo'),
+      encuestas.value = FITCORP_MOCK_DATA.participacion.encuestasDetalle.map(enc => ({
+        id: enc.id,
+        titulo: enc.titulo,
+        estado: enc.estado,
+        fecha_creacion: enc.fecha_envio,
+        fecha_inicio: enc.fecha_envio,
+        fecha_fin: enc.fecha_cierre
+      }));
 
-      supabase
-        .from('departamentos')
-        .select('id, nombre')
-        .eq('empresa_id', authStore.empresaId),
+      const totalEmpleados = FITCORP_MOCK_DATA.estadisticas.dashboard.totalEmpleados;
+      empleados.value = Array.from({ length: totalEmpleados }, (_, i) => ({
+        id: `emp-${String(i + 1).padStart(3, '0')}`,
+        departamento_id: FITCORP_MOCK_DATA.departamentos[i % FITCORP_MOCK_DATA.departamentos.length].id
+      }));
 
-      supabase
-        .from('respuestas_encuesta')
-        .select('encuesta_id, empleado_id')
-    ]);
+      departamentos.value = FITCORP_MOCK_DATA.departamentos;
 
-    if (encuestasRes.error) throw encuestasRes.error;
-    if (empleadosRes.error) throw empleadosRes.error;
-    if (departamentosRes.error) throw departamentosRes.error;
-    if (respuestasRes.error) throw respuestasRes.error;
+      respuestas.value = [];
+      FITCORP_MOCK_DATA.participacion.encuestasDetalle.forEach(enc => {
+        for (let i = 0; i < enc.respondidos; i++) {
+          respuestas.value.push({
+            encuesta_id: enc.id,
+            empleado_id: `emp-${String(i + 1).padStart(3, '0')}`
+          });
+        }
+      });
+    } else {
+      const [encuestasRes, empleadosRes, departamentosRes, respuestasRes] = await Promise.all([
+        supabase
+          .from('encuestas')
+          .select('*')
+          .eq('empresa_id', authStore.empresaId)
+          .order('fecha_creacion', { ascending: false }),
 
-    encuestas.value = encuestasRes.data || [];
-    empleados.value = empleadosRes.data || [];
-    departamentos.value = departamentosRes.data || [];
+        supabase
+          .from('empleados')
+          .select('id, departamento_id')
+          .eq('empresa_id', authStore.empresaId)
+          .eq('estado', 'Activo'),
 
-    const encuestaIds = encuestas.value.map(e => e.id);
-    respuestas.value = (respuestasRes.data || []).filter(r => encuestaIds.includes(r.encuesta_id));
+        supabase
+          .from('departamentos')
+          .select('id, nombre')
+          .eq('empresa_id', authStore.empresaId),
+
+        supabase
+          .from('respuestas_encuesta')
+          .select('encuesta_id, empleado_id')
+      ]);
+
+      if (encuestasRes.error) throw encuestasRes.error;
+      if (empleadosRes.error) throw empleadosRes.error;
+      if (departamentosRes.error) throw departamentosRes.error;
+      if (respuestasRes.error) throw respuestasRes.error;
+
+      encuestas.value = encuestasRes.data || [];
+      empleados.value = empleadosRes.data || [];
+      departamentos.value = departamentosRes.data || [];
+
+      const encuestaIds = encuestas.value.map(e => e.id);
+      respuestas.value = (respuestasRes.data || []).filter(r => encuestaIds.includes(r.encuesta_id));
+    }
 
   } catch (error) {
     console.error('Error cargando datos:', error);

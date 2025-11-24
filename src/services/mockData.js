@@ -603,5 +603,117 @@ export const FITCORP_MOCK_DATA = {
     { categoria: 'Nutrición', valor: 4.5, variacion: 0.3 },
     { categoria: 'Motivación', valor: 4.4, variacion: 0.6 },
     { categoria: 'Balance Vida-Trabajo', valor: 4.2, variacion: 0.2 }
-  ]
+  ],
+
+  participacion: {
+    estadisticas: {
+      tasaPromedio: 92,
+      totalRespondidos: 368,
+      totalEnviados: 400,
+      encuestasActivas: 2,
+      totalEncuestas: 8,
+      encuestasCerradas: 6
+    },
+
+    evolucionEncuestas: [
+      {
+        fecha: '2024-09-15',
+        encuesta: 'Bienestar y Clima Laboral Q3',
+        tasa: 95,
+        respondidos: 43,
+        enviados: 45
+      },
+      {
+        fecha: '2024-08-20',
+        encuesta: 'Evaluación de Servicios Deportivos',
+        tasa: 91,
+        respondidos: 41,
+        enviados: 45
+      },
+      {
+        fecha: '2024-07-10',
+        encuesta: 'Salud Mental y Estrés',
+        tasa: 89,
+        respondidos: 40,
+        enviados: 45
+      },
+      {
+        fecha: '2024-06-05',
+        encuesta: 'Nutrición y Hábitos Alimenticios',
+        tasa: 93,
+        respondidos: 42,
+        enviados: 45
+      },
+      {
+        fecha: '2024-05-12',
+        encuesta: 'Satisfacción con Instalaciones',
+        tasa: 88,
+        respondidos: 39,
+        enviados: 44
+      },
+      {
+        fecha: '2024-04-18',
+        encuesta: 'Evaluación Trimestral Q2',
+        tasa: 94,
+        respondidos: 41,
+        enviados: 44
+      }
+    ],
+
+    encuestasDetalle: [
+      {
+        id: 'enc-001',
+        titulo: 'Clima Organizacional Noviembre 2024',
+        estado: 'activa',
+        fecha_envio: '2024-11-20',
+        fecha_cierre: '2024-11-30',
+        enviados: 45,
+        respondidos: 42,
+        departamentos: [
+          { nombre: 'Entrenamiento Deportivo', enviados: 9, respondidos: 9 },
+          { nombre: 'Fisioterapia', enviados: 12, respondidos: 11 },
+          { nombre: 'Nutrición Deportiva', enviados: 2, respondidos: 2 },
+          { nombre: 'Psicología Deportiva', enviados: 2, respondidos: 2 },
+          { nombre: 'Administración', enviados: 20, respondidos: 18 }
+        ]
+      },
+      {
+        id: 'enc-002',
+        titulo: 'Evaluación de Programas de Bienestar',
+        estado: 'activa',
+        fecha_envio: '2024-11-22',
+        fecha_cierre: '2024-12-05',
+        enviados: 45,
+        respondidos: 38,
+        departamentos: [
+          { nombre: 'Entrenamiento Deportivo', enviados: 9, respondidos: 8 },
+          { nombre: 'Fisioterapia', enviados: 12, respondidos: 11 },
+          { nombre: 'Nutrición Deportiva', enviados: 2, respondidos: 2 },
+          { nombre: 'Psicología Deportiva', enviados: 2, respondidos: 2 },
+          { nombre: 'Administración', enviados: 20, respondidos: 15 }
+        ]
+      },
+      {
+        id: 'enc-003',
+        titulo: 'Bienestar y Clima Laboral Q3',
+        estado: 'finalizada',
+        fecha_envio: '2024-09-15',
+        fecha_cierre: '2024-09-25',
+        enviados: 45,
+        respondidos: 43,
+        departamentos: [
+          { nombre: 'Entrenamiento Deportivo', enviados: 9, respondidos: 9 },
+          { nombre: 'Fisioterapia', enviados: 12, respondidos: 12 },
+          { nombre: 'Nutrición Deportiva', enviados: 2, respondidos: 2 },
+          { nombre: 'Psicología Deportiva', enviados: 2, respondidos: 2 },
+          { nombre: 'Administración', enviados: 20, respondidos: 18 }
+        ]
+      }
+    ],
+
+    departamentosExtemos: {
+      mejor: { nombre: 'Entrenamiento Deportivo', tasa: 98, enviados: 27, respondidos: 27 },
+      peor: { nombre: 'Administración', tasa: 85, enviados: 60, respondidos: 51 }
+    }
+  }
 };

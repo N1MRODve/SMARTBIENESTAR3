@@ -414,7 +414,8 @@ export const FITCORP_MOCK_DATA = {
       fecha_fin: '2024-11-30',
       respuestas_totales: 38,
       respuestas_objetivo: 45,
-      participacion: 84
+      participacion: 84,
+      puntos_otorgados: 100
     },
     {
       id: 'enc-002',
@@ -426,7 +427,8 @@ export const FITCORP_MOCK_DATA = {
       fecha_fin: '2024-11-27',
       respuestas_totales: 29,
       respuestas_objetivo: 45,
-      participacion: 64
+      participacion: 64,
+      puntos_otorgados: 150
     }
   ],
 

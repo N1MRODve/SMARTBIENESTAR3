@@ -9,6 +9,7 @@ export const plantillasEncuestas = [
     descripcion: 'Evaluación completa del ambiente de trabajo en centros deportivos',
     categoria: 'clima-laboral',
     icon: '🏢',
+    puntos_otorgados: 100,
     preguntas: [
       {
         id: 'p1',
@@ -59,6 +60,7 @@ export const plantillasEncuestas = [
     nombre: 'Salud y Bienestar Personal',
     descripcion: 'Evaluación del bienestar físico y emocional del equipo',
     categoria: 'bienestar',
+    puntos_otorgados: 120,
     preguntas: [
       {
         id: 'p1',

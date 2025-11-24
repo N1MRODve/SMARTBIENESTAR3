@@ -144,27 +144,57 @@ const formatearFecha = (fecha) => {
 <template>
   <div class="space-y-6">
 
-    <!-- Header -->
-    <div class="card p-6 mb-6">
+    <!-- Header con Color -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-xl p-8 mb-6">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <div class="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center">
-            <FileText class="h-6 w-6 text-white" />
+          <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+            <FileText class="h-8 w-8 text-white" />
           </div>
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">Encuestas de Bienestar</h1>
-            <p class="text-sm text-gray-600 mt-1">
+            <h1 class="text-3xl font-bold text-white">Encuestas de Bienestar</h1>
+            <p class="text-white/80 mt-1">
               {{ encuestas.length }} encuesta{{ encuestas.length !== 1 ? 's' : '' }} en el sistema
             </p>
           </div>
         </div>
         <button
           @click="crearEncuesta"
-          class="btn btn-primary"
+          class="bg-white text-purple-600 hover:bg-purple-50 px-6 py-3 rounded-xl font-semibold transition-colors inline-flex items-center shadow-lg"
         >
-          <Plus class="h-4 w-4 mr-2" />
+          <Plus class="h-5 w-5 mr-2" />
           Nueva Encuesta
         </button>
+      </div>
+    </div>
+
+    <!-- Panel Informativo de Puntos -->
+    <div class="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-6 shadow-md mb-6">
+      <div class="flex items-start">
+        <div class="flex-shrink-0 w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mr-4">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-lg font-bold text-amber-900 mb-2">Sistema de Recompensas por Participación</h3>
+          <p class="text-sm text-amber-800 mb-3">Los empleados ganan puntos automáticamente al completar encuestas. Configura cuántos puntos otorga cada encuesta al crearla o editarla.</p>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div class="bg-white rounded-lg p-3 border border-amber-200">
+              <p class="text-xl font-bold text-amber-600">+100 pts</p>
+              <p class="text-xs text-amber-800">Encuesta estándar</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-amber-200">
+              <p class="text-xl font-bold text-amber-600">+150 pts</p>
+              <p class="text-xs text-amber-800">Respuesta rápida</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-amber-200">
+              <p class="text-xl font-bold text-amber-600">Variable</p>
+              <p class="text-xs text-amber-800">Según tu configuración</p>
+            </div>
+          </div>
+          <p class="text-xs text-amber-700 mt-3">💡 Los puntos se acreditan automáticamente al completar la encuesta. Los empleados pueden canjearlos en el catálogo de recompensas.</p>
+        </div>
       </div>
     </div>
 
@@ -226,10 +256,18 @@ const formatearFecha = (fecha) => {
             <span>{{ getCategoriaLabel(encuesta.categoria) }}</span>
             <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
             <span>{{ encuesta.totalPreguntas }} pregunta{{ encuesta.totalPreguntas !== 1 ? 's' : '' }}</span>
+            <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+            <!-- Badge de Puntos -->
+            <div class="inline-flex items-center bg-amber-50 rounded-full px-2.5 py-1 border border-amber-200">
+              <svg class="w-3.5 h-3.5 text-amber-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+              </svg>
+              <span class="text-xs font-bold text-amber-700">{{ encuesta.puntos_otorgados || 100 }} pts</span>
+            </div>
           </div>
 
           <div class="pt-4 border-t border-gray-100">
-            <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+            <div class="grid grid-cols-3 gap-4 text-sm mb-4">
               <div>
                 <span class="text-gray-500 text-xs block mb-1">Creada</span>
                 <span class="font-medium text-gray-900 text-xs">
@@ -241,6 +279,15 @@ const formatearFecha = (fecha) => {
                 <span class="font-medium text-gray-900 text-xs capitalize">
                   {{ encuesta.privacidad_nivel.replace('_', ' ') }}
                 </span>
+              </div>
+              <div>
+                <span class="text-gray-500 text-xs block mb-1">Recompensa</span>
+                <div class="flex items-center">
+                  <svg class="w-3 h-3 text-amber-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                  </svg>
+                  <span class="font-bold text-amber-600 text-xs">{{ encuesta.puntos_otorgados || 100 }}</span>
+                </div>
               </div>
             </div>
 

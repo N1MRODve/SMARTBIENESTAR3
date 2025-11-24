@@ -219,207 +219,312 @@ export const plantillasEncuestas = [
   }
 ];
 
-// Encuestas activas y completadas
+// Encuestas activas y completadas - FitCorp
 export const encuestasDemo = [
   {
-    id: 'enc-001',
-    titulo: 'Evaluación Trimestral Q4 2024',
-    descripcion: 'Evaluación integral del último trimestre del año',
-    tipo: 'integral',
-    categoria: 'integral',
-    plantilla_id: 'plantilla-4',
-    estado: 'completada',
-    fecha_creacion: '2024-12-01',
-    fecha_inicio: '2024-12-15',
-    fecha_fin: '2024-12-28',
+    id: 'enc-fitcorp-001',
+    titulo: 'Clima Laboral - Noviembre 2024',
+    descripcion: 'Encuesta trimestral sobre satisfacción y bienestar en FitCorp',
+    tipo: 'clima_laboral',
+    categoria: 'clima-laboral',
+    plantilla_id: 'plantilla-1',
+    estado: 'activa',
+    estado_label: 'Activa',
+    fecha_creacion: '2024-11-01',
+    fecha_inicio: '2024-11-20',
+    fecha_fin: '2024-11-30',
     es_anonima: true,
-    privacidad_nivel: 'anonimato_completo',
+    privacidad_nivel: 'anonimo',
+    puntos_otorgados: 100,
+    totalPreguntas: 8,
+    preguntas: [
+      { id: 'p1', texto: '¿Cómo calificarías el ambiente de trabajo en tu departamento?', tipo: 'escala', dimension: 'Ambiente Laboral' },
+      { id: 'p2', texto: '¿Te sientes valorado por tu equipo de trabajo?', tipo: 'escala', dimension: 'Reconocimiento' },
+      { id: 'p3', texto: '¿La comunicación con tu supervisor es efectiva?', tipo: 'escala', dimension: 'Comunicación' },
+      { id: 'p4', texto: '¿Tienes acceso a los recursos necesarios para realizar tu trabajo?', tipo: 'escala', dimension: 'Recursos' },
+      { id: 'p5', texto: '¿Cómo valoras las instalaciones de FitCorp?', tipo: 'escala', dimension: 'Instalaciones' },
+      { id: 'p6', texto: '¿Te sientes apoyado en tu desarrollo profesional?', tipo: 'escala', dimension: 'Desarrollo' },
+      { id: 'p7', texto: '¿Qué aspectos consideras que deberíamos mejorar?', tipo: 'abierta', dimension: 'Sugerencias' },
+      { id: 'p8', texto: '¿Qué es lo mejor de trabajar en FitCorp?', tipo: 'abierta', dimension: 'Aspectos Positivos' }
+    ],
     participacion: {
-      total_empleados: 120,
-      respuestas: 112,
-      porcentaje: 93.3,
+      total_empleados: 45,
+      respuestas: 38,
+      porcentaje: 84.4,
       por_departamento: {
-        'Entrenamiento Personal': { total: 35, respuestas: 33, porcentaje: 94.3 },
-        'Nutrición Deportiva': { total: 15, respuestas: 14, porcentaje: 93.3 },
-        'Fisioterapia': { total: 12, respuestas: 12, porcentaje: 100 },
-        'Recepción y Atención': { total: 18, respuestas: 16, porcentaje: 88.9 },
-        'Clases Grupales': { total: 28, respuestas: 26, porcentaje: 92.9 },
-        'Dirección': { total: 12, respuestas: 11, porcentaje: 91.7 }
+        'Entrenamiento Deportivo': { total: 12, respuestas: 11, porcentaje: 91.7 },
+        'Fisioterapia': { total: 8, respuestas: 8, porcentaje: 100 },
+        'Nutrición Deportiva': { total: 6, respuestas: 5, porcentaje: 83.3 },
+        'Psicología Deportiva': { total: 5, respuestas: 4, porcentaje: 80.0 },
+        'Administración': { total: 8, respuestas: 6, porcentaje: 75.0 },
+        'Servicios Generales': { total: 6, respuestas: 4, porcentaje: 66.7 }
       }
     },
     resultados: {
-      score_global: 4.2,
+      score_global: 4.4,
+      nps: 8.5,
       dimensiones: {
-        'Satisfacción General': 4.3,
-        'NPS Empleado': 8.2,
-        'Instalaciones': 4.6,
-        'Liderazgo': 4.0,
-        'Desarrollo Profesional': 3.9
+        'Ambiente Laboral': { valor: 4.6, respuestas: 38, tendencia: 'positiva' },
+        'Reconocimiento': { valor: 4.3, respuestas: 38, tendencia: 'estable' },
+        'Comunicación': { valor: 4.2, respuestas: 38, tendencia: 'positiva' },
+        'Recursos': { valor: 4.5, respuestas: 38, tendencia: 'positiva' },
+        'Instalaciones': { valor: 4.8, respuestas: 38, tendencia: 'positiva' },
+        'Desarrollo': { valor: 4.1, respuestas: 38, tendencia: 'estable' }
       },
       distribucion_respuestas: {
-        'p1': { 1: 2, 2: 5, 3: 18, 4: 45, 5: 42 },
-        'p2': { 0: 0, 1: 0, 2: 1, 3: 2, 4: 3, 5: 5, 6: 8, 7: 12, 8: 25, 9: 32, 10: 24 },
-        'p3': { 1: 1, 2: 3, 3: 12, 4: 38, 5: 58 },
-        'p4': { 1: 3, 2: 8, 3: 22, 4: 48, 5: 31 },
-        'p5': { 1: 5, 2: 12, 3: 28, 4: 42, 5: 25 }
+        'p1': { 1: 0, 2: 1, 3: 4, 4: 12, 5: 21 },
+        'p2': { 1: 1, 2: 2, 3: 5, 4: 15, 5: 15 },
+        'p3': { 1: 1, 2: 3, 3: 6, 4: 16, 5: 12 },
+        'p4': { 1: 0, 2: 2, 3: 5, 4: 13, 5: 18 },
+        'p5': { 1: 0, 2: 0, 3: 2, 4: 10, 5: 26 },
+        'p6': { 1: 1, 2: 3, 3: 7, 4: 14, 5: 13 }
       },
-      tendencias: 'positiva',
+      tendencias: 'muy_positiva',
       comparacion_anterior: {
-        cambio: 0.3,
-        porcentaje_cambio: 7.7
+        cambio: 0.2,
+        porcentaje_cambio: 4.8
       }
     },
     comentarios_destacados: [
       {
         id: 'c1',
         dimension: 'Aspectos Positivos',
-        texto: 'El ambiente de equipo es increíble. Todos nos apoyamos y celebramos los logros juntos.',
-        departamento: 'Entrenamiento Personal',
-        fecha: '2024-12-20'
+        texto: 'Las instalaciones de FitCorp son espectaculares. Tener acceso a equipamiento de última generación para nuestro propio entrenamiento es un beneficio increíble.',
+        departamento: 'Entrenamiento Deportivo',
+        fecha: '2024-11-22',
+        sentimiento: 'muy_positivo'
       },
       {
         id: 'c2',
         dimension: 'Aspectos Positivos',
-        texto: 'Las instalaciones son de primera calidad y siempre están impecables.',
+        texto: 'El equipo de fisioterapia es excepcional. Todos somos muy colaborativos y siempre estamos aprendiendo unos de otros.',
         departamento: 'Fisioterapia',
-        fecha: '2024-12-21'
+        fecha: '2024-11-23',
+        sentimiento: 'positivo'
       },
       {
         id: 'c3',
-        dimension: 'Áreas de Mejora',
-        texto: 'Sería genial tener más oportunidades de formación especializada en nuevas técnicas.',
-        departamento: 'Entrenamiento Personal',
-        fecha: '2024-12-19'
+        dimension: 'Sugerencias',
+        texto: 'Sería genial tener más formaciones sobre las últimas tendencias en nutrición deportiva y suplementación.',
+        departamento: 'Nutrición Deportiva',
+        fecha: '2024-11-21',
+        sentimiento: 'constructivo'
       },
       {
         id: 'c4',
         dimension: 'Aspectos Positivos',
-        texto: 'Me encanta que podamos usar las instalaciones. Es un beneficio enorme.',
-        departamento: 'Nutrición Deportiva',
-        fecha: '2024-12-22'
+        texto: 'Me encanta poder trabajar con atletas de alto rendimiento. Es muy motivador ver su progreso día a día.',
+        departamento: 'Psicología Deportiva',
+        fecha: '2024-11-24',
+        sentimiento: 'positivo'
       },
       {
         id: 'c5',
-        dimension: 'Áreas de Mejora',
-        texto: 'Algunos turnos en horario pico son muy intensos. Necesitamos más personal de apoyo.',
-        departamento: 'Recepción y Atención',
-        fecha: '2024-12-18'
+        dimension: 'Sugerencias',
+        texto: 'Podríamos mejorar la comunicación entre departamentos. A veces los planes de entrenamiento no están completamente alineados con nutrición.',
+        departamento: 'Entrenamiento Deportivo',
+        fecha: '2024-11-23',
+        sentimiento: 'constructivo'
+      },
+      {
+        id: 'c6',
+        dimension: 'Aspectos Positivos',
+        texto: 'El sistema de puntos y recompensas es muy motivador. Me gusta sentir que mi participación en encuestas se valora.',
+        departamento: 'Administración',
+        fecha: '2024-11-25',
+        sentimiento: 'positivo'
+      },
+      {
+        id: 'c7',
+        dimension: 'Sugerencias',
+        texto: 'Necesitamos más sesiones de mindfulness y gestión del estrés. El trabajo con deportistas de élite puede ser muy demandante.',
+        departamento: 'Psicología Deportiva',
+        fecha: '2024-11-22',
+        sentimiento: 'constructivo'
+      },
+      {
+        id: 'c8',
+        dimension: 'Aspectos Positivos',
+        texto: 'La dirección es muy transparente y siempre está abierta a escuchar sugerencias. Se siente un ambiente de confianza.',
+        departamento: 'Fisioterapia',
+        fecha: '2024-11-26',
+        sentimiento: 'muy_positivo'
+      },
+      {
+        id: 'c9',
+        dimension: 'Aspectos Positivos',
+        texto: 'Los programas de nutrición que ofrecemos son de clase mundial. Estoy orgulloso del trabajo que hacemos.',
+        departamento: 'Nutrición Deportiva',
+        fecha: '2024-11-24',
+        sentimiento: 'muy_positivo'
+      },
+      {
+        id: 'c10',
+        dimension: 'Sugerencias',
+        texto: 'Un sistema de reservas más flexible para las sesiones de apoyo personal sería muy útil.',
+        departamento: 'Administración',
+        fecha: '2024-11-25',
+        sentimiento: 'constructivo'
+      }
+    ],
+    acciones_recomendadas: [
+      {
+        id: 'a1',
+        prioridad: 'alta',
+        dimension: 'Desarrollo',
+        titulo: 'Programa de Formación Continua',
+        descripcion: 'Implementar ciclos trimestrales de formación especializada en nuevas técnicas y metodologías deportivas',
+        impacto_estimado: 'alto',
+        recursos_necesarios: 'Presupuesto para instructores externos, tiempo dedicado',
+        plazo_sugerido: '3 meses'
+      },
+      {
+        id: 'a2',
+        prioridad: 'media',
+        dimension: 'Comunicación',
+        titulo: 'Reuniones Interdepartamentales',
+        descripcion: 'Establecer reuniones semanales entre entrenamiento, nutrición y fisioterapia para alinear planes',
+        impacto_estimado: 'medio',
+        recursos_necesarios: '2 horas semanales',
+        plazo_sugerido: '1 mes'
+      },
+      {
+        id: 'a3',
+        prioridad: 'media',
+        dimension: 'Bienestar',
+        titulo: 'Programa de Mindfulness',
+        descripcion: 'Sesiones semanales de mindfulness y gestión del estrés para todo el equipo',
+        impacto_estimado: 'alto',
+        recursos_necesarios: 'Instructor especializado, sala dedicada',
+        plazo_sugerido: '1 mes'
       }
     ]
   },
   {
-    id: 'enc-002',
-    titulo: 'Pulso de Bienestar Enero 2025',
-    descripcion: 'Evaluación mensual de salud y bienestar del equipo',
-    tipo: 'bienestar',
+    id: 'enc-fitcorp-002',
+    titulo: 'Evaluación de Servicios Deportivos',
+    descripcion: 'Tu opinión sobre nuestros programas de entrenamiento y recuperación',
+    tipo: 'satisfaccion',
     categoria: 'bienestar',
     plantilla_id: 'plantilla-2',
     estado: 'activa',
-    fecha_creacion: '2025-01-08',
-    fecha_inicio: '2025-01-10',
-    fecha_fin: '2025-01-17',
-    es_anonima: true,
-    privacidad_nivel: 'anonimato_completo',
-    participacion: {
-      total_empleados: 120,
-      respuestas: 87,
-      porcentaje: 72.5,
-      por_departamento: {
-        'Entrenamiento Personal': { total: 35, respuestas: 28, porcentaje: 80.0 },
-        'Nutrición Deportiva': { total: 15, respuestas: 12, porcentaje: 80.0 },
-        'Fisioterapia': { total: 12, respuestas: 10, porcentaje: 83.3 },
-        'Recepción y Atención': { total: 18, respuestas: 11, porcentaje: 61.1 },
-        'Clases Grupales': { total: 28, respuestas: 19, porcentaje: 67.9 },
-        'Dirección': { total: 12, respuestas: 7, porcentaje: 58.3 }
-      }
-    },
-    resultados: {
-      score_global: 3.8,
-      dimensiones: {
-        'Estrés': 2.9,
-        'Equilibrio Vida-Trabajo': 3.7,
-        'Fatiga Física': 3.2,
-        'Uso de Instalaciones': 4.2
-      },
-      distribucion_respuestas: {
-        'p1': { 1: 8, 2: 15, 3: 35, 4: 22, 5: 7 },
-        'p2': { 1: 5, 2: 12, 3: 28, 4: 32, 5: 10 },
-        'p3': { 1: 10, 2: 18, 3: 30, 4: 20, 5: 9 },
-        'p4': {
-          'Diariamente': 28,
-          '3-4 veces por semana': 35,
-          '1-2 veces por semana': 15,
-          'Ocasionalmente': 7,
-          'Nunca': 2
-        }
-      },
-      tendencias: 'atencion',
-      alertas: ['Nivel de estrés ligeramente elevado en Recepción y Atención']
-    }
-  },
-  {
-    id: 'enc-003',
-    titulo: 'Clima Laboral Noviembre 2024',
-    descripcion: 'Evaluación del ambiente de trabajo y comunicación',
-    tipo: 'clima-laboral',
-    categoria: 'clima-laboral',
-    plantilla_id: 'plantilla-1',
-    estado: 'completada',
+    estado_label: 'Activa',
     fecha_creacion: '2024-11-01',
-    fecha_inicio: '2024-11-10',
-    fecha_fin: '2024-11-20',
+    fecha_inicio: '2024-11-21',
+    fecha_fin: '2024-11-27',
     es_anonima: true,
-    privacidad_nivel: 'anonimato_completo',
+    privacidad_nivel: 'anonimo',
+    puntos_otorgados: 150,
+    totalPreguntas: 7,
+    preguntas: [
+      { id: 'p1', texto: '¿Cómo calificas la calidad de nuestros programas de entrenamiento?', tipo: 'escala', dimension: 'Calidad Servicios' },
+      { id: 'p2', texto: '¿Los servicios de recuperación (crioterapia, masajes) cumplen tus expectativas?', tipo: 'escala', dimension: 'Recuperación' },
+      { id: 'p3', texto: '¿Qué tan satisfecho estás con el equipamiento disponible?', tipo: 'escala', dimension: 'Equipamiento' },
+      { id: 'p4', texto: '¿Los planes nutricionales son efectivos y personalizados?', tipo: 'escala', dimension: 'Nutrición' },
+      { id: 'p5', texto: '¿El apoyo psicológico te ayuda en tu desempeño?', tipo: 'escala', dimension: 'Apoyo Psicológico' },
+      { id: 'p6', texto: '¿Qué servicio te gustaría que mejoráramos?', tipo: 'abierta', dimension: 'Mejoras' },
+      { id: 'p7', texto: '¿Qué nuevo servicio te gustaría que ofreciéramos?', tipo: 'abierta', dimension: 'Innovación' }
+    ],
     participacion: {
-      total_empleados: 118,
-      respuestas: 105,
-      porcentaje: 89.0,
+      total_empleados: 45,
+      respuestas: 29,
+      porcentaje: 64.4,
       por_departamento: {
-        'Entrenamiento Personal': { total: 34, respuestas: 31, porcentaje: 91.2 },
-        'Nutrición Deportiva': { total: 15, respuestas: 13, porcentaje: 86.7 },
-        'Fisioterapia': { total: 12, respuestas: 11, porcentaje: 91.7 },
-        'Recepción y Atención': { total: 17, respuestas: 14, porcentaje: 82.4 },
-        'Clases Grupales': { total: 28, respuestas: 25, porcentaje: 89.3 },
-        'Dirección': { total: 12, respuestas: 11, porcentaje: 91.7 }
+        'Entrenamiento Deportivo': { total: 12, respuestas: 9, porcentaje: 75.0 },
+        'Fisioterapia': { total: 8, respuestas: 6, porcentaje: 75.0 },
+        'Nutrición Deportiva': { total: 6, respuestas: 4, porcentaje: 66.7 },
+        'Psicología Deportiva': { total: 5, respuestas: 3, porcentaje: 60.0 },
+        'Administración': { total: 8, respuestas: 4, porcentaje: 50.0 },
+        'Servicios Generales': { total: 6, respuestas: 3, porcentaje: 50.0 }
       }
     },
     resultados: {
-      score_global: 4.1,
+      score_global: 4.5,
+      nps: 8.8,
       dimensiones: {
-        'Ambiente Laboral': 4.3,
-        'Reconocimiento': 4.0,
-        'Comunicación': 3.9,
-        'Recursos': 4.2
+        'Calidad Servicios': { valor: 4.7, respuestas: 29, tendencia: 'positiva' },
+        'Recuperación': { valor: 4.6, respuestas: 29, tendencia: 'positiva' },
+        'Equipamiento': { valor: 4.8, respuestas: 29, tendencia: 'muy_positiva' },
+        'Nutrición': { valor: 4.5, respuestas: 29, tendencia: 'positiva' },
+        'Apoyo Psicológico': { valor: 4.3, respuestas: 29, tendencia: 'estable' }
       },
       distribucion_respuestas: {
-        'p1': { 1: 2, 2: 6, 3: 20, 4: 42, 5: 35 },
-        'p2': { 1: 3, 2: 8, 3: 25, 4: 45, 5: 24 },
-        'p3': { 1: 4, 2: 10, 3: 28, 4: 38, 5: 25 },
-        'p4': { 1: 2, 2: 5, 3: 18, 4: 48, 5: 32 }
+        'p1': { 1: 0, 2: 0, 3: 2, 4: 9, 5: 18 },
+        'p2': { 1: 0, 2: 1, 3: 3, 4: 10, 5: 15 },
+        'p3': { 1: 0, 2: 0, 3: 1, 4: 8, 5: 20 },
+        'p4': { 1: 0, 2: 1, 3: 4, 4: 12, 5: 12 },
+        'p5': { 1: 1, 2: 2, 3: 5, 4: 13, 5: 8 }
       },
-      tendencias: 'positiva'
-    }
-  },
-  {
-    id: 'enc-004',
-    titulo: 'Evaluación de Carga Laboral - Temporada Alta',
-    descripcion: 'Medición de carga de trabajo durante enero (operación enero)',
-    tipo: 'desempeno',
-    categoria: 'desempeno',
-    plantilla_id: 'plantilla-3',
-    estado: 'programada',
-    fecha_creacion: '2025-01-12',
-    fecha_inicio: '2025-02-01',
-    fecha_fin: '2025-02-10',
-    es_anonima: true,
-    privacidad_nivel: 'anonimato_completo',
-    participacion: {
-      total_empleados: 120,
-      respuestas: 0,
-      porcentaje: 0,
-      por_departamento: {}
+      tendencias: 'muy_positiva',
+      comparacion_anterior: {
+        cambio: 0.3,
+        porcentaje_cambio: 7.1
+      }
     },
-    resultados: null
+    comentarios_destacados: [
+      {
+        id: 'c1',
+        dimension: 'Calidad Servicios',
+        texto: 'La crioterapia ha mejorado significativamente mis tiempos de recuperación. Excelente inversión.',
+        departamento: 'Entrenamiento Deportivo',
+        fecha: '2024-11-23',
+        sentimiento: 'muy_positivo'
+      },
+      {
+        id: 'c2',
+        dimension: 'Equipamiento',
+        texto: 'El nuevo equipamiento de análisis biomecánico es impresionante. Nos da datos muy precisos.',
+        departamento: 'Fisioterapia',
+        fecha: '2024-11-24',
+        sentimiento: 'muy_positivo'
+      },
+      {
+        id: 'c3',
+        dimension: 'Innovación',
+        texto: 'Sería fantástico incorporar sesiones de yoga y meditación guiadas específicamente para deportistas.',
+        departamento: 'Psicología Deportiva',
+        fecha: '2024-11-22',
+        sentimiento: 'constructivo'
+      },
+      {
+        id: 'c4',
+        dimension: 'Mejoras',
+        texto: 'Los planes nutricionales podrían incluir más opciones para dietas veganas y vegetarianas de alto rendimiento.',
+        departamento: 'Nutrición Deportiva',
+        fecha: '2024-11-25',
+        sentimiento: 'constructivo'
+      },
+      {
+        id: 'c5',
+        dimension: 'Calidad Servicios',
+        texto: 'Los protocolos de entrenamiento están perfectamente estructurados. Se nota la experiencia del equipo.',
+        departamento: 'Entrenamiento Deportivo',
+        fecha: '2024-11-24',
+        sentimiento: 'positivo'
+      }
+    ],
+    acciones_recomendadas: [
+      {
+        id: 'a1',
+        prioridad: 'media',
+        dimension: 'Innovación',
+        titulo: 'Programa de Yoga Deportivo',
+        descripcion: 'Implementar sesiones de yoga adaptado para atletas de alto rendimiento',
+        impacto_estimado: 'alto',
+        recursos_necesarios: 'Instructor certificado en yoga deportivo, espacio dedicado',
+        plazo_sugerido: '2 meses'
+      },
+      {
+        id: 'a2',
+        prioridad: 'baja',
+        dimension: 'Nutrición',
+        titulo: 'Menús Plant-Based',
+        descripcion: 'Ampliar opciones de planes nutricionales veganos y vegetarianos de alta performance',
+        impacto_estimado: 'medio',
+        recursos_necesarios: 'Consultoría nutricional especializada',
+        plazo_sugerido: '1 mes'
+      }
+    ]
   }
 ];
 

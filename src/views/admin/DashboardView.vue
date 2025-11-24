@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { supabase } from '@/lib/supabase';
 import { DEMO_MODE, demoData } from '@/utils/demoData';
+import { FITCORP_MOCK_DATA } from '@/services/mockData';
 import { empleadosService } from '@/services/empleados.service';
 import { comunicadosService } from '@/services/comunicados.service';
 import { encuestasService } from '@/services/encuestas.service';
@@ -57,7 +58,11 @@ const loadDashboardData = async () => {
   loading.value = true;
 
   try {
-    if (DEMO_MODE.enabled) {
+    if (authStore.isDemoMode) {
+      empresa.value = FITCORP_MOCK_DATA.empresa;
+      stats.value = FITCORP_MOCK_DATA.estadisticas.dashboard;
+      metrics.value = FITCORP_MOCK_DATA.metricas;
+    } else if (DEMO_MODE.enabled) {
       empresa.value = demoData.empresa;
       stats.value = demoData.estadisticas.dashboard;
 

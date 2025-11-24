@@ -87,6 +87,10 @@ const handleLogout = async () => {
     </aside>
 
     <div class="flex-1 flex flex-col overflow-hidden">
+      <div v-if="authStore.isDemoMode" class="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 text-center font-medium text-sm shadow-md">
+        Modo Demo: FitCorp High Performance
+      </div>
+
       <header class="bg-white border-b border-gray-200 p-4 shadow-sm flex justify-between items-center">
          <h2 class="text-2xl font-bold text-gray-900">Panel de Administración</h2>
         <div>

@@ -1,13 +1,22 @@
 import { DEMO_MODE, demoData } from '@/utils/demoData';
+import { FITCORP_MOCK_DATA } from './mockData';
+import { useAuthStore } from '@/stores/auth.store';
 
 export const wrapServiceWithDemo = (service, demoDataKey) => {
   const wrappedService = {};
 
   for (const [methodName, originalMethod] of Object.entries(service)) {
     wrappedService[methodName] = async (...args) => {
-      if (DEMO_MODE.enabled && demoDataKey) {
-        return handleDemoRequest(methodName, demoDataKey, args);
+      const authStore = useAuthStore();
+
+      if (authStore.isDemoMode && demoDataKey) {
+        return handleDemoRequest(methodName, demoDataKey, args, FITCORP_MOCK_DATA);
       }
+
+      if (DEMO_MODE.enabled && demoDataKey) {
+        return handleDemoRequest(methodName, demoDataKey, args, demoData);
+      }
+
       return originalMethod.apply(service, args);
     };
   }
@@ -15,23 +24,23 @@ export const wrapServiceWithDemo = (service, demoDataKey) => {
   return wrappedService;
 };
 
-const handleDemoRequest = async (methodName, dataKey, args) => {
+const handleDemoRequest = async (methodName, dataKey, args, mockDataSource) => {
   await simulateDelay();
 
   switch (methodName) {
     case 'getAll':
-      return demoData[dataKey] || [];
+      return mockDataSource[dataKey] || [];
 
     case 'getById':
       const id = args[0];
-      const items = demoData[dataKey] || [];
+      const items = mockDataSource[dataKey] || [];
       const item = items.find(i => i.id === id);
       if (!item) throw new Error('No encontrado');
       return item;
 
     case 'getByCategoria':
       const categoria = args[0];
-      const allItems = demoData[dataKey] || [];
+      const allItems = mockDataSource[dataKey] || [];
       return allItems.filter(i => i.categoria === categoria);
 
     case 'create':
@@ -46,7 +55,7 @@ const handleDemoRequest = async (methodName, dataKey, args) => {
     case 'update':
       const updateId = args[0];
       const updates = args[1];
-      const existingItems = demoData[dataKey] || [];
+      const existingItems = mockDataSource[dataKey] || [];
       const existingItem = existingItems.find(i => i.id === updateId);
       if (!existingItem) throw new Error('No encontrado');
       const updatedItem = { ...existingItem, ...updates };
@@ -58,22 +67,22 @@ const handleDemoRequest = async (methodName, dataKey, args) => {
       return { success: true };
 
     case 'getByAuthUserId':
-      return demoData.empleados[0];
+      return mockDataSource.empleados[0];
 
     case 'getRespuestas':
-      return generateDemoRespuestas(args[0]);
+      return generateDemoRespuestas(args[0], mockDataSource);
 
     case 'getLecturas':
       const comunicadoId = args[0];
-      const comunicado = demoData.comunicados.find(c => c.id === comunicadoId);
-      return comunicado ? generateDemoLecturas(comunicado) : [];
+      const comunicado = mockDataSource.comunicados.find(c => c.id === comunicadoId);
+      return comunicado ? generateDemoLecturas(comunicado, mockDataSource) : [];
 
     case 'marcarComoLeido':
       console.log('[DEMO MODE] Marcando comunicado como leído');
       return { success: true };
 
     case 'getActive':
-      const activeEncuesta = demoData.encuestas.find(e => e.estado === 'activa');
+      const activeEncuesta = mockDataSource.encuestas.find(e => e.estado === 'activa');
       return activeEncuesta || null;
 
     case 'submitRespuesta':
@@ -82,7 +91,7 @@ const handleDemoRequest = async (methodName, dataKey, args) => {
 
     case 'canjear':
       const [empleadoId, recompensaId] = args;
-      const recompensa = demoData.recompensas.find(r => r.id === recompensaId);
+      const recompensa = mockDataSource.recompensas.find(r => r.id === recompensaId);
       if (!recompensa) throw new Error('Recompensa no encontrada');
 
       console.log('[DEMO MODE] Canjeando recompensa:', recompensa.nombre);
@@ -90,13 +99,13 @@ const handleDemoRequest = async (methodName, dataKey, args) => {
         id: `demo-canje-${Date.now()}`,
         empleado_id: empleadoId,
         recompensa_id: recompensaId,
-        puntos_gastados: recompensa.costo_puntos,
+        puntos_gastados: recompensa.puntos_requeridos || recompensa.costo_puntos,
         estado: 'pendiente',
         fecha_canje: new Date().toISOString()
       };
 
     case 'getHistorialCanjes':
-      return demoData.canjes || [];
+      return mockDataSource.canjes || [];
 
     case 'updateEstadoCanje':
       const [canjeId, estado, notas] = args;
@@ -109,13 +118,13 @@ const handleDemoRequest = async (methodName, dataKey, args) => {
       };
 
     case 'getEstadisticasParticipacion':
-      return demoData.estadisticas?.participacion || null;
+      return mockDataSource.estadisticas?.participacion || null;
 
     case 'getEstadisticasDashboard':
-      return demoData.estadisticas?.dashboard || null;
+      return mockDataSource.estadisticas?.dashboard || null;
 
     case 'getEstadisticasEncuestas':
-      return demoData.estadisticas?.encuestas || null;
+      return mockDataSource.estadisticas?.encuestas || null;
 
     default:
       console.log(`[DEMO MODE] Método no manejado: ${methodName}`);
@@ -127,8 +136,8 @@ const simulateDelay = () => {
   return new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
 };
 
-const generateDemoRespuestas = (encuestaId) => {
-  const encuesta = demoData.encuestas.find(e => e.id === encuestaId);
+const generateDemoRespuestas = (encuestaId, mockDataSource) => {
+  const encuesta = mockDataSource.encuestas.find(e => e.id === encuestaId);
   if (!encuesta) return [];
 
   const respuestas = [];
@@ -156,12 +165,12 @@ const generateDemoRespuestas = (encuestaId) => {
   return respuestas;
 };
 
-const generateDemoLecturas = (comunicado) => {
+const generateDemoLecturas = (comunicado, mockDataSource) => {
   const numLecturas = comunicado.lecturas || 0;
   const lecturas = [];
 
-  for (let i = 0; i < Math.min(numLecturas, demoData.empleados.length); i++) {
-    const empleado = demoData.empleados[i];
+  for (let i = 0; i < Math.min(numLecturas, mockDataSource.empleados.length); i++) {
+    const empleado = mockDataSource.empleados[i];
     lecturas.push({
       id: `demo-lect-${i}`,
       comunicado_id: comunicado.id,

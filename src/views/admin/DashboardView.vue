@@ -335,23 +335,23 @@ const wellbeingMetrics = computed(() => [
             <div
               v-for="metric in wellbeingMetrics"
               :key="metric.label"
-              class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+              class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow overflow-hidden"
             >
               <div class="flex items-start justify-between mb-3">
-                <component :is="metric.icon" class="h-5 w-5 text-gray-900" />
+                <component :is="metric.icon" class="h-5 w-5 text-gray-900 flex-shrink-0" />
                 <span v-if="metric.value !== null" class="text-lg font-semibold text-gray-900">
                   {{ metric.value }}
                 </span>
                 <span v-else class="text-sm text-gray-400">-</span>
               </div>
-              <h3 class="font-medium text-gray-900 text-sm mb-1">{{ metric.label }}</h3>
-              <p class="text-xs text-gray-600">{{ metric.description }}</p>
+              <h3 class="font-medium text-gray-900 text-sm mb-1 line-clamp-2">{{ metric.label }}</h3>
+              <p class="text-xs text-gray-600 line-clamp-1">{{ metric.description }}</p>
 
               <!-- Progress bar si hay valor -->
-              <div v-if="metric.value !== null" class="mt-3 w-full bg-gray-200 rounded-full h-1.5">
+              <div v-if="metric.value !== null" class="mt-3 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                 <div
                   class="bg-gray-900 h-1.5 rounded-full transition-all duration-500"
-                  :style="{ width: `${(metric.value / 5) * 100}%` }"
+                  :style="{ width: `${Math.min((metric.value / 10) * 100, 100)}%` }"
                 ></div>
               </div>
               <!-- Placeholder si no hay datos -->

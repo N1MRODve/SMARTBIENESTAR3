@@ -283,21 +283,25 @@ const wellbeingMetrics = computed(() => [
 <template>
   <div class="space-y-6">
 
-    <!-- Header -->
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-8">
-      <div class="flex items-center justify-between">
+    <!-- Header con Gradiente -->
+    <div class="bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 rounded-2xl shadow-2xl p-8 relative overflow-hidden">
+      <!-- Decoración de fondo -->
+      <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+      <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
+
+      <div class="relative flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <div class="w-12 h-12 border border-gray-300 rounded-lg flex items-center justify-center">
-            <LayoutDashboard class="h-6 w-6 text-gray-900" />
+          <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+            <LayoutDashboard class="h-8 w-8 text-white" />
           </div>
           <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Panel Principal</h1>
-            <p class="text-sm text-gray-600 mt-0.5">{{ empresa?.nombre || 'Cargando...' }}</p>
+            <h1 class="text-3xl font-bold text-white">Panel Principal</h1>
+            <p class="text-white/80 mt-1">{{ empresa?.nombre || 'Cargando...' }}</p>
           </div>
         </div>
-        <div v-if="!loading" class="flex items-center space-x-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md">
-          <div class="w-2 h-2 bg-black rounded-full"></div>
-          <span class="text-xs font-medium text-gray-900">Activo</span>
+        <div v-if="!loading" class="flex items-center space-x-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-xl">
+          <div class="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse"></div>
+          <span class="text-sm font-semibold text-white">Sistema Activo</span>
         </div>
       </div>
     </div>
@@ -307,61 +311,87 @@ const wellbeingMetrics = computed(() => [
       <div class="animate-spin rounded-full h-10 w-10 border-2 border-gray-300 border-t-gray-900"></div>
     </div>
 
-    <!-- Stats Grid -->
+    <!-- Stats Grid con Color -->
     <template v-else-if="hasData">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div
-          v-for="stat in [
-            { label: 'Empleados', value: stats.totalEmpleados, icon: Users },
-            { label: 'Comunicados', value: stats.comunicadosActivos, icon: MessageSquare },
-            { label: 'Encuestas', value: stats.encuestasActivas, icon: FileText },
-            { label: 'Recompensas', value: stats.recompensasDisponibles, icon: Gift }
+          v-for="(stat, index) in [
+            { label: 'Empleados', value: stats.totalEmpleados, icon: Users, gradient: 'from-blue-500 to-blue-600', bg: 'bg-blue-50', iconBg: 'bg-blue-100', textColor: 'text-blue-600' },
+            { label: 'Comunicados', value: stats.comunicadosActivos, icon: MessageSquare, gradient: 'from-green-500 to-emerald-600', bg: 'bg-green-50', iconBg: 'bg-green-100', textColor: 'text-green-600' },
+            { label: 'Encuestas', value: stats.encuestasActivas, icon: FileText, gradient: 'from-purple-500 to-purple-600', bg: 'bg-purple-50', iconBg: 'bg-purple-100', textColor: 'text-purple-600' },
+            { label: 'Recompensas', value: stats.recompensasDisponibles, icon: Gift, gradient: 'from-orange-500 to-orange-600', bg: 'bg-orange-50', iconBg: 'bg-orange-100', textColor: 'text-orange-600' }
           ]"
           :key="stat.label"
-          class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
+          class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 relative overflow-hidden group"
         >
-          <div class="flex items-start justify-between mb-4">
-            <component :is="stat.icon" class="h-5 w-5 text-gray-900" />
-            <span class="text-2xl font-semibold text-gray-900">{{ stat.value }}</span>
+          <!-- Decoración de fondo -->
+          <div :class="['absolute top-0 right-0 w-24 h-24 rounded-full -mr-12 -mt-12 opacity-10 transition-opacity group-hover:opacity-20', stat.bg]"></div>
+
+          <div class="relative">
+            <div class="flex items-start justify-between mb-4">
+              <div :class="['w-12 h-12 rounded-xl flex items-center justify-center', stat.iconBg]">
+                <component :is="stat.icon" :class="['h-6 w-6', stat.textColor]" />
+              </div>
+              <span :class="['text-3xl font-bold', stat.textColor]">{{ stat.value }}</span>
+            </div>
+            <p class="text-sm font-medium text-gray-600">{{ stat.label }}</p>
+
+            <!-- Barra decorativa inferior -->
+            <div class="mt-4 h-1 w-full bg-gray-100 rounded-full overflow-hidden">
+              <div :class="['h-full bg-gradient-to-r', stat.gradient]" :style="{ width: '75%' }"></div>
+            </div>
           </div>
-          <p class="text-sm text-gray-600">{{ stat.label }}</p>
         </div>
       </div>
 
-      <!-- Wellbeing Metrics -->
-      <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-        <div class="border-b border-gray-200 px-6 py-4">
-          <h2 class="text-lg font-semibold text-gray-900">Métricas de Bienestar</h2>
-          <p class="text-sm text-gray-600 mt-0.5">Indicadores clave de salud organizacional</p>
+      <!-- Wellbeing Metrics con Color -->
+      <div class="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-5">
+          <h2 class="text-xl font-bold text-white">Métricas de Bienestar</h2>
+          <p class="text-white/80 mt-1">Indicadores clave de salud organizacional</p>
         </div>
 
         <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
             <div
-              v-for="metric in wellbeingMetrics"
+              v-for="(metric, index) in wellbeingMetrics.map((m, i) => ({
+                ...m,
+                gradient: ['from-pink-500 to-rose-500', 'from-blue-500 to-cyan-500', 'from-red-500 to-pink-500', 'from-green-500 to-emerald-500', 'from-violet-500 to-purple-500'][i],
+                bgColor: ['bg-pink-50', 'bg-blue-50', 'bg-red-50', 'bg-green-50', 'bg-violet-50'][i],
+                iconBg: ['bg-pink-100', 'bg-blue-100', 'bg-red-100', 'bg-green-100', 'bg-violet-100'][i],
+                textColor: ['text-pink-600', 'text-blue-600', 'text-red-600', 'text-green-600', 'text-violet-600'][i]
+              }))"
               :key="metric.label"
-              class="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow overflow-hidden"
+              class="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-all duration-300 overflow-hidden group relative"
             >
-              <div class="flex items-start justify-between mb-3">
-                <component :is="metric.icon" class="h-5 w-5 text-gray-900 flex-shrink-0" />
-                <span v-if="metric.value !== null" class="text-lg font-semibold text-gray-900">
-                  {{ metric.value }}
-                </span>
-                <span v-else class="text-sm text-gray-400">-</span>
-              </div>
-              <h3 class="font-medium text-gray-900 text-sm mb-1 line-clamp-2">{{ metric.label }}</h3>
-              <p class="text-xs text-gray-600 line-clamp-1">{{ metric.description }}</p>
+              <!-- Decoración de fondo -->
+              <div :class="['absolute top-0 right-0 w-20 h-20 rounded-full -mr-10 -mt-10 opacity-10 group-hover:opacity-20 transition-opacity', metric.bgColor]"></div>
 
-              <!-- Progress bar si hay valor -->
-              <div v-if="metric.value !== null" class="mt-3 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                <div
-                  class="bg-gray-900 h-1.5 rounded-full transition-all duration-500"
-                  :style="{ width: `${Math.min((metric.value / 10) * 100, 100)}%` }"
-                ></div>
-              </div>
-              <!-- Placeholder si no hay datos -->
-              <div v-else class="mt-3">
-                <span class="text-xs text-gray-500 italic">Sin datos aún</span>
+              <div class="relative">
+                <div class="flex items-start justify-between mb-3">
+                  <div :class="['w-10 h-10 rounded-lg flex items-center justify-center', metric.iconBg]">
+                    <component :is="metric.icon" :class="['h-5 w-5', metric.textColor]" />
+                  </div>
+                  <div v-if="metric.value !== null" :class="['text-2xl font-bold', metric.textColor]">
+                    {{ metric.value }}
+                  </div>
+                  <div v-else class="text-xl text-gray-300 font-bold">-</div>
+                </div>
+                <h3 class="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">{{ metric.label }}</h3>
+                <p class="text-xs text-gray-500 line-clamp-1">{{ metric.description }}</p>
+
+                <!-- Progress bar con gradiente -->
+                <div v-if="metric.value !== null" class="mt-4 w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                  <div
+                    :class="['h-2 rounded-full transition-all duration-500 bg-gradient-to-r', metric.gradient]"
+                    :style="{ width: `${Math.min((metric.value / 10) * 100, 100)}%` }"
+                  ></div>
+                </div>
+                <!-- Placeholder si no hay datos -->
+                <div v-else class="mt-4">
+                  <div class="w-full bg-gray-100 rounded-full h-2"></div>
+                  <span class="text-xs text-gray-400 italic mt-1 block">Sin datos aún</span>
+                </div>
               </div>
             </div>
           </div>
@@ -382,29 +412,46 @@ const wellbeingMetrics = computed(() => [
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-        <div class="border-b border-gray-200 px-6 py-4">
-          <h2 class="text-lg font-semibold text-gray-900">Acciones Rápidas</h2>
-          <p class="text-sm text-gray-600 mt-0.5">Accede a las funciones principales</p>
+      <!-- Quick Actions con Color -->
+      <div class="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-slate-700 to-gray-800 px-6 py-5">
+          <h2 class="text-xl font-bold text-white">Acciones Rápidas</h2>
+          <p class="text-white/80 mt-1">Accede a las funciones principales del sistema</p>
         </div>
 
         <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <button
-              v-for="action in quickActions"
+              v-for="(action, index) in quickActions.map((a, i) => ({
+                ...a,
+                gradient: ['from-blue-500 to-blue-600', 'from-green-500 to-emerald-600', 'from-purple-500 to-purple-600', 'from-orange-500 to-orange-600', 'from-cyan-500 to-teal-600'][i],
+                bgColor: ['bg-blue-50', 'bg-green-50', 'bg-purple-50', 'bg-orange-50', 'bg-cyan-50'][i],
+                iconBg: ['bg-blue-100', 'bg-green-100', 'bg-purple-100', 'bg-orange-100', 'bg-cyan-100'][i],
+                textColor: ['text-blue-600', 'text-green-600', 'text-purple-600', 'text-orange-600', 'text-cyan-600'][i],
+                hoverBorder: ['hover:border-blue-400', 'hover:border-green-400', 'hover:border-purple-400', 'hover:border-orange-400', 'hover:border-cyan-400'][i]
+              }))"
               :key="action.title"
               @click="router.push(action.route)"
-              class="group text-left p-4 border border-gray-200 rounded-lg hover:border-gray-900 hover:shadow-sm transition-all"
+              :class="['group text-left p-6 bg-white border-2 border-gray-200 rounded-xl hover:shadow-lg transition-all duration-300 relative overflow-hidden', action.hoverBorder]"
             >
-              <div class="flex items-start justify-between mb-3">
-                <component :is="action.icon" class="h-5 w-5 text-gray-900" />
-                <ArrowRight class="h-4 w-4 text-gray-400 group-hover:text-gray-900 group-hover:translate-x-0.5 transition-all" />
-              </div>
-              <h3 class="font-medium text-gray-900 mb-1">{{ action.title }}</h3>
-              <p class="text-sm text-gray-600">{{ action.description }}</p>
-              <div v-if="action.stat" class="mt-2 pt-2 border-t border-gray-100">
-                <span class="text-xs text-gray-500">Total: <span class="font-medium text-gray-900">{{ action.stat.value }}</span></span>
+              <!-- Decoración de fondo -->
+              <div :class="['absolute top-0 right-0 w-24 h-24 rounded-full -mr-12 -mt-12 opacity-0 group-hover:opacity-10 transition-opacity', action.bgColor]"></div>
+
+              <div class="relative">
+                <div class="flex items-start justify-between mb-4">
+                  <div :class="['w-12 h-12 rounded-xl flex items-center justify-center transition-all', action.iconBg]">
+                    <component :is="action.icon" :class="['h-6 w-6', action.textColor]" />
+                  </div>
+                  <ArrowRight :class="['h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-all', `group-hover:${action.textColor}`]" />
+                </div>
+                <h3 class="font-bold text-gray-900 mb-2 text-lg">{{ action.title }}</h3>
+                <p class="text-sm text-gray-600">{{ action.description }}</p>
+                <div v-if="action.stat" class="mt-4 pt-4 border-t border-gray-100">
+                  <div class="flex items-baseline">
+                    <span class="text-xs text-gray-500 mr-2">Total:</span>
+                    <span :class="['text-2xl font-bold', action.textColor]">{{ action.stat.value }}</span>
+                  </div>
+                </div>
               </div>
             </button>
           </div>

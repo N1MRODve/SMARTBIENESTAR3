@@ -605,6 +605,18 @@ export const FITCORP_MOCK_DATA = {
     { categoria: 'Balance Vida-Trabajo', valor: 4.2, variacion: 0.2 }
   ],
 
+  gamificacion: {
+    reglas_puntos: {
+      encuesta_completada: 100,
+      encuesta_rapida: 150,
+      participacion_mensual_completa: 200,
+      referir_empleado: 50,
+      sugerencia_implementada: 300,
+      asistencia_evento: 75
+    },
+    descripcion: 'Los puntos se acumulan automáticamente al participar en encuestas, eventos y actividades de bienestar. Cada encuesta completada suma 100 puntos base, con bonificaciones por rapidez y participación consistente.'
+  },
+
   recompensas: [
     {
       id: 'rec-001',

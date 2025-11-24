@@ -339,8 +339,18 @@ const formatearFechaCompleta = (fecha) => {
           :key="recompensa.id"
           class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow"
         >
-          <div class="h-48 bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center">
-            <Gift class="h-20 w-20 text-white" />
+          <div class="h-48 bg-gradient-to-br from-orange-400 to-pink-500 flex flex-col items-center justify-center relative">
+            <Gift class="h-20 w-20 text-white mb-3" />
+            <!-- Badge de Puntos en la Imagen -->
+            <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-orange-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                </svg>
+                <span class="text-lg font-bold text-gray-900">{{ (recompensa.costo_puntos || recompensa.puntos_requeridos || 0).toLocaleString() }}</span>
+              </div>
+              <p class="text-xs text-gray-500 text-center">puntos</p>
+            </div>
           </div>
           <div class="p-6">
             <div class="flex items-start justify-between mb-2">
@@ -352,16 +362,16 @@ const formatearFechaCompleta = (fecha) => {
                 {{ recompensa.activa ? 'Activa' : 'Inactiva' }}
               </span>
             </div>
-            <p class="text-sm text-gray-600 mb-4">{{ recompensa.descripcion }}</p>
-            <div class="flex items-center justify-between mb-4">
+            <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ recompensa.descripcion }}</p>
+            <div class="flex items-center justify-between mb-4 bg-gray-50 rounded-lg p-3">
               <div>
-                <span class="text-xs text-gray-500">Costo</span>
-                <div class="text-xl font-bold text-orange-600">{{ recompensa.costo_puntos }} pts</div>
+                <span class="text-xs text-gray-500 uppercase font-medium">Categoría</span>
+                <div class="text-sm font-semibold text-gray-900 capitalize">{{ recompensa.categoria }}</div>
               </div>
               <div class="text-right">
-                <span class="text-xs text-gray-500">Stock</span>
-                <div class="text-lg font-semibold text-gray-900">
-                  {{ recompensa.stock === -1 ? 'Ilimitado' : recompensa.stock }}
+                <span class="text-xs text-gray-500 uppercase font-medium">Stock</span>
+                <div class="text-sm font-semibold" :class="recompensa.stock === 0 ? 'text-red-600' : 'text-gray-900'">
+                  {{ recompensa.stock === -1 ? '∞ Ilimitado' : `${recompensa.stock} disponibles` }}
                 </div>
               </div>
             </div>
@@ -431,7 +441,13 @@ const formatearFechaCompleta = (fecha) => {
                   <div class="text-xs text-gray-500 capitalize">{{ canje.recompensa?.categoria }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="text-sm font-bold text-orange-600">{{ canje.puntos_gastados }} pts</span>
+                  <div class="flex items-center bg-orange-50 rounded-lg px-3 py-1.5 inline-flex">
+                    <svg class="w-4 h-4 text-orange-500 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                    </svg>
+                    <span class="text-sm font-bold text-orange-700">{{ (canje.puntos_gastados || canje.puntos_utilizados || 0).toLocaleString() }}</span>
+                    <span class="text-xs text-orange-600 ml-1">pts</span>
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span

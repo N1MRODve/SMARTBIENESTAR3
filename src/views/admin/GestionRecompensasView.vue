@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth.store';
-import { supabase } from '@/lib/supabase';
+import { recompensasService } from '@/services/recompensas.service';
 import { Plus, AlertCircle, RefreshCw, Gift, History, Edit, Trash2 } from 'lucide-vue-next';
 import Button from '@/components/common/Button.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
@@ -48,13 +48,7 @@ const cargarRecompensas = async () => {
   loading.value = true;
   error.value = null;
   try {
-    const { data, error: err } = await supabase
-      .from('recompensas')
-      .select('*')
-      .eq('empresa_id', authStore.empresaId)
-      .order('created_at', { ascending: false });
-
-    if (err) throw err;
+    const data = await recompensasService.getAll();
     recompensas.value = data || [];
   } catch (err) {
     console.error('Error cargando recompensas:', err);
@@ -68,34 +62,7 @@ const cargarHistorial = async () => {
   loading.value = true;
   error.value = null;
   try {
-    // Primero obtener las recompensas de la empresa
-    const { data: recompensasEmpresa, error: recompError } = await supabase
-      .from('recompensas')
-      .select('id')
-      .eq('empresa_id', authStore.empresaId);
-
-    if (recompError) throw recompError;
-
-    const recompensaIds = recompensasEmpresa.map(r => r.id);
-
-    if (recompensaIds.length === 0) {
-      historialCanjes.value = [];
-      loading.value = false;
-      return;
-    }
-
-    // Luego obtener los canjes de esas recompensas
-    const { data, error: err } = await supabase
-      .from('canjes_recompensas')
-      .select(`
-        *,
-        empleado:empleados(nombre, email),
-        recompensa:recompensas(nombre, categoria, imagen_url)
-      `)
-      .in('recompensa_id', recompensaIds)
-      .order('fecha_canje', { ascending: false });
-
-    if (err) throw err;
+    const data = await recompensasService.getHistorialCanjes();
     historialCanjes.value = data || [];
   } catch (err) {
     console.error('Error cargando historial:', err);

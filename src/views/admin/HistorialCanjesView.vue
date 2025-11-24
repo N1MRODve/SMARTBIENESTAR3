@@ -1,32 +1,27 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import Card from '@/components/ui/Card.vue';
-import { getHistorialCanjes } from '@/services/mock/recompensas.service.js';
-import { getEmpleados } from '@/services/mock/empleados.service.js';
+import { recompensasService } from '@/services/recompensas.service';
 
-// --- Estado Reactivo ---
 const historial = ref([]);
 const isLoading = ref(true);
 
-// --- Carga de Datos ---
 onMounted(async () => {
   isLoading.value = true;
   try {
-    // Obtenemos el historial y la lista de empleados para poder cruzar los datos
-    const [historialData, empleadosData] = await Promise.all([
-      getHistorialCanjes(),
-      getEmpleados()
-    ]);
-
-    // Mapeamos los datos para añadir el nombre del empleado a cada canje
-    historial.value = historialData.map(canje => {
-      const empleado = empleadosData.find(e => e.id === canje.usuarioId);
-      return {
-        ...canje,
-        nombreEmpleado: empleado ? empleado.nombre : 'Empleado Desconocido'
-      };
-    });
-
+    const data = await recompensasService.getHistorialCanjes();
+    historial.value = data.map(canje => ({
+      id: canje.id,
+      fecha: new Date(canje.fecha_canje).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }),
+      nombreEmpleado: canje.empleado_nombre || 'Empleado',
+      recompensaTitulo: canje.recompensa_nombre || 'Recompensa',
+      coste: canje.puntos_utilizados || canje.puntos_gastados || 0,
+      estado: canje.estado
+    }));
   } catch (error) {
     console.error("Error al cargar el historial de canjes:", error);
   } finally {

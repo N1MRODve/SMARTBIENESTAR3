@@ -1,80 +1,126 @@
-// TODO: conectar con tablas "solicitudes_servicios" y "departamentos" en futuras iteraciones.
+// Solicitudes de servicios específicas para FitCorp basadas en resultados de encuestas
 
 export const departamentosMock = [
-  "RRHH",
-  "Marketing",
-  "Ventas",
-  "Producción",
-  "Tecnología",
-  "Finanzas",
-  "Operaciones",
-  "Atención al Cliente"
+  "Entrenamiento Deportivo",
+  "Fisioterapia",
+  "Nutrición Deportiva",
+  "Psicología Deportiva",
+  "Administración",
+  "Servicios Generales"
 ];
 
 export const solicitudesMock = [
   {
     id: 1,
     servicio: {
-      id: "bienestar_mental",
-      nombre: "Programa de Bienestar Mental",
-      icono: "🧘"
+      id: "formacion_continua_deportiva",
+      nombre: "Programa de Formación Continua Deportiva",
+      icono: "🎓"
     },
-    departamento: "RRHH",
-    fecha_implementacion: "2025-11-15",
-    objetivos: "Reducir niveles de estrés del equipo y mejorar el clima laboral general.",
-    comentarios: "Priorizar talleres de mindfulness y gestión emocional.",
+    departamento: "Entrenamiento Deportivo",
+    fecha_implementacion: "2024-12-15",
+    objetivos: "Actualizar conocimientos del equipo en técnicas de entrenamiento de última generación y obtener certificaciones internacionales. Responde a la necesidad identificada en la encuesta de Clima Laboral donde Desarrollo obtuvo 4.1/5.0.",
+    comentarios: "Priorizar formación en periodización avanzada y nuevas metodologías de entrenamiento funcional. Incluir certificaciones NSCA o similares.",
     estado: "En curso",
-    fecha_solicitud: "2025-10-01",
-    solicitante: "María González"
+    fecha_solicitud: "2024-11-26",
+    solicitante: "Carlos Mendoza - Director Deportivo",
+    encuestaRelacionada: "Clima Laboral - Noviembre 2024",
+    prioridad: "Alta",
+    presupuestoEstimado: "$8,500"
   },
   {
     id: 2,
     servicio: {
-      id: "liderazgo_consciente",
-      nombre: "Programa de Liderazgo Consciente",
-      icono: "👥"
+      id: "mindfulness_deportivo",
+      nombre: "Programa de Mindfulness y Gestión del Estrés Deportivo",
+      icono: "🧘"
     },
-    departamento: "Marketing",
-    fecha_implementacion: "2025-12-01",
-    objetivos: "Desarrollar competencias de liderazgo empático en mandos medios.",
-    comentarios: "Incluir seguimiento trimestral post-formación.",
-    estado: "Pendiente",
-    fecha_solicitud: "2025-10-05",
-    solicitante: "Carlos Ramírez"
+    departamento: "Psicología Deportiva",
+    fecha_implementacion: "2024-12-01",
+    objetivos: "Implementar sesiones de mindfulness y gestión del estrés para todo el equipo. Según encuesta, el trabajo con atletas de élite genera alta demanda emocional. Score general: 4.4/5.0",
+    comentarios: "Enfoque en técnicas adaptadas al entorno deportivo. Sesiones semanales para todo el personal. Priorizar Entrenamiento y Psicología.",
+    estado: "Aprobado",
+    fecha_solicitud: "2024-11-24",
+    solicitante: "Dra. Patricia Ruiz - Psicología Deportiva",
+    encuestaRelacionada: "Clima Laboral - Noviembre 2024",
+    prioridad: "Alta",
+    presupuestoEstimado: "$4,200"
   },
   {
     id: 3,
     servicio: {
-      id: "cultura_feedback",
-      nombre: "Taller Cultura de Feedback",
-      icono: "🏆"
+      id: "comunicacion_interdepartamental",
+      nombre: "Taller de Comunicación Interdepartamental",
+      icono: "💬"
     },
-    departamento: "Ventas",
-    fecha_implementacion: "2025-10-20",
-    objetivos: "Establecer prácticas de reconocimiento peer-to-peer en el equipo comercial.",
-    comentarios: "",
-    estado: "Completado",
-    fecha_solicitud: "2025-09-15",
-    solicitante: "Ana Martínez"
+    departamento: "Administración",
+    fecha_implementacion: "2024-12-08",
+    objetivos: "Mejorar la coordinación entre Entrenamiento, Nutrición y Fisioterapia para crear programas integrados más efectivos. Dimensión Comunicación: 4.2/5.0 en encuesta.",
+    comentarios: "Varios comentarios en la encuesta mencionan la necesidad de mejor alineación entre departamentos. Implementar reuniones semanales de coordinación.",
+    estado: "Pendiente",
+    fecha_solicitud: "2024-11-25",
+    solicitante: "Laura Fernández - Gerente de Operaciones",
+    encuestaRelacionada: "Clima Laboral - Noviembre 2024",
+    prioridad: "Media",
+    presupuestoEstimado: "$2,800"
   },
   {
     id: 4,
     servicio: {
-      id: "comunicacion_interna",
-      nombre: "Formación en Comunicación Interna",
-      icono: "💬"
+      id: "yoga_deportivo",
+      nombre: "Programa de Yoga para Alto Rendimiento",
+      icono: "🧘‍♂️"
     },
-    departamento: "Producción",
-    fecha_implementacion: "2025-11-10",
-    objetivos: "Mejorar la comunicación entre turnos y reducir malentendidos operativos.",
-    comentarios: "Adaptar ejemplos a contexto de planta de producción.",
+    departamento: "Entrenamiento Deportivo",
+    fecha_implementacion: "2025-01-15",
+    objetivos: "Implementar yoga deportivo como nuevo servicio. Solicitud surgió en encuesta de Servicios (score 4.5/5.0). Diversifica oferta y mejora recuperación de atletas.",
+    comentarios: "Iniciar con programa piloto. Certificar a 2 instructores internos. Evaluar resultados antes de expansión completa.",
+    estado: "En evaluación",
+    fecha_solicitud: "2024-11-27",
+    solicitante: "Diego Torres - Coordinador de Innovación",
+    encuestaRelacionada: "Evaluación de Servicios Deportivos",
+    prioridad: "Media",
+    presupuestoEstimado: "$6,500"
+  },
+  {
+    id: 5,
+    servicio: {
+      id: "nutricion_plant_based",
+      nombre: "Especialización en Nutrición Plant-Based para Alto Rendimiento",
+      icono: "🥗"
+    },
+    departamento: "Nutrición Deportiva",
+    fecha_implementacion: "2025-01-20",
+    objetivos: "Capacitar al equipo en nutrición vegana/vegetariana de alto rendimiento. Comentarios en encuesta de Servicios solicitaron más opciones plant-based. Score Nutrición: 4.5/5.0",
+    comentarios: "Demanda creciente de atletas con dietas plant-based. Necesitamos expertise para no comprometer performance. Certificación internacional preferible.",
     estado: "Pendiente",
-    fecha_solicitud: "2025-10-08",
-    solicitante: "Roberto Silva"
+    fecha_solicitud: "2024-11-26",
+    solicitante: "Lic. Andrea Gómez - Jefa de Nutrición",
+    encuestaRelacionada: "Evaluación de Servicios Deportivos",
+    prioridad: "Media",
+    presupuestoEstimado: "$3,800"
+  },
+  {
+    id: 6,
+    servicio: {
+      id: "formacion_continua_deportiva",
+      nombre: "Programa de Formación Continua Deportiva",
+      icono: "🎓"
+    },
+    departamento: "Fisioterapia",
+    fecha_implementacion: "2025-02-01",
+    objetivos: "Actualizar al equipo de fisioterapia en técnicas de recuperación avanzadas y nuevas metodologías de tratamiento deportivo.",
+    comentarios: "Complementa la formación del equipo de entrenamiento. Enfoque en recuperación post-lesión y prevención. Departamento de Fisioterapia tuvo 100% de participación en encuesta.",
+    estado: "Pendiente",
+    fecha_solicitud: "2024-11-28",
+    solicitante: "Ft. Roberto Vega - Coordinador de Fisioterapia",
+    encuestaRelacionada: "Clima Laboral - Noviembre 2024",
+    prioridad: "Media",
+    presupuestoEstimado: "$7,200"
   }
 ];
 
-let nextId = 5;
+let nextId = 7;
 
 // Función para agregar nueva solicitud
 export const agregarSolicitud = (solicitud) => {

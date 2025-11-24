@@ -1,8 +1,16 @@
 import { supabase } from '@/lib/supabase';
 import { DEMO_MODE, demoData } from '@/utils/demoData';
+import { FITCORP_MOCK_DATA } from './mockData';
+import { useAuthStore } from '@/stores/auth.store';
 
 const baseService = {
   async getAnalytics(empresaId) {
+    const authStore = useAuthStore();
+
+    if (authStore.isDemoMode) {
+      return FITCORP_MOCK_DATA.analitica;
+    }
+
     if (DEMO_MODE.enabled) {
       return {
         bienestar_global: 8.4,
@@ -138,6 +146,12 @@ const baseService = {
   },
 
   async getEvolution(empresaId, meses = 6) {
+    const authStore = useAuthStore();
+
+    if (authStore.isDemoMode) {
+      return FITCORP_MOCK_DATA.evolucion;
+    }
+
     if (DEMO_MODE.enabled) {
       return demoData.estadisticas.participacion.tendenciaMensual;
     }
@@ -201,6 +215,12 @@ const baseService = {
   },
 
   async getCategorias(empresaId) {
+    const authStore = useAuthStore();
+
+    if (authStore.isDemoMode) {
+      return FITCORP_MOCK_DATA.categorias;
+    }
+
     if (DEMO_MODE.enabled) {
       return demoData.estadisticas.encuestas.dimensiones;
     }

@@ -570,5 +570,38 @@ export const FITCORP_MOCK_DATA = {
       insignias: ['primera_reserva', 'participacion_activa', 'wellness_champion'],
       racha_dias: 45
     }
-  }
+  },
+
+  analitica: {
+    bienestar_global: 4.5,
+    variacion_trimestral: 0.4,
+    participacion_global: 92,
+    alertas_activas: 0,
+    encuestas_activas: 2,
+    encuestas_completadas: 8,
+    empleados_totales: 45,
+    departamentos_fuertes: [
+      { nombre: 'Psicología Deportiva', empleados: 2, promedio: 4.8, tendencia: 'up' },
+      { nombre: 'Nutrición Deportiva', empleados: 2, promedio: 4.7, tendencia: 'up' },
+      { nombre: 'Entrenamiento Deportivo', empleados: 9, promedio: 4.6, tendencia: 'up' }
+    ],
+    departamentos_criticos: []
+  },
+
+  evolucion: [
+    { mes: 'Jun 2024', valor: 4.1, participacion: 38 },
+    { mes: 'Jul 2024', valor: 4.2, participacion: 40 },
+    { mes: 'Ago 2024', valor: 4.3, participacion: 41 },
+    { mes: 'Sep 2024', valor: 4.4, participacion: 42 },
+    { mes: 'Oct 2024', valor: 4.4, participacion: 43 },
+    { mes: 'Nov 2024', valor: 4.5, participacion: 44 }
+  ],
+
+  categorias: [
+    { categoria: 'Salud Mental', valor: 4.6, variacion: 0.5 },
+    { categoria: 'Condición Física', valor: 4.7, variacion: 0.4 },
+    { categoria: 'Nutrición', valor: 4.5, variacion: 0.3 },
+    { categoria: 'Motivación', valor: 4.4, variacion: 0.6 },
+    { categoria: 'Balance Vida-Trabajo', valor: 4.2, variacion: 0.2 }
+  ]
 };

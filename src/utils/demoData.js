@@ -35,21 +35,21 @@ const nombres = ['Carlos', 'Laura', 'Javier', 'Ana', 'Miguel', 'Patricia', 'Robe
 const apellidos = ['Martínez', 'González', 'Ruiz', 'Morales', 'Sánchez', 'Fernández', 'Díaz', 'López', 'Torres', 'Ramírez', 'Ortiz', 'Jiménez', 'Vega', 'Castro', 'Romero', 'Navarro', 'Gil', 'Serrano', 'Blanco', 'Suárez', 'Molina', 'Vázquez', 'Ramos', 'Cruz', 'Flores', 'Herrera', 'Mendoza', 'Guerrero', 'Medina', 'Cortés'];
 
 const cargos = {
-  'demo-dept-1': ['Director de Entrenamiento', 'Entrenador Personal Senior', 'Entrenador Personal', 'Especialista en Fuerza', 'Especialista en Resistencia', 'Preparador Físico', 'Coach de Alto Rendimiento', 'Instructor Funcional'],
-  'demo-dept-2': ['Nutricionista Jefe', 'Nutricionista Senior', 'Nutricionista', 'Dietista Deportivo', 'Consultor Nutricional'],
-  'demo-dept-3': ['Fisioterapeuta Senior', 'Fisioterapeuta', 'Terapeuta Deportivo', 'Especialista en Recuperación', 'Masajista Deportivo'],
-  'demo-dept-4': ['Coordinador de Recepción', 'Recepcionista Senior', 'Recepcionista', 'Atención al Cliente', 'Administrativo'],
-  'demo-dept-5': ['Coordinador de Clases', 'Instructor de Spinning', 'Instructor de Yoga', 'Instructor de Pilates', 'Instructor de CrossFit', 'Instructor de Zumba', 'Instructor de HIIT', 'Instructor de Body Pump'],
-  'demo-dept-6': ['Gerente General', 'Director de Operaciones', 'Director Financiero', 'Director de RRHH', 'Jefe de Marketing', 'Coordinador General', 'Analista de Negocios', 'Asistente de Dirección']
+  'demo-dept-1': ['Tech Lead', 'Senior Full Stack Developer', 'Full Stack Developer', 'Senior Backend Developer', 'Backend Developer', 'Senior Frontend Developer', 'Frontend Developer', 'Junior Developer'],
+  'demo-dept-2': ['QA Manager', 'Senior QA Engineer', 'QA Engineer', 'QA Automation Engineer', 'Test Analyst'],
+  'demo-dept-3': ['DevOps Lead', 'Senior DevOps Engineer', 'DevOps Engineer', 'Cloud Architect', 'Site Reliability Engineer'],
+  'demo-dept-4': ['Design Lead', 'Senior UX Designer', 'UX Designer', 'UI Designer', 'Product Designer'],
+  'demo-dept-5': ['Director de Proyectos', 'Project Manager', 'Scrum Master', 'Product Owner', 'Business Analyst', 'Agile Coach', 'PMO Coordinator', 'Product Manager'],
+  'demo-dept-6': ['CEO', 'CTO', 'Director de Operaciones', 'Director de RRHH', 'Director Comercial', 'CFO', 'Head of Engineering', 'Office Manager']
 };
 
 const departamentosConfig = [
-  { id: 'demo-dept-1', nombre: 'Entrenamiento Personal', codigo: 'ENT', cantidad: 35 },
-  { id: 'demo-dept-2', nombre: 'Nutrición Deportiva', codigo: 'NUT', cantidad: 15 },
-  { id: 'demo-dept-3', nombre: 'Fisioterapia', codigo: 'FIS', cantidad: 12 },
-  { id: 'demo-dept-4', nombre: 'Recepción y Atención', codigo: 'REC', cantidad: 18 },
-  { id: 'demo-dept-5', nombre: 'Clases Grupales', codigo: 'GRP', cantidad: 28 },
-  { id: 'demo-dept-6', nombre: 'Dirección', codigo: 'DIR', cantidad: 12 }
+  { id: 'demo-dept-1', nombre: 'Desarrollo de Software', codigo: 'DEV', cantidad: 35 },
+  { id: 'demo-dept-2', nombre: 'QA y Testing', codigo: 'QA', cantidad: 15 },
+  { id: 'demo-dept-3', nombre: 'DevOps e Infraestructura', codigo: 'OPS', cantidad: 12 },
+  { id: 'demo-dept-4', nombre: 'Diseño UX/UI', codigo: 'UX', cantidad: 18 },
+  { id: 'demo-dept-5', nombre: 'Gestión de Proyectos', codigo: 'PM', cantidad: 28 },
+  { id: 'demo-dept-6', nombre: 'Dirección y Administración', codigo: 'ADM', cantidad: 12 }
 ];
 
 // Generar 120 empleados dinámicamente
@@ -68,7 +68,7 @@ function generarEmpleados() {
       const nombreCompleto = `${nombre} ${apellido}`;
       const emailNombre = nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
       const emailApellido = apellido.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      const email = `${emailNombre}.${emailApellido}${empleadoIndex}@sportlife.com`;
+      const email = `${emailNombre}.${emailApellido}${empleadoIndex}@techpulse.com`;
       const cargoIndex = i % cargosDisponibles.length;
       const cargo = cargosDisponibles[cargoIndex];
       const diasDesdeFundacion = Math.floor((empleadoIndex - 1) * 365 / 120);
@@ -157,10 +157,10 @@ function generarRespuestasEncuesta() {
 export const demoData = {
   empresa: {
     id: 'demo-empresa-1',
-    nombre: 'SportLife Performance',
-    descripcion: 'Centro deportivo de alto rendimiento',
-    sector: 'Deportes y Fitness',
-    logo_url: 'https://images.pexels.com/photos/1552252/pexels-photo-1552252.jpeg?auto=compress&cs=tinysrgb&w=200',
+    nombre: 'TechPulse Consulting',
+    descripcion: 'Consultora tecnológica líder en soluciones digitales',
+    sector: 'Tecnología y Consultoría',
+    logo_url: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=200',
     fecha_creacion: '2023-01-15T00:00:00Z',
     onboarding_completado: true
   },
@@ -178,7 +178,7 @@ export const demoData = {
   encuestas: [
     {
       id: 'demo-enc-1',
-      titulo: 'Clima Laboral SportLife - Q4 2024',
+      titulo: 'Clima Laboral TechPulse - Q4 2024',
       descripcion: 'Encuesta trimestral para medir el clima laboral y satisfacción del equipo',
       estado: 'activa',
       fecha_inicio: '2024-11-01',
@@ -192,8 +192,8 @@ export const demoData = {
     },
     {
       id: 'demo-enc-2',
-      titulo: 'Evaluación Servicios Nutricionales',
-      descripcion: 'Feedback sobre los servicios del departamento de nutrición',
+      titulo: 'Evaluación de Herramientas y Tecnología',
+      descripcion: 'Feedback sobre herramientas de desarrollo y servicios de bienestar',
       estado: 'finalizada',
       fecha_inicio: '2024-10-01',
       fecha_fin: '2024-10-15',
@@ -210,7 +210,7 @@ export const demoData = {
     {
       id: 'demo-preg-1',
       encuesta_id: 'demo-enc-1',
-      texto: '¿Cómo calificarías el ambiente laboral en SportLife?',
+      texto: '¿Cómo calificarías el ambiente laboral en TechPulse?',
       tipo: 'escala',
       opciones: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
       requerida: true,
@@ -250,8 +250,8 @@ export const demoData = {
   comunicados: [
     {
       id: 'demo-com-1',
-      titulo: '¡Nueva zona de CrossFit inaugurada!',
-      contenido: 'Nos complace anunciar la apertura de nuestra nueva zona de CrossFit completamente equipada. Incluye rigs olímpicos, kettlebells de competición y todo lo necesario para llevar tu entrenamiento funcional al siguiente nivel.',
+      titulo: 'Nueva Infraestructura Cloud Migrada',
+      contenido: 'Nos complace anunciar que hemos completado con éxito la migración a AWS. El equipo de DevOps ha trabajado arduamente para garantizar cero downtime. ¡Gracias a todos por el esfuerzo!',
       tipo: 'anuncio',
       prioridad: 'alta',
       fecha_publicacion: '2024-11-10T09:00:00Z',
@@ -264,8 +264,8 @@ export const demoData = {
     },
     {
       id: 'demo-com-2',
-      titulo: 'Horarios especiales por festivo',
-      contenido: 'Les recordamos que el próximo festivo permaneceremos abiertos en horario especial de 08:00 a 15:00. Todas las clases grupales se mantendrán según programación matutina.',
+      titulo: 'Horario Flexible de Verano',
+      contenido: 'A partir del próximo mes, implementaremos jornada intensiva los viernes durante julio y agosto. El horario será de 08:00 a 15:00.',
       tipo: 'informativo',
       prioridad: 'media',
       fecha_publicacion: '2024-11-08T10:30:00Z',
@@ -278,8 +278,8 @@ export const demoData = {
     },
     {
       id: 'demo-com-3',
-      titulo: 'Nuevos planes nutricionales personalizados',
-      contenido: 'El departamento de nutrición lanza un nuevo servicio de planes alimenticios 100% personalizados. Incluye seguimiento semanal, recetas adaptadas y ajustes según tus objetivos deportivos.',
+      titulo: 'Tech Talk: Microservicios con Kubernetes',
+      contenido: 'Este viernes 24 a las 17:00 tendremos una charla técnica sobre arquitectura de microservicios y orquestación con Kubernetes. Snacks y bebidas incluidas. ¡No te la pierdas!',
       tipo: 'servicio',
       prioridad: 'media',
       fecha_publicacion: '2024-11-05T08:00:00Z',
@@ -292,8 +292,8 @@ export const demoData = {
     },
     {
       id: 'demo-com-4',
-      titulo: 'Mantenimiento programado instalaciones',
-      contenido: 'Este sábado realizaremos mantenimiento preventivo de las máquinas de cardio. El área estará disponible desde las 14:00. Disculpen las molestias.',
+      titulo: 'Mantenimiento Programado de Servidores',
+      contenido: 'Este sábado realizaremos mantenimiento de nuestros servidores de desarrollo. El acceso estará disponible desde las 14:00. Disculpen las molestias.',
       tipo: 'mantenimiento',
       prioridad: 'baja',
       fecha_publicacion: '2024-11-03T12:00:00Z',
@@ -306,8 +306,8 @@ export const demoData = {
     },
     {
       id: 'demo-com-5',
-      titulo: 'Jornada de formación en primeros auxilios',
-      contenido: 'Invitamos a todo el personal a participar en la jornada de formación en primeros auxilios deportivos. Será el próximo martes de 10:00 a 14:00. Inscripciones abiertas.',
+      titulo: 'Certificaciones AWS Cubiertas al 100%',
+      contenido: 'TechPulse cubrirá el 100% del costo de certificaciones AWS para todo el equipo. Inscripciones abiertas hasta el 15 de diciembre. ¡Aprovecha esta oportunidad!',
       tipo: 'formacion',
       prioridad: 'alta',
       fecha_publicacion: '2024-11-01T09:00:00Z',
@@ -335,20 +335,20 @@ export const demoData = {
     },
     {
       id: 'demo-rec-2',
-      nombre: 'Pack suplementos deportivos',
-      descripcion: 'Pack premium de suplementos nutricionales',
+      nombre: 'Curso Online Udemy',
+      descripcion: 'Acceso a cualquier curso de desarrollo en Udemy',
       costo_puntos: 300,
-      categoria: 'bienestar',
+      categoria: 'formacion',
       activa: true,
       disponible: true,
       stock: 15,
-      imagen_url: 'https://images.pexels.com/photos/4058224/pexels-photo-4058224.jpeg?auto=compress&cs=tinysrgb&w=400',
+      imagen_url: 'https://images.pexels.com/photos/4144923/pexels-photo-4144923.jpeg?auto=compress&cs=tinysrgb&w=400',
       empresa_id: 'demo-empresa-1'
     },
     {
       id: 'demo-rec-3',
-      nombre: 'Masaje deportivo 60min',
-      descripcion: 'Sesión completa de masaje deportivo',
+      nombre: 'Masaje terapéutico 60min',
+      descripcion: 'Sesión completa de masaje para aliviar tensión',
       costo_puntos: 200,
       categoria: 'bienestar',
       activa: true,
@@ -359,14 +359,14 @@ export const demoData = {
     },
     {
       id: 'demo-rec-4',
-      nombre: 'Ropa deportiva premium',
-      descripcion: 'Vale para ropa deportiva de marca',
+      nombre: 'Gadgets Tech',
+      descripcion: 'Auriculares, teclados mecánicos, mouse ergonómico',
       costo_puntos: 400,
-      categoria: 'material',
+      categoria: 'tecnologia',
       activa: true,
       disponible: true,
       stock: 8,
-      imagen_url: 'https://images.pexels.com/photos/8846253/pexels-photo-8846253.jpeg?auto=compress&cs=tinysrgb&w=400',
+      imagen_url: 'https://images.pexels.com/photos/4158/apple-iphone-smartphone-desk.jpg?auto=compress&cs=tinysrgb&w=400',
       empresa_id: 'demo-empresa-1'
     },
     {
@@ -385,10 +385,10 @@ export const demoData = {
 
   canjes: [
     { id: 'demo-canje-1', empleado_id: 'demo-emp-1', recompensa_id: 'demo-rec-1', puntos_gastados: 500, estado: 'completado', fecha_canje: '2024-10-15T14:30:00Z', empleado: { nombre: 'Carlos Martínez' }, recompensa: { nombre: 'Día libre adicional' } },
-    { id: 'demo-canje-2', empleado_id: 'demo-emp-36', recompensa_id: 'demo-rec-3', puntos_gastados: 200, estado: 'completado', fecha_canje: '2024-10-20T09:15:00Z', empleado: { nombre: 'Carlos González' }, recompensa: { nombre: 'Masaje deportivo 60min' } },
-    { id: 'demo-canje-3', empleado_id: 'demo-emp-53', recompensa_id: 'demo-rec-2', puntos_gastados: 300, estado: 'pendiente', fecha_canje: '2024-11-01T11:00:00Z', empleado: { nombre: 'Carlos Ramos' }, recompensa: { nombre: 'Pack suplementos deportivos' } },
+    { id: 'demo-canje-2', empleado_id: 'demo-emp-36', recompensa_id: 'demo-rec-3', puntos_gastados: 200, estado: 'completado', fecha_canje: '2024-10-20T09:15:00Z', empleado: { nombre: 'Carlos González' }, recompensa: { nombre: 'Masaje terapéutico 60min' } },
+    { id: 'demo-canje-3', empleado_id: 'demo-emp-53', recompensa_id: 'demo-rec-2', puntos_gastados: 300, estado: 'pendiente', fecha_canje: '2024-11-01T11:00:00Z', empleado: { nombre: 'Carlos Ramos' }, recompensa: { nombre: 'Curso Online Udemy' } },
     { id: 'demo-canje-4', empleado_id: 'demo-emp-89', recompensa_id: 'demo-rec-5', puntos_gastados: 250, estado: 'completado', fecha_canje: '2024-11-05T16:45:00Z', empleado: { nombre: 'Carlos Medina' }, recompensa: { nombre: 'Vale comida saludable' } },
-    { id: 'demo-canje-5', empleado_id: 'demo-emp-120', recompensa_id: 'demo-rec-4', puntos_gastados: 400, estado: 'pendiente', fecha_canje: '2024-11-08T10:30:00Z', empleado: { nombre: 'Sara Cortés' }, recompensa: { nombre: 'Ropa deportiva premium' } }
+    { id: 'demo-canje-5', empleado_id: 'demo-emp-120', recompensa_id: 'demo-rec-4', puntos_gastados: 400, estado: 'pendiente', fecha_canje: '2024-11-08T10:30:00Z', empleado: { nombre: 'Sara Cortés' }, recompensa: { nombre: 'Gadgets Tech' } }
   ],
 
   estadisticas: {
@@ -435,9 +435,9 @@ export const demoData = {
   },
 
   servicios: [
-    { id: 'demo-serv-1', nombre: 'Asesoría Nutricional', descripcion: 'Consulta personalizada con nutricionista deportivo', categoria: 'nutricion', duracion_minutos: 60, disponible: true, imagen_url: 'https://images.pexels.com/photos/6551415/pexels-photo-6551415.jpeg?auto=compress&cs=tinysrgb&w=400' },
-    { id: 'demo-serv-2', nombre: 'Sesión Fisioterapia', descripcion: 'Tratamiento de lesiones y recuperación muscular', categoria: 'salud', duracion_minutos: 45, disponible: true, imagen_url: 'https://images.pexels.com/photos/5473180/pexels-photo-5473180.jpeg?auto=compress&cs=tinysrgb&w=400' },
-    { id: 'demo-serv-3', nombre: 'Coaching Deportivo', descripcion: 'Mentoría para alcanzar tus objetivos deportivos', categoria: 'entrenamiento', duracion_minutos: 90, disponible: true, imagen_url: 'https://images.pexels.com/photos/4162491/pexels-photo-4162491.jpeg?auto=compress&cs=tinysrgb&w=400' }
+    { id: 'demo-serv-1', nombre: 'Asesoría Nutricional', descripcion: 'Consulta personalizada con nutricionista para mejorar hábitos', categoria: 'bienestar', duracion_minutos: 60, disponible: true, imagen_url: 'https://images.pexels.com/photos/6551415/pexels-photo-6551415.jpeg?auto=compress&cs=tinysrgb&w=400' },
+    { id: 'demo-serv-2', nombre: 'Ergonomía y Postura', descripcion: 'Evaluación ergonómica de tu puesto de trabajo', categoria: 'salud', duracion_minutos: 45, disponible: true, imagen_url: 'https://images.pexels.com/photos/7640463/pexels-photo-7640463.jpeg?auto=compress&cs=tinysrgb&w=400' },
+    { id: 'demo-serv-3', nombre: 'Mindfulness para Developers', descripcion: 'Técnicas de meditación y gestión del estrés', categoria: 'bienestar', duracion_minutos: 45, disponible: true, imagen_url: 'https://images.pexels.com/photos/3822622/pexels-photo-3822622.jpeg?auto=compress&cs=tinysrgb&w=400' }
   ]
 };
 

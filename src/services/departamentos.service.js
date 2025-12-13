@@ -1,7 +1,6 @@
 import { supabase } from '@/lib/supabase';
-import { wrapServiceWithDemo } from './demo.wrapper';
 
-const baseService = {
+export const departamentosService = {
   async getAll() {
     const { data, error } = await supabase
       .from('departamentos')
@@ -55,5 +54,3 @@ const baseService = {
     if (error) throw error;
   },
 };
-
-export const departamentosService = wrapServiceWithDemo(baseService, 'departamentos');

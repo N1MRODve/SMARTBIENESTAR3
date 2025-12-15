@@ -1,15 +1,17 @@
 // src/stores/sesiones.store.js
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { 
-  getSesiones, 
-  getSesionesByEmpleado,
-  getServiciosSolicitados,
-  addSesion, 
-  reservarPlaza, 
-  cancelarReserva,
-  getSesionById 
-} from '@/services/mock/sesiones.service';
+// TODO: Implement real sesiones service with Supabase
+// These functions should be implemented in @/services/servicios.service.js
+// import {
+//   getSesiones,
+//   getSesionesByEmpleado,
+//   getServiciosSolicitados,
+//   addSesion,
+//   reservarPlaza,
+//   cancelarReserva,
+//   getSesionById
+// } from '@/services/servicios.service';
 
 export const useSesionesStore = defineStore('sesiones', () => {
   const sesiones = ref([]);

@@ -157,7 +157,6 @@ import {
   Clock,
   Save
 } from 'lucide-vue-next';
-import { departamentosMock, agregarSolicitud } from '@/utils/solicitudesMock.js';
 
 // TODO: conectar con tablas "solicitudes_servicios" y "departamentos" en futuras iteraciones.
 
@@ -176,7 +175,14 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'solicitud-guardada']);
 
-const departamentos = ref(departamentosMock);
+const departamentos = ref([
+  'Recursos Humanos',
+  'Tecnología',
+  'Ventas',
+  'Marketing',
+  'Operaciones',
+  'Finanzas'
+]);
 
 const formData = ref({
   departamento: '',
@@ -225,7 +231,8 @@ const guardarSolicitud = () => {
     estado: formData.value.estado
   };
 
-  agregarSolicitud(nuevaSolicitud);
+  // TODO: Save to Supabase solicitudes_servicios table
+  console.log('Guardando solicitud:', nuevaSolicitud);
 
   toast.success('Solicitud registrada correctamente', {
     timeout: 4000

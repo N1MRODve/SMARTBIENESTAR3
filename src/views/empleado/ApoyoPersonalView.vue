@@ -2,8 +2,7 @@
 import { ref, onMounted } from 'vue';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
-// Asumimos que este servicio ya existe y funciona
-import { getEspecialistasSaludMental } from '@/services/mock/colaboradores.service.js';
+import { empleadosService } from '@/services/empleados.service.js';
 
 // --- Estado Reactivo ---
 const especialistas = ref([]);
@@ -13,8 +12,16 @@ const isLoading = ref(true);
 onMounted(async () => {
   isLoading.value = true;
   try {
-    // Obtenemos solo los colaboradores de salud mental
-    especialistas.value = await getEspecialistasSaludMental();
+    // TODO: Filter empleados by role or specialty for mental health specialists
+    // For now, get all empleados - this should be filtered based on a specialist role
+    const allEmpleados = await empleadosService.getAll();
+    // Filter for mental health specialists if there's a way to identify them
+    // This is a placeholder - adjust based on your data model
+    especialistas.value = allEmpleados.filter(e =>
+      e.puesto?.toLowerCase().includes('psicólogo') ||
+      e.puesto?.toLowerCase().includes('terapeuta') ||
+      e.departamentos?.nombre?.toLowerCase().includes('salud mental')
+    );
   } catch (error) {
     console.error("Error al cargar los especialistas:", error);
   } finally {

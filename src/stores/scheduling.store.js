@@ -1,15 +1,16 @@
 // /src/stores/scheduling.store.js
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { 
-  createRecurringSchedule,
-  getScheduledSurveys,
-  updateSchedule,
-  cancelSchedule,
-  getScheduleHistory,
-  getUpcomingScheduledSends,
-  validateScheduleConfig
-} from '@/services/mock/scheduling.service';
+// TODO: Implement real scheduling service with Supabase
+// import {
+//   createRecurringSchedule,
+//   getScheduledSurveys,
+//   updateSchedule,
+//   cancelSchedule,
+//   getScheduleHistory,
+//   getUpcomingScheduledSends,
+//   validateScheduleConfig
+// } from '@/services/scheduling.service';
 
 export const useSchedulingStore = defineStore('scheduling', () => {
   const scheduledSurveys = ref([]);

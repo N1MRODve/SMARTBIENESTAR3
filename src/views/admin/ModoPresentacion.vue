@@ -285,26 +285,54 @@ import {
   FileText,
   X
 } from 'lucide-vue-next';
-import {
-  analiticaMock,
-  evolucionMock,
-  generarResumenEjecutivo,
-  obtenerEstadoGlobal
-} from '@/utils/analiticaMock.js';
-import { configuracionMock } from '@/utils/configuracionMock.js';
 
-// TODO: conectar con "resultados_globales" y "departamentos" cuando BD esté activa.
+// TODO: Load data from Supabase resultados_globales and departamentos tables
 
 const router = useRouter();
 
 // Estado
-const analitica = ref(analiticaMock);
-const evolucion = ref(evolucionMock);
-const config = ref(configuracionMock);
+const analitica = ref({
+  bienestar_global: 0,
+  variacion_trimestral: 0,
+  participacion_global: 0,
+  alertas_activas: 0,
+  encuestas_activas: 0,
+  encuestas_completadas: 0,
+  empleados_totales: 0,
+  departamentos_fuertes: [],
+  departamentos_criticos: []
+});
+
+const evolucion = ref([]);
+
+const config = ref({
+  empresa: {
+    nombre: 'Mi Empresa'
+  }
+});
 
 // Computed
-const estadoGlobal = computed(() => obtenerEstadoGlobal(analitica.value.bienestar_global));
-const resumenEjecutivo = computed(() => generarResumenEjecutivo(analitica.value));
+const estadoGlobal = computed(() => {
+  const valor = analitica.value.bienestar_global;
+  if (valor >= 4.0) return { label: 'Excelente', bg: 'bg-green-100', text: 'text-green-800' };
+  if (valor >= 3.5) return { label: 'Bueno', bg: 'bg-blue-100', text: 'text-blue-800' };
+  if (valor >= 3.0) return { label: 'Regular', bg: 'bg-orange-100', text: 'text-orange-800' };
+  return { label: 'Crítico', bg: 'bg-red-100', text: 'text-red-800' };
+});
+
+const resumenEjecutivo = computed(() => {
+  const valor = analitica.value.bienestar_global;
+
+  if (valor >= 4.0) {
+    return 'La organización presenta indicadores excelentes de bienestar. Se recomienda mantener las prácticas actuales.';
+  } else if (valor >= 3.5) {
+    return 'Los indicadores de bienestar son buenos con oportunidades de mejora en áreas específicas.';
+  } else if (valor >= 3.0) {
+    return 'Se identifican áreas de mejora importantes que requieren atención.';
+  } else {
+    return 'Los indicadores requieren atención inmediata con un plan de acción integral.';
+  }
+});
 
 const fechaActual = computed(() => {
   const hoy = new Date();

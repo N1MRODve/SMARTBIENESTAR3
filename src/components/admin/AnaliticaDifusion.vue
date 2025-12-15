@@ -164,7 +164,13 @@ import {
   CheckCircle,
   Target
 } from 'lucide-vue-next';
-import { calcularEstadisticas } from '@/utils/comunicadosAvanzadosMock.js';
 
-const estadisticas = computed(() => calcularEstadisticas());
+const estadisticas = computed(() => ({
+  totalEnviados: 0,
+  totalProgramados: 0,
+  promedioLectura: 0,
+  totalBorradores: 0,
+  departamentosActivos: 0,
+  datosGrafico: []
+}));
 </script>

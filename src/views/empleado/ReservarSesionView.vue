@@ -1,12 +1,15 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getColaboradorInfo, getDisponibilidad } from '@/services/mock/colaboradores.service.js';
+import { empleadosService } from '@/services/empleados.service.js';
+import { sesionesService, reservasService } from '@/services/servicios.service.js';
 import { useReservasStore } from '@/stores/reservas.store.js';
+import { useAuthStore } from '@/stores/auth.store.js';
 
 const route = useRoute();
 const router = useRouter();
 const reservasStore = useReservasStore();
+const authStore = useAuthStore();
 const colaborador = ref(null);
 const disponibilidad = ref([]);
 const isLoading = ref(true);
@@ -26,13 +29,22 @@ onMounted(async () => {
   const colaboradorId = route.params.colaboradorId;
   isLoading.value = true;
   try {
-    // Obtenemos la info del colaborador y su disponibilidad en paralelo
-    const [info, slots] = await Promise.all([
-      getColaboradorInfo(colaboradorId),
-      getDisponibilidad(colaboradorId)
-    ]);
-    colaborador.value = info;
-    disponibilidad.value = slots;
+    // Get colaborador info
+    colaborador.value = await empleadosService.getById(colaboradorId);
+
+    // Get upcoming sessions for this specialist
+    // TODO: This should be filtered by the specialist/empleado
+    const sesiones = await sesionesService.getProximas();
+    // Map sesiones to disponibilidad format
+    disponibilidad.value = sesiones.map(sesion => ({
+      id: sesion.id,
+      fecha: sesion.fecha_inicio?.split('T')[0],
+      hora: new Date(sesion.fecha_inicio).toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      disponible: sesion.cupo_disponible > 0
+    }));
   } catch (error) {
     console.error("Error al cargar la disponibilidad:", error);
   } finally {
@@ -41,21 +53,26 @@ onMounted(async () => {
 });
 
 const handleReservarClick = async (slot) => {
-  const sesionInfo = {
-    id: slot.id,
-    titulo: `Sesión con ${colaborador.value.nombre}`,
-    fecha: slot.fecha,
-    hora: slot.hora,
-    especialista: colaborador.value.nombre
-  };
+  if (!slot.disponible) return;
 
-  const confirmacion = confirm(`¿Confirmas tu reserva para el ${sesionInfo.fecha} a las ${sesionInfo.hora}?`);
+  const confirmacion = confirm(`¿Confirmas tu reserva para el ${slot.fecha} a las ${slot.hora}?`);
 
   if (confirmacion) {
-    await reservasStore.crearReserva(sesionInfo);
-    slot.disponible = false;
-    alert('¡Tu sesión ha sido reservada con éxito!');
-    router.push('/empleado/dashboard');
+    try {
+      const empleadoId = authStore.empleado?.id;
+      if (!empleadoId) {
+        alert('Debes estar autenticado para reservar una sesión');
+        return;
+      }
+
+      await reservasService.crear(empleadoId, slot.id);
+      slot.disponible = false;
+      alert('¡Tu sesión ha sido reservada con éxito!');
+      router.push('/empleado/dashboard');
+    } catch (error) {
+      console.error('Error al reservar sesión:', error);
+      alert(error.message || 'Error al reservar la sesión');
+    }
   }
 };
 </script>

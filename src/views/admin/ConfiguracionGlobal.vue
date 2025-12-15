@@ -419,21 +419,49 @@ import {
   ImagePlus,
   Loader2
 } from 'lucide-vue-next';
-import {
-  configuracionMock,
-  opcionesConfiguracion,
-  guardarConfiguracion as guardarConfig,
-  cargarConfiguracion,
-  resetearConfiguracion as resetearConfig
-} from '@/utils/configuracionMock.js';
 
 const toast = useToast();
 
-// TODO: conectar con tabla "configuracion_empresa" y "parametros_encuestas" en futuras iteraciones.
+// TODO: Load configuration from Supabase configuracion_empresa and parametros_encuestas tables
 
 // Estado
-const config = reactive({ ...configuracionMock });
-const opciones = opcionesConfiguracion;
+const config = reactive({
+  empresa: {
+    nombre: 'Mi Empresa',
+    pais: 'Chile',
+    idioma: 'Español'
+  },
+  encuestas: {
+    escala: '1-5',
+    anonimato_predeterminado: 'Anónimo completo',
+    umbral_resultados: 5,
+    frecuencia_pulso: 'Mensual',
+    recordatorio_automatico: true,
+    dias_recordatorio: 3
+  },
+  interfaz: {
+    tema: 'Claro',
+    idioma_ui: 'Español',
+    notificaciones_email: true
+  },
+  privacidad: {
+    retencion_datos_meses: 24
+  }
+});
+
+const opciones = {
+  paises: ['Chile', 'Argentina', 'Colombia', 'México', 'Perú'],
+  idiomas: ['Español', 'Inglés', 'Portugués'],
+  escalas: ['1-5', '1-10', 'NPS (0-10)'],
+  nivelesAnonimato: [
+    { id: 'completo', label: 'Anónimo completo', descripcion: '100% anónimo sin identificadores' },
+    { id: 'parcial', label: 'Anónimo parcial', descripcion: 'Agrupado por departamento' },
+    { id: 'identificado', label: 'Identificado', descripcion: 'Con seguimiento individual' }
+  ],
+  frecuenciasPulso: ['Semanal', 'Quincenal', 'Mensual', 'Trimestral'],
+  temas: ['Claro', 'Oscuro', 'Automático']
+};
+
 const guardando = ref(false);
 
 // Métodos
@@ -441,9 +469,9 @@ const guardarConfiguracion = async () => {
   guardando.value = true;
 
   try {
+    // TODO: Save to Supabase configuracion_empresa table
     await new Promise(resolve => setTimeout(resolve, 1000));
-
-    guardarConfig(config);
+    console.log('Guardando configuración:', config);
 
     toast.add({
       severity: 'success',
@@ -464,8 +492,29 @@ const guardarConfiguracion = async () => {
 };
 
 const resetearConfiguracion = () => {
-  const configReset = resetearConfig();
-  Object.assign(config, configReset);
+  Object.assign(config, {
+    empresa: {
+      nombre: 'Mi Empresa',
+      pais: 'Chile',
+      idioma: 'Español'
+    },
+    encuestas: {
+      escala: '1-5',
+      anonimato_predeterminado: 'Anónimo completo',
+      umbral_resultados: 5,
+      frecuencia_pulso: 'Mensual',
+      recordatorio_automatico: true,
+      dias_recordatorio: 3
+    },
+    interfaz: {
+      tema: 'Claro',
+      idioma_ui: 'Español',
+      notificaciones_email: true
+    },
+    privacidad: {
+      retencion_datos_meses: 24
+    }
+  });
 
   toast.add({
     severity: 'info',
@@ -485,7 +534,7 @@ const handleLogoUpload = () => {
 };
 
 onMounted(() => {
-  cargarConfiguracion();
+  // TODO: Load configuration from Supabase
   console.log('Configuración Global cargada');
 });
 </script>

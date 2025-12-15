@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { supabase } from '@/lib/supabase';
 import {
@@ -9,9 +10,21 @@ import {
   FileText,
   BarChart3,
   Award,
-  AlertTriangle
+  AlertTriangle,
+  Info,
+  HelpCircle,
+  Send,
+  Plus,
+  RefreshCw,
+  XCircle,
+  Eye,
+  Users,
+  Target,
+  TrendingDown,
+  Clock
 } from 'lucide-vue-next';
 
+const router = useRouter();
 const authStore = useAuthStore();
 
 const encuestas = ref([]);
@@ -119,6 +132,29 @@ const extremos = computed(() => {
   };
 });
 
+// Computed para acciones recomendadas
+const accionesRecomendadas = computed(() => {
+  const acciones = [];
+
+  // Si hay encuestas activas con baja participación
+  encuestasConParticipacion.value.forEach(encuesta => {
+    const tasa = calcularTasa(encuesta.enviados, encuesta.respondidos);
+    if ((encuesta.estado === 'activa' || encuesta.estado === 'Activa') && tasa < 60) {
+      acciones.push({
+        tipo: 'recordatorio',
+        encuesta: encuesta.titulo,
+        encuestaId: encuesta.id,
+        tasa,
+        prioridad: tasa < 30 ? 'alta' : 'media'
+      });
+    }
+  });
+
+  return acciones;
+});
+
+const hasEncuestas = computed(() => encuestas.value.length > 0);
+
 onMounted(async () => {
   await cargarDatos();
 });
@@ -126,71 +162,40 @@ onMounted(async () => {
 const cargarDatos = async () => {
   isLoading.value = true;
   try {
-    if (authStore.isDemoMode) {
-      const { FITCORP_MOCK_DATA } = await import('@/services/mockData.js');
+    const [encuestasRes, empleadosRes, departamentosRes, respuestasRes] = await Promise.all([
+      supabase
+        .from('encuestas')
+        .select('*')
+        .eq('empresa_id', authStore.empresaId)
+        .order('fecha_creacion', { ascending: false }),
 
-      encuestas.value = FITCORP_MOCK_DATA.participacion.encuestasDetalle.map(enc => ({
-        id: enc.id,
-        titulo: enc.titulo,
-        estado: enc.estado,
-        fecha_creacion: enc.fecha_envio,
-        fecha_inicio: enc.fecha_envio,
-        fecha_fin: enc.fecha_cierre
-      }));
+      supabase
+        .from('empleados')
+        .select('id, departamento_id')
+        .eq('empresa_id', authStore.empresaId)
+        .eq('estado', 'Activo'),
 
-      const totalEmpleados = FITCORP_MOCK_DATA.estadisticas.dashboard.totalEmpleados;
-      empleados.value = Array.from({ length: totalEmpleados }, (_, i) => ({
-        id: `emp-${String(i + 1).padStart(3, '0')}`,
-        departamento_id: FITCORP_MOCK_DATA.departamentos[i % FITCORP_MOCK_DATA.departamentos.length].id
-      }));
+      supabase
+        .from('departamentos')
+        .select('id, nombre')
+        .eq('empresa_id', authStore.empresaId),
 
-      departamentos.value = FITCORP_MOCK_DATA.departamentos;
+      supabase
+        .from('respuestas_encuesta')
+        .select('encuesta_id, empleado_id')
+    ]);
 
-      respuestas.value = [];
-      FITCORP_MOCK_DATA.participacion.encuestasDetalle.forEach(enc => {
-        for (let i = 0; i < enc.respondidos; i++) {
-          respuestas.value.push({
-            encuesta_id: enc.id,
-            empleado_id: `emp-${String(i + 1).padStart(3, '0')}`
-          });
-        }
-      });
-    } else {
-      const [encuestasRes, empleadosRes, departamentosRes, respuestasRes] = await Promise.all([
-        supabase
-          .from('encuestas')
-          .select('*')
-          .eq('empresa_id', authStore.empresaId)
-          .order('fecha_creacion', { ascending: false }),
+    if (encuestasRes.error) throw encuestasRes.error;
+    if (empleadosRes.error) throw empleadosRes.error;
+    if (departamentosRes.error) throw departamentosRes.error;
+    if (respuestasRes.error) throw respuestasRes.error;
 
-        supabase
-          .from('empleados')
-          .select('id, departamento_id')
-          .eq('empresa_id', authStore.empresaId)
-          .eq('estado', 'Activo'),
+    encuestas.value = encuestasRes.data || [];
+    empleados.value = empleadosRes.data || [];
+    departamentos.value = departamentosRes.data || [];
 
-        supabase
-          .from('departamentos')
-          .select('id, nombre')
-          .eq('empresa_id', authStore.empresaId),
-
-        supabase
-          .from('respuestas_encuesta')
-          .select('encuesta_id, empleado_id')
-      ]);
-
-      if (encuestasRes.error) throw encuestasRes.error;
-      if (empleadosRes.error) throw empleadosRes.error;
-      if (departamentosRes.error) throw departamentosRes.error;
-      if (respuestasRes.error) throw respuestasRes.error;
-
-      encuestas.value = encuestasRes.data || [];
-      empleados.value = empleadosRes.data || [];
-      departamentos.value = departamentosRes.data || [];
-
-      const encuestaIds = encuestas.value.map(e => e.id);
-      respuestas.value = (respuestasRes.data || []).filter(r => encuestaIds.includes(r.encuesta_id));
-    }
+    const encuestaIds = encuestas.value.map(e => e.id);
+    respuestas.value = (respuestasRes.data || []).filter(r => encuestaIds.includes(r.encuesta_id));
 
   } catch (error) {
     console.error('Error cargando datos:', error);
@@ -233,6 +238,21 @@ const getBorderColorClass = (tasa) => {
   if (tasa >= 40) return 'border-orange-200 bg-orange-50/50';
   return 'border-red-200 bg-red-50/50';
 };
+
+const getAlertaParticipacion = (tasa) => {
+  if (tasa >= 80) return { mensaje: 'Excelente participación', icono: CheckCircle, color: 'green' };
+  if (tasa >= 60) return { mensaje: 'Buena participación', icono: TrendingUp, color: 'blue' };
+  if (tasa >= 40) return { mensaje: 'Participación media - Considera enviar recordatorio', icono: AlertTriangle, color: 'orange' };
+  return { mensaje: 'Participación baja - Acción requerida', icono: XCircle, color: 'red' };
+};
+
+const crearEncuesta = () => {
+  router.push('/admin/encuestas/crear');
+};
+
+const verEncuesta = (encuestaId) => {
+  router.push({ name: 'admin-encuesta-resultados', params: { encuestaId } });
+};
 </script>
 
 <template>
@@ -241,10 +261,21 @@ const getBorderColorClass = (tasa) => {
     <div class="py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <!-- Header -->
-        <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900">Panel de Participación</h1>
-          <p class="text-gray-600 mt-2">Monitorea en tiempo real el avance de las encuestas y la tasa de respuesta por área</p>
+        <!-- Header Mejorado -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-xl p-8 mb-8">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <BarChart3 class="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 class="text-3xl font-bold text-white">Panel de Participación</h1>
+                <p class="text-white/80 mt-1">
+                  Detecta patrones, identifica desinterés y toma acciones basadas en datos reales
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Loading State -->
@@ -254,73 +285,236 @@ const getBorderColorClass = (tasa) => {
 
         <template v-else>
 
-          <!-- Estadísticas Globales -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Tasa Promedio -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500 mb-1">Tasa Promedio</p>
-                  <p class="text-3xl font-bold text-indigo-600">{{ estadisticas.tasaPromedio }}%</p>
-                  <p class="text-xs text-gray-500 mt-1">En todas las encuestas</p>
+          <!-- Estado Vacío - Onboarding Contextual -->
+          <template v-if="!hasEncuestas">
+            <!-- Bloque Educativo -->
+            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-8 mb-6 shadow-sm">
+              <div class="max-w-3xl mx-auto text-center">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-indigo-100 rounded-full mb-6">
+                  <Target class="h-10 w-10 text-indigo-600" />
                 </div>
-                <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <TrendingUp class="h-7 w-7 text-indigo-600" />
+
+                <h2 class="text-2xl font-bold text-gray-900 mb-3">
+                  Aún no hay datos de participación
+                </h2>
+
+                <p class="text-gray-700 text-lg mb-6 leading-relaxed">
+                  La participación mide <strong>cuántos empleados responden tus encuestas</strong> y te ayuda a detectar
+                  desinterés, saturación o problemas de comunicación antes de que se conviertan en crisis.
+                </p>
+
+                <!-- CTA Principal -->
+                <div class="mb-6">
+                  <button
+                    @click="crearEncuesta"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-lg hover:shadow-xl inline-flex items-center text-lg group"
+                  >
+                    <Plus class="h-6 w-6 mr-2 group-hover:scale-110 transition-transform" />
+                    Crear primera encuesta
+                  </button>
+                </div>
+
+                <!-- Indicadores de valor -->
+                <div class="flex items-center justify-center gap-8 text-sm text-gray-600">
+                  <div class="flex items-center">
+                    <TrendingUp class="h-5 w-5 text-green-600 mr-2" />
+                    <span>Detecta patrones</span>
+                  </div>
+                  <div class="flex items-center">
+                    <AlertTriangle class="h-5 w-5 text-orange-600 mr-2" />
+                    <span>Previene crisis</span>
+                  </div>
+                  <div class="flex items-center">
+                    <Users class="h-5 w-5 text-blue-600 mr-2" />
+                    <span>Por departamento</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Total Respuestas -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500 mb-1">Total Respuestas</p>
-                  <p class="text-3xl font-bold text-green-600">{{ estadisticas.totalRespondidos }}</p>
-                  <p class="text-xs text-gray-500 mt-1">de {{ estadisticas.totalEnviados }} posibles</p>
+            <!-- Preview del Estado Futuro -->
+            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div class="flex items-center mb-6">
+                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                  <Eye class="h-5 w-5 text-indigo-600" />
                 </div>
-                <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
-                  <CheckCircle class="h-7 w-7 text-green-600" />
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">Vista previa: Tu panel de control</h3>
+                  <p class="text-sm text-gray-600">Esto es lo que verás cuando tengas encuestas activas</p>
                 </div>
               </div>
-            </div>
 
-            <!-- Encuestas Activas -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500 mb-1">Encuestas Activas</p>
-                  <p class="text-3xl font-bold text-blue-600">{{ estadisticas.encuestasActivas }}</p>
-                  <p class="text-xs text-gray-500 mt-1">En curso</p>
+              <!-- Grid de métricas simuladas -->
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-sm font-medium text-gray-500">Tasa Promedio</p>
+                    <TrendingUp class="h-5 w-5 text-gray-400" />
+                  </div>
+                  <p class="text-2xl font-bold text-gray-400">---%</p>
+                  <p class="text-xs text-gray-500 mt-1">Porcentaje medio de empleados que responden</p>
                 </div>
-                <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Activity class="h-7 w-7 text-blue-600" />
+
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-sm font-medium text-gray-500">Total Respuestas</p>
+                    <CheckCircle class="h-5 w-5 text-gray-400" />
+                  </div>
+                  <p class="text-2xl font-bold text-gray-400">---</p>
+                  <p class="text-xs text-gray-500 mt-1">Respuestas recibidas vs total de empleados</p>
+                </div>
+
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-sm font-medium text-gray-500">Encuestas Activas</p>
+                    <Activity class="h-5 w-5 text-gray-400" />
+                  </div>
+                  <p class="text-2xl font-bold text-gray-400">---</p>
+                  <p class="text-xs text-gray-500 mt-1">Esperando respuestas en este momento</p>
+                </div>
+
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-sm font-medium text-gray-500">Total Encuestas</p>
+                    <FileText class="h-5 w-5 text-gray-400" />
+                  </div>
+                  <p class="text-2xl font-bold text-gray-400">---</p>
+                  <p class="text-xs text-gray-500 mt-1">Activas + cerradas en tu historial</p>
                 </div>
               </div>
-            </div>
 
-            <!-- Total Encuestas -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-500 mb-1">Total Encuestas</p>
-                  <p class="text-3xl font-bold text-gray-900">{{ estadisticas.totalEncuestas }}</p>
-                  <p class="text-xs text-gray-500 mt-1">{{ estadisticas.encuestasCerradas }} cerradas</p>
-                </div>
-                <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
-                  <FileText class="h-7 w-7 text-gray-600" />
+              <!-- Lista de características futuras -->
+              <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+                <p class="text-sm font-semibold text-indigo-900 mb-3">Cuando tengas encuestas activas, aquí verás:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                  <div class="flex items-center text-gray-700">
+                    <CheckCircle class="h-4 w-4 text-indigo-500 mr-2 flex-shrink-0" />
+                    <span>Participación por encuesta</span>
+                  </div>
+                  <div class="flex items-center text-gray-700">
+                    <CheckCircle class="h-4 w-4 text-indigo-500 mr-2 flex-shrink-0" />
+                    <span>Participación por departamento</span>
+                  </div>
+                  <div class="flex items-center text-gray-700">
+                    <CheckCircle class="h-4 w-4 text-indigo-500 mr-2 flex-shrink-0" />
+                    <span>Evolución temporal (↑ ↓)</span>
+                  </div>
+                  <div class="flex items-center text-gray-700">
+                    <CheckCircle class="h-4 w-4 text-indigo-500 mr-2 flex-shrink-0" />
+                    <span>Alertas de baja participación</span>
+                  </div>
+                  <div class="flex items-center text-gray-700">
+                    <CheckCircle class="h-4 w-4 text-indigo-500 mr-2 flex-shrink-0" />
+                    <span>Mejor y peor departamento</span>
+                  </div>
+                  <div class="flex items-center text-gray-700">
+                    <CheckCircle class="h-4 w-4 text-indigo-500 mr-2 flex-shrink-0" />
+                    <span>Acciones recomendadas</span>
+                  </div>
                 </div>
               </div>
+
+              <p class="text-sm text-gray-500 mt-4 text-center">
+                Crea tu primera encuesta para comenzar a monitorear el engagement de tu equipo
+              </p>
             </div>
-          </div>
+          </template>
 
-          <!-- Sin Datos -->
-          <div v-if="encuestas.length === 0" class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-            <FileText class="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No hay encuestas aún</h3>
-            <p class="text-gray-500">Crea encuestas para empezar a monitorear la participación de tu equipo.</p>
-          </div>
-
+          <!-- Estado Con Datos -->
           <template v-else>
+
+            <!-- Estadísticas Globales CON TOOLTIPS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <!-- Tasa Promedio -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <p class="text-sm font-medium text-gray-500">Tasa Promedio</p>
+                      <div
+                        class="ml-2 cursor-help"
+                        title="Porcentaje medio de empleados que han respondido tus encuestas. Una tasa inferior al 60% puede indicar falta de engagement."
+                      >
+                        <HelpCircle class="h-4 w-4 text-gray-400" />
+                      </div>
+                    </div>
+                    <p class="text-3xl font-bold text-indigo-600 mb-1">{{ estadisticas.tasaPromedio }}%</p>
+                    <p class="text-xs text-gray-500">
+                      {{ estadisticas.tasaPromedio >= 80 ? 'Excelente' : estadisticas.tasaPromedio >= 60 ? 'Buena' : estadisticas.tasaPromedio >= 40 ? 'Media' : 'Baja' }} participación
+                    </p>
+                  </div>
+                  <div class="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <TrendingUp class="h-7 w-7 text-indigo-600" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Total Respuestas -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <p class="text-sm font-medium text-gray-500">Total Respuestas</p>
+                      <div
+                        class="ml-2 cursor-help"
+                        title="Número total de respuestas recibidas vs total posible (empleados × encuestas)"
+                      >
+                        <HelpCircle class="h-4 w-4 text-gray-400" />
+                      </div>
+                    </div>
+                    <p class="text-3xl font-bold text-green-600 mb-1">{{ estadisticas.totalRespondidos }}</p>
+                    <p class="text-xs text-gray-500">de {{ estadisticas.totalEnviados }} posibles</p>
+                  </div>
+                  <div class="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+                    <CheckCircle class="h-7 w-7 text-green-600" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Encuestas Activas -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <p class="text-sm font-medium text-gray-500">Encuestas Activas</p>
+                      <div
+                        class="ml-2 cursor-help"
+                        title="Encuestas que están esperando respuestas en este momento"
+                      >
+                        <HelpCircle class="h-4 w-4 text-gray-400" />
+                      </div>
+                    </div>
+                    <p class="text-3xl font-bold text-blue-600 mb-1">{{ estadisticas.encuestasActivas }}</p>
+                    <p class="text-xs text-gray-500">Esperando respuestas</p>
+                  </div>
+                  <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Activity class="h-7 w-7 text-blue-600" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Total Encuestas -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <p class="text-sm font-medium text-gray-500">Total Encuestas</p>
+                      <div
+                        class="ml-2 cursor-help"
+                        title="Total de encuestas creadas (activas + cerradas)"
+                      >
+                        <HelpCircle class="h-4 w-4 text-gray-400" />
+                      </div>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-900 mb-1">{{ estadisticas.totalEncuestas }}</p>
+                    <p class="text-xs text-gray-500">{{ estadisticas.encuestasCerradas }} cerradas</p>
+                  </div>
+                  <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+                    <FileText class="h-7 w-7 text-gray-600" />
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <!-- Gráfico de Evolución Temporal -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
@@ -363,7 +557,7 @@ const getBorderColorClass = (tasa) => {
               </div>
             </div>
 
-            <!-- Desglose por Encuesta y Departamento -->
+            <!-- Desglose por Encuesta y Departamento CON ALERTAS -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
               <div class="flex items-center mb-6">
                 <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mr-3">
@@ -382,20 +576,43 @@ const getBorderColorClass = (tasa) => {
                   class="border rounded-xl p-6"
                   :class="getBorderColorClass(calcularTasa(encuesta.enviados, encuesta.respondidos))"
                 >
-                  <!-- Header Encuesta -->
-                  <div class="flex items-center justify-between mb-4">
+                  <!-- Header Encuesta CON ALERTA -->
+                  <div class="flex items-start justify-between mb-4">
                     <div class="flex-1">
                       <h3 class="text-lg font-bold text-gray-900 mb-1">{{ encuesta.titulo }}</h3>
-                      <p class="text-sm text-gray-600">
+                      <p class="text-sm text-gray-600 mb-2">
                         Enviada: {{ formatearFecha(encuesta.fecha_envio) }}
                         <span v-if="encuesta.fecha_cierre"> • Cierre: {{ formatearFecha(encuesta.fecha_cierre) }}</span>
                       </p>
+
+                      <!-- Alerta Contextual -->
+                      <div
+                        v-if="calcularTasa(encuesta.enviados, encuesta.respondidos) < 80"
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-medium mt-2"
+                        :class="{
+                          'bg-orange-100 text-orange-800': calcularTasa(encuesta.enviados, encuesta.respondidos) >= 40,
+                          'bg-red-100 text-red-800': calcularTasa(encuesta.enviados, encuesta.respondidos) < 40
+                        }"
+                      >
+                        <component
+                          :is="getAlertaParticipacion(calcularTasa(encuesta.enviados, encuesta.respondidos)).icono"
+                          class="h-4 w-4"
+                        />
+                        <span>{{ getAlertaParticipacion(calcularTasa(encuesta.enviados, encuesta.respondidos)).mensaje }}</span>
+                      </div>
                     </div>
                     <div class="text-right ml-4">
                       <p class="text-3xl font-bold" :class="getTasaColor(calcularTasa(encuesta.enviados, encuesta.respondidos))">
                         {{ calcularTasa(encuesta.enviados, encuesta.respondidos) }}%
                       </p>
                       <p class="text-xs text-gray-500">{{ encuesta.respondidos }}/{{ encuesta.enviados }}</p>
+                      <button
+                        @click="verEncuesta(encuesta.id)"
+                        class="mt-2 text-xs text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center"
+                      >
+                        <Eye class="h-3 w-3 mr-1" />
+                        Ver resultados
+                      </button>
                     </div>
                   </div>
 
@@ -438,7 +655,7 @@ const getBorderColorClass = (tasa) => {
             </div>
 
             <!-- Insights y Recomendaciones -->
-            <div v-if="extremos.mejor.nombre !== '-'" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div v-if="extremos.mejor.nombre !== '-'" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <!-- Mejor Departamento -->
               <div class="bg-green-50 border-2 border-green-200 rounded-xl p-6">
                 <div class="flex items-start">
@@ -478,6 +695,79 @@ const getBorderColorClass = (tasa) => {
               </div>
             </div>
 
+            <!-- Bloque de Acciones Recomendadas -->
+            <div v-if="accionesRecomendadas.length > 0" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mr-3">
+                  <Target class="h-5 w-5 text-amber-600" />
+                </div>
+                <div>
+                  <h2 class="text-xl font-semibold text-gray-900">Acciones Recomendadas</h2>
+                  <p class="text-sm text-gray-600">Tareas sugeridas para mejorar la participación</p>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <div
+                  v-for="(accion, index) in accionesRecomendadas"
+                  :key="index"
+                  class="flex items-start gap-4 p-4 rounded-lg border-2"
+                  :class="{
+                    'bg-red-50 border-red-200': accion.prioridad === 'alta',
+                    'bg-orange-50 border-orange-200': accion.prioridad === 'media'
+                  }"
+                >
+                  <div
+                    class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    :class="{
+                      'bg-red-100': accion.prioridad === 'alta',
+                      'bg-orange-100': accion.prioridad === 'media'
+                    }"
+                  >
+                    <Send
+                      class="h-5 w-5"
+                      :class="{
+                        'text-red-600': accion.prioridad === 'alta',
+                        'text-orange-600': accion.prioridad === 'media'
+                      }"
+                    />
+                  </div>
+                  <div class="flex-1">
+                    <p
+                      class="font-semibold mb-1"
+                      :class="{
+                        'text-red-900': accion.prioridad === 'alta',
+                        'text-orange-900': accion.prioridad === 'media'
+                      }"
+                    >
+                      Enviar recordatorio: {{ accion.encuesta }}
+                    </p>
+                    <p
+                      class="text-sm mb-2"
+                      :class="{
+                        'text-red-800': accion.prioridad === 'alta',
+                        'text-orange-800': accion.prioridad === 'media'
+                      }"
+                    >
+                      Esta encuesta tiene una participación de <strong>{{ accion.tasa }}%</strong>.
+                      {{ accion.prioridad === 'alta' ? 'Acción urgente requerida.' : 'Considera enviar un recordatorio.' }}
+                    </p>
+                    <button
+                      @click="verEncuesta(accion.encuestaId)"
+                      class="text-sm font-medium inline-flex items-center"
+                      :class="{
+                        'text-red-700 hover:text-red-900': accion.prioridad === 'alta',
+                        'text-orange-700 hover:text-orange-900': accion.prioridad === 'media'
+                      }"
+                    >
+                      Ver encuesta
+                      <Eye class="h-4 w-4 ml-1" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </template>
 
         </template>
@@ -486,3 +776,10 @@ const getBorderColorClass = (tasa) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Animaciones suaves para hover */
+.hover\:shadow-md {
+  transition: box-shadow 0.2s ease-in-out;
+}
+</style>

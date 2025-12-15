@@ -534,8 +534,8 @@
 import { ref, onMounted, nextTick, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
-import { getResultadosEncuestaById } from '@/services/mock/encuestas.service.js';
-import { DEMO_MODE } from '@/utils/demoData';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/stores/auth.store';
 import Button from '@/components/common/Button.vue';
 import ModalAccionRecomendada from '@/components/admin/ModalAccionRecomendada.vue';
 import ResultadosPorDepartamento from '@/components/admin/results/ResultadosPorDepartamento.vue';
@@ -575,6 +575,7 @@ Chart.register(...registerables);
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
+const authStore = useAuthStore();
 
 const encuesta = ref(null);
 const loading = ref(true);
@@ -592,15 +593,43 @@ const modalComunicadoAbierto = ref(false);
 const cargarResultados = async () => {
   loading.value = true;
   error.value = null;
-  
+
   try {
     const encuestaId = route.params.encuestaId;
-    const resultados = await getResultadosEncuestaById(encuestaId);
-    encuesta.value = resultados;
-    
+
+    // Load survey data from Supabase
+    const { data: encuestaData, error: encuestaError } = await supabase
+      .from('encuestas')
+      .select(`
+        *,
+        preguntas:preguntas_encuesta(*)
+      `)
+      .eq('id', encuestaId)
+      .eq('empresa_id', authStore.empresaId)
+      .single();
+
+    if (encuestaError) throw encuestaError;
+
+    // Load responses
+    const { data: respuestasData, error: respuestasError } = await supabase
+      .from('respuestas_encuesta')
+      .select('*')
+      .eq('encuesta_id', encuestaId);
+
+    if (respuestasError) throw respuestasError;
+
+    // Calculate total participants
+    const totalParticipantes = new Set(respuestasData.map(r => r.empleado_id)).size;
+
+    encuesta.value = {
+      ...encuestaData,
+      totalParticipantes,
+      resultados: respuestasData
+    };
+
     await nextTick();
     crearGraficos();
-    
+
   } catch (err) {
     error.value = err.message || 'Error al cargar los resultados';
     console.error('Error cargando resultados:', err);

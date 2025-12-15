@@ -1,34 +1,7 @@
 import { supabase } from '@/lib/supabase';
-import { DEMO_MODE, demoData } from '@/utils/demoData';
-import { FITCORP_MOCK_DATA } from './mockData';
-import { useAuthStore } from '@/stores/auth.store';
 
 const baseService = {
   async getAnalytics(empresaId) {
-    const authStore = useAuthStore();
-
-    if (authStore.isDemoMode) {
-      return FITCORP_MOCK_DATA.analitica;
-    }
-
-    if (DEMO_MODE.enabled) {
-      return {
-        bienestar_global: 8.4,
-        variacion_trimestral: 0.5,
-        participacion_global: 87.5,
-        alertas_activas: 0,
-        encuestas_activas: 2,
-        encuestas_completadas: 5,
-        empleados_totales: 120,
-        departamentos_fuertes: [
-          { nombre: 'Dirección', empleados: 12, promedio: 9.2, tendencia: 'up' },
-          { nombre: 'Entrenamiento Personal', empleados: 35, promedio: 8.9, tendencia: 'up' },
-          { nombre: 'Clases Grupales', empleados: 28, promedio: 8.7, tendencia: 'up' }
-        ],
-        departamentos_criticos: []
-      };
-    }
-
     try {
       // Obtener todas las encuestas completadas
       const { data: encuestas, error: encuestasError } = await supabase
@@ -146,16 +119,6 @@ const baseService = {
   },
 
   async getEvolution(empresaId, meses = 6) {
-    const authStore = useAuthStore();
-
-    if (authStore.isDemoMode) {
-      return FITCORP_MOCK_DATA.evolucion;
-    }
-
-    if (DEMO_MODE.enabled) {
-      return demoData.estadisticas.participacion.tendenciaMensual;
-    }
-
     try {
       const fechaInicio = new Date();
       fechaInicio.setMonth(fechaInicio.getMonth() - meses);
@@ -215,25 +178,14 @@ const baseService = {
   },
 
   async getCategorias(empresaId) {
-    const authStore = useAuthStore();
-
-    if (authStore.isDemoMode) {
-      return FITCORP_MOCK_DATA.categorias;
-    }
-
-    if (DEMO_MODE.enabled) {
-      return demoData.estadisticas.encuestas.dimensiones;
-    }
-
     try {
-      // Por ahora retornamos categorías mock
-      // TODO: Implementar lógica de categorización basada en preguntas
+      // TODO: Implement category logic based on survey questions
       return [
-        { categoria: 'Físico', valor: 4.2, variacion: 0.3 },
-        { categoria: 'Mental', valor: 3.8, variacion: -0.1 },
-        { categoria: 'Social', valor: 4.5, variacion: 0.2 },
-        { categoria: 'Financiero', valor: 3.9, variacion: 0.0 },
-        { categoria: 'Profesional', valor: 4.1, variacion: 0.1 }
+        { categoria: 'Físico', valor: 0, variacion: 0 },
+        { categoria: 'Mental', valor: 0, variacion: 0 },
+        { categoria: 'Social', valor: 0, variacion: 0 },
+        { categoria: 'Financiero', valor: 0, variacion: 0 },
+        { categoria: 'Profesional', valor: 0, variacion: 0 }
       ];
     } catch (error) {
       console.error('Error obteniendo categorías:', error);

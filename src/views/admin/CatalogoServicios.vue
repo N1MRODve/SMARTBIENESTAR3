@@ -280,9 +280,8 @@ import {
   Send,
   Users
 } from 'lucide-vue-next';
-import { serviciosMock, obtenerCategorias, obtenerColorCategoria, obtenerServicioPorId } from '@/utils/serviciosMock.js';
 
-// TODO: conectar con tabla "servicios" y endpoint de recomendación dinámica en futuras iteraciones.
+// TODO: Load services from Supabase servicios table
 
 const route = useRoute();
 const toast = useToast();
@@ -292,14 +291,30 @@ const servicioSeleccionado = ref(null);
 const modalDetalleAbierto = ref(false);
 const modalSolicitudAbierto = ref(false);
 
-const categorias = computed(() => obtenerCategorias());
+// Servicios mock (TODO: replace with Supabase data)
+const servicios = ref([]);
+
+const categorias = computed(() => {
+  const cats = new Set(servicios.value.map(s => s.categoria));
+  return ['Todos', ...Array.from(cats)];
+});
 
 const serviciosFiltrados = computed(() => {
   if (categoriaSeleccionada.value === 'Todos') {
-    return serviciosMock;
+    return servicios.value;
   }
-  return serviciosMock.filter(s => s.categoria === categoriaSeleccionada.value);
+  return servicios.value.filter(s => s.categoria === categoriaSeleccionada.value);
 });
+
+const obtenerColorCategoria = (categoria) => {
+  const colores = {
+    'Salud Mental': { bg: 'bg-purple-100', text: 'text-purple-800' },
+    'Actividad Física': { bg: 'bg-green-100', text: 'text-green-800' },
+    'Nutrición': { bg: 'bg-orange-100', text: 'text-orange-800' },
+    'Prevención': { bg: 'bg-blue-100', text: 'text-blue-800' }
+  };
+  return colores[categoria] || { bg: 'bg-gray-100', text: 'text-gray-800' };
+};
 
 const abrirDetalleServicio = (servicio) => {
   servicioSeleccionado.value = servicio;
@@ -316,9 +331,10 @@ const handleSolicitudGuardada = () => {
 };
 
 onMounted(() => {
+  // TODO: Load services from Supabase
   const servicioId = route.query.servicio;
   if (servicioId) {
-    const servicio = obtenerServicioPorId(servicioId);
+    const servicio = servicios.value.find(s => s.id === servicioId);
     if (servicio) {
       abrirDetalleServicio(servicio);
     }

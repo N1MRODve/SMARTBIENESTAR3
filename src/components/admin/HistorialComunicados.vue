@@ -174,15 +174,25 @@ import {
   Copy,
   Trash2
 } from 'lucide-vue-next';
-import {
-  comunicadosMock,
-  obtenerColorEstado,
-  obtenerColorInteraccion
-} from '@/utils/comunicadosAvanzadosMock.js';
 
 defineEmits(['ver-comunicado', 'duplicar-comunicado', 'eliminar-comunicado']);
 
-const comunicados = ref(comunicadosMock);
+const comunicados = ref([]);
+
+const obtenerColorEstado = (estado) => {
+  const colores = {
+    'Enviado': { badge: 'bg-green-100 text-green-800' },
+    'Programado': { badge: 'bg-yellow-100 text-yellow-800' },
+    'Borrador': { badge: 'bg-gray-100 text-gray-800' }
+  };
+  return colores[estado] || { badge: 'bg-gray-100 text-gray-800' };
+};
+
+const obtenerColorInteraccion = (interacciones) => {
+  if (interacciones >= 80) return 'text-green-600';
+  if (interacciones >= 60) return 'text-orange-600';
+  return 'text-red-600';
+};
 
 const formatearFecha = (fecha) => {
   if (!fecha) return 'Sin enviar';

@@ -338,12 +338,21 @@ import {
   Lock,
   UserCheck
 } from 'lucide-vue-next';
-import { departamentos, getTotalEmpleados } from '@/utils/departamentosMock.js';
 
 const router = useRouter();
 const route = useRoute();
 const toast = useToast();
 const encuestasStore = useEncuestasStore();
+
+// Departamentos (TODO: load from Supabase)
+const departamentos = ref([
+  { id: '1', nombre: 'Recursos Humanos', empleados: 12 },
+  { id: '2', nombre: 'Tecnología', empleados: 25 },
+  { id: '3', nombre: 'Ventas', empleados: 18 },
+  { id: '4', nombre: 'Marketing', empleados: 15 },
+  { id: '5', nombre: 'Operaciones', empleados: 20 },
+  { id: '6', nombre: 'Finanzas', empleados: 10 }
+]);
 
 // Estado
 const encuesta = ref({
@@ -361,11 +370,13 @@ const mostrarVistaPrevia = ref(false);
 const mostrarConfirmacion = ref(false);
 
 // Computed
-const totalEmpleadosEmpresa = computed(() => getTotalEmpleados());
+const totalEmpleadosEmpresa = computed(() => {
+  return departamentos.value.reduce((sum, dept) => sum + dept.empleados, 0);
+});
 
 const totalEmpleadosSeleccionados = computed(() => {
   return departamentosSeleccionados.value.reduce((total, deptId) => {
-    const dept = departamentos.find(d => d.id === deptId);
+    const dept = departamentos.value.find(d => d.id === deptId);
     return total + (dept?.empleados || 0);
   }, 0);
 });
@@ -417,12 +428,12 @@ const toggleDepartamento = (deptId) => {
     departamentosSeleccionados.value.push(deptId);
   }
 
-  todosSeleccionados.value = departamentosSeleccionados.value.length === departamentos.length;
+  todosSeleccionados.value = departamentosSeleccionados.value.length === departamentos.value.length;
 };
 
 const toggleTodos = () => {
   if (todosSeleccionados.value) {
-    departamentosSeleccionados.value = departamentos.map(d => d.id);
+    departamentosSeleccionados.value = departamentos.value.map(d => d.id);
   } else {
     departamentosSeleccionados.value = [];
   }
@@ -442,11 +453,10 @@ const enviarEncuesta = async () => {
   enviando.value = true;
 
   try {
-    // Simular envío con mock data
-    // TODO: conectar con tablas "departamentos" y "empleados_encuestas" cuando BD esté activa.
+    // TODO: Connect with real Supabase tables for departamentos and empleados_encuestas
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // Crear la encuesta con estado "Enviada"
+    // Create survey with status "Active"
     await encuestasStore.createNewSurvey({
       ...encuesta.value,
       estado: 'activa',
@@ -455,10 +465,10 @@ const enviarEncuesta = async () => {
       total_destinatarios: totalEmpleadosSeleccionados.value
     });
 
-    // Limpiar datos de sesión
+    // Clean session data
     sessionStorage.removeItem('encuesta_preview');
 
-    // Mostrar confirmación
+    // Show confirmation
     mostrarConfirmacion.value = true;
   } catch (error) {
     console.error('Error al enviar encuesta:', error);

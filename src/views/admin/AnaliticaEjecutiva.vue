@@ -381,10 +381,6 @@ import {
   Info,
   Monitor
 } from 'lucide-vue-next';
-import {
-  generarResumenEjecutivo,
-  obtenerEstadoGlobal
-} from '@/utils/analiticaMock.js';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -408,13 +404,27 @@ const error = ref(null);
 
 // Computed
 const estadoGlobal = computed(() => {
-  const estado = obtenerEstadoGlobal(analitica.value.bienestar_global);
-  return {
-    ...estado,
-    border: 'border-gray-300'
-  };
+  const valor = analitica.value.bienestar_global;
+  if (valor >= 4.0) return { label: 'Excelente', bg: 'bg-green-100', text: 'text-green-800', border: 'border-gray-300' };
+  if (valor >= 3.5) return { label: 'Bueno', bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-gray-300' };
+  if (valor >= 3.0) return { label: 'Regular', bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-gray-300' };
+  return { label: 'Crítico', bg: 'bg-red-100', text: 'text-red-800', border: 'border-gray-300' };
 });
-const resumenEjecutivo = computed(() => generarResumenEjecutivo(analitica.value));
+
+const resumenEjecutivo = computed(() => {
+  const valor = analitica.value.bienestar_global;
+  const participacion = analitica.value.participacion_global;
+
+  if (valor >= 4.0 && participacion >= 80) {
+    return 'La organización presenta indicadores excelentes de bienestar con alta participación. Se recomienda mantener las prácticas actuales y continuar monitoreando.';
+  } else if (valor >= 3.5) {
+    return 'Los indicadores de bienestar son buenos. Existen oportunidades de mejora en áreas específicas que pueden potenciar aún más el clima laboral.';
+  } else if (valor >= 3.0) {
+    return 'Se identifican áreas de mejora importantes. Se recomienda implementar acciones correctivas en los departamentos con menor desempeño.';
+  } else {
+    return 'Los indicadores requieren atención inmediata. Es fundamental desarrollar un plan de acción integral para mejorar el bienestar organizacional.';
+  }
+});
 
 // Cargar datos
 onMounted(async () => {

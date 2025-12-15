@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
-import { getServicioById } from '@/services/mock/servicios.service.js';
+import { serviciosService } from '@/services/servicios.service.js';
 
 // --- Inicialización ---
 const route = useRoute();
@@ -15,7 +15,7 @@ onMounted(async () => {
   const servicioId = route.params.id; // Asume que el ID viene de la ruta
   isLoading.value = true;
   try {
-    servicio.value = await getServicioById(servicioId);
+    servicio.value = await serviciosService.getById(servicioId);
   } catch (error) {
     console.error("Error al cargar el servicio:", error);
   } finally {

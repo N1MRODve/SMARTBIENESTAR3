@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { authService } from '@/services/auth.service';
-import { FITCORP_MOCK_DATA } from '@/services/mockData';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null);
@@ -10,20 +9,12 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(true);
   const initializationDone = ref(false);
   const authListenerSetup = ref(false);
-  const isDemoMode = ref(false);
 
-  const isAuthenticated = computed(() => !!user.value && (!!session.value || isDemoMode.value));
-  const empresaId = computed(() => {
-    if (isDemoMode.value) return FITCORP_MOCK_DATA.empresa.id;
-    return empleado.value?.empresa_id || null;
-  });
-  const isAdmin = computed(() => {
-    if (isDemoMode.value) return true;
-    return empleado.value?.es_admin || false;
-  });
+  const isAuthenticated = computed(() => !!user.value && !!session.value);
+  const empresaId = computed(() => empleado.value?.empresa_id || null);
+  const isAdmin = computed(() => empleado.value?.es_admin || false);
   const userRole = computed(() => {
-    if (!empleado.value && !isDemoMode.value) return null;
-    if (isDemoMode.value) return 'admin';
+    if (!empleado.value) return null;
     return empleado.value.es_admin ? 'admin' : 'empleado';
   });
 
@@ -86,27 +77,6 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true;
 
     try {
-      if (email === 'demo@fitcorp.com') {
-        isDemoMode.value = true;
-        user.value = {
-          id: 'demo-user-001',
-          email: 'demo@fitcorp.com',
-          name: 'Admin Demo'
-        };
-        empleado.value = {
-          id: 'demo-admin-001',
-          nombre: 'Admin',
-          apellidos: 'Demo FitCorp',
-          email: 'demo@fitcorp.com',
-          empresa_id: FITCORP_MOCK_DATA.empresa.id,
-          es_admin: true,
-          cargo: 'Administrador'
-        };
-        session.value = { access_token: 'demo-token' };
-        loading.value = false;
-        return 'admin';
-      }
-
       const response = await authService.signIn(email, password);
 
       user.value = response.user;
@@ -123,15 +93,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = async () => {
     try {
-      if (isDemoMode.value) {
-        isDemoMode.value = false;
-        user.value = null;
-        empleado.value = null;
-        session.value = null;
-        loading.value = false;
-        return;
-      }
-
       await authService.signOut();
       user.value = null;
       empleado.value = null;
@@ -158,7 +119,6 @@ export const useAuthStore = defineStore('auth', () => {
     empresaId,
     isAdmin,
     userRole,
-    isDemoMode,
     initialize,
     login,
     logout,

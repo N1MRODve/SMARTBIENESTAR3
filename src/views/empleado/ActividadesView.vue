@@ -2,9 +2,8 @@
 import { ref, onMounted, computed } from 'vue';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
-// Asumimos que estos servicios y stores ya existen y funcionan
 import { useReservasStore } from '@/stores/reservas.store.js';
-import { getSesiones } from '@/services/mock/sesiones.service.js';
+import { sesionesService, reservasService } from '@/services/servicios.service.js';
 import { useAuthStore } from '@/stores/auth.store.js';
 
 // --- Inicialización ---
@@ -19,9 +18,8 @@ const isLoading = ref(true);
 onMounted(async () => {
   isLoading.value = true;
   try {
-    // Obtenemos todas las sesiones y las filtramos para el futuro
-    const todasLasSesiones = await getSesiones();
-    sesionesDisponibles.value = todasLasSesiones.filter(s => new Date(s.fecha) >= new Date());
+    // Get upcoming sessions
+    sesionesDisponibles.value = await sesionesService.getProximas();
   } catch (error) {
     console.error("Error al cargar las actividades:", error);
   } finally {
@@ -31,14 +29,25 @@ onMounted(async () => {
 
 // --- Lógica de Reserva ---
 const handleReservar = async (sesion) => {
-  const userId = authStore.user?.id;
-  if (!userId) return;
+  const empleadoId = authStore.empleado?.id;
+  if (!empleadoId) {
+    alert('Debes estar autenticado para reservar una actividad');
+    return;
+  }
 
-  const confirmacion = confirm(`¿Confirmas tu reserva para "${sesion.titulo}" el ${sesion.fecha}?`);
+  const fecha = new Date(sesion.fecha_inicio).toLocaleDateString('es-ES');
+  const confirmacion = confirm(`¿Confirmas tu reserva para "${sesion.servicio?.nombre || 'Actividad'}" el ${fecha}?`);
+
   if (confirmacion) {
-    await reservasStore.crearReserva(userId, sesion);
-    alert('¡Reserva confirmada con éxito!');
-    // Idealmente, aquí se actualiza el estado de la sesión para mostrar que ya está reservada
+    try {
+      await reservasService.crear(empleadoId, sesion.id);
+      alert('¡Reserva confirmada con éxito!');
+      // Refresh the sessions list
+      sesionesDisponibles.value = await sesionesService.getProximas();
+    } catch (error) {
+      console.error('Error al crear reserva:', error);
+      alert(error.message || 'Error al crear la reserva');
+    }
   }
 };
 </script>
@@ -57,18 +66,22 @@ const handleReservar = async (sesion) => {
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <Card v-for="sesion in sesionesDisponibles" :key="sesion.id">
         <template #header>
-          <h2 class="text-xl font-semibold text-on-surface">{{ sesion.titulo }}</h2>
+          <h2 class="text-xl font-semibold text-on-surface">{{ sesion.servicio?.nombre || 'Actividad' }}</h2>
         </template>
-        
+
         <div class="space-y-2 text-on-surface-variant">
-          <p><strong>Fecha:</strong> {{ sesion.fecha }}</p>
-          <p><strong>Hora:</strong> {{ sesion.hora }}</p>
-          <p><strong>Plazas disponibles:</strong> {{ sesion.plazasTotales - (sesion.participantes?.length || 0) }}</p>
+          <p><strong>Fecha:</strong> {{ new Date(sesion.fecha_inicio).toLocaleDateString('es-ES') }}</p>
+          <p><strong>Hora:</strong> {{ new Date(sesion.fecha_inicio).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) }}</p>
+          <p><strong>Plazas disponibles:</strong> {{ sesion.cupo_disponible || 0 }}</p>
         </div>
 
         <template #footer>
           <div class="text-right">
-            <Button @click="handleReservar(sesion)" variant="primary">
+            <Button
+              @click="handleReservar(sesion)"
+              variant="primary"
+              :disabled="!sesion.cupo_disponible || sesion.cupo_disponible <= 0"
+            >
               Reservar Plaza
             </Button>
           </div>

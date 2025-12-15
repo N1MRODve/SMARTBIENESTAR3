@@ -63,14 +63,26 @@ src/
 
 ## 🚦 Inicio Rápido
 
-### La plataforma se visualiza automáticamente
-
-El servidor de desarrollo se inicia automáticamente. Los cambios se reflejan instantáneamente gracias a Hot Module Replacement (HMR).
-
-### Comandos disponibles:
+### Instalación inicial
 
 ```bash
-# Desarrollo (automático)
+# 1. Instalar dependencias
+npm install
+
+# 2. Iniciar Supabase local (PostgreSQL + Auth)
+supabase start
+
+# 3. Configurar variables de entorno (opcional si usas los valores por defecto)
+# Copia las credenciales que muestra 'supabase start' a .env.development
+
+# 4. Iniciar servidor de desarrollo
+npm run dev
+```
+
+### Comandos de desarrollo:
+
+```bash
+# Desarrollo con Supabase local
 npm run dev
 
 # Build para producción
@@ -86,12 +98,45 @@ npm run clean
 npm run preview
 ```
 
+### Comandos de Supabase:
+
+```bash
+# Ver estado de servicios locales
+supabase status
+
+# Detener Supabase local
+supabase stop
+
+# Aplicar migraciones
+supabase db push
+
+# Ver logs de la base de datos
+supabase logs db
+
+# Acceder a la base de datos (psql)
+supabase db shell
+```
+
 ### Para ver cambios:
 1. Guarda tu archivo
 2. El navegador se actualiza automáticamente
 3. Si no se actualiza: `Ctrl + Shift + R`
 
 ## 🗄️ Base de Datos
+
+### Desarrollo Local vs Producción
+
+**Desarrollo Local (Supabase CLI):**
+- PostgreSQL corriendo en Docker localmente
+- URL: `http://127.0.0.1:54321`
+- Migraciones aplicadas automáticamente
+- Datos de prueba aislados
+- Reinicia limpio con `supabase db reset`
+
+**Producción (Supabase Cloud):**
+- Base de datos en la nube
+- URL en [.env.local](.env.local)
+- Migra con `supabase db push`
 
 ### Tablas principales:
 - `empresas`, `departamentos`, `empleados`
@@ -106,6 +151,23 @@ npm run preview
 - ✅ Políticas restrictivas por defecto
 - ✅ Autenticación requerida
 - ✅ Verificación de empresa_id
+
+### Migrar de Local a Producción:
+
+```bash
+# 1. Vincular con proyecto de Supabase Cloud
+supabase link --project-ref tu-project-ref
+
+# 2. Aplicar migraciones a producción
+supabase db push
+
+# 3. (Opcional) Migrar datos
+# Exportar datos locales
+supabase db dump --data-only > data.sql
+
+# Importar a producción
+psql "postgresql://..." < data.sql
+```
 
 ## 🔐 Autenticación
 

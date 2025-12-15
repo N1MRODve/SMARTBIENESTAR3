@@ -2,10 +2,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth.store.js';
-import { enableDemoMode } from '@/utils/demoData';
 import empleadoRoutes from './routes/empleado.routes.js';
 import adminRoutes from './routes/admin.routes.js';
-import demoRoutes from './routes/demo.routes.js';
 
 // Importar vistas del MVP
 import LoginView from '../views/LoginView.vue';
@@ -59,8 +57,6 @@ const routes = [
   ...adminRoutes,
   // === RUTAS EMPLEADO (ANIDADAS) ===
   ...empleadoRoutes,
-  // === RUTAS DEMO ===
-  ...demoRoutes,
 
   // === RUTA EMPLEADO LEGACY (MANTENER TEMPORALMENTE) ===
   {
@@ -93,24 +89,6 @@ const router = createRouter({
 
 // Guard de navegación global
 router.beforeEach(async (to, from) => {
-  const isDemoRoute = to.matched.some(record => record.meta.requiresDemo);
-  const isDemoUser = localStorage.getItem('demo_user') === 'admin';
-
-  // Si es una ruta demo, verificar acceso demo
-  if (isDemoRoute) {
-    if (!isDemoUser) {
-      return { name: 'login' };
-    }
-    // Asegurar que el modo demo esté activo
-    enableDemoMode();
-    return true;
-  }
-
-  // Si el usuario demo intenta acceder a rutas normales, redirigir a demo
-  if (isDemoUser && !isDemoRoute) {
-    return '/demo/dashboard';
-  }
-
   const authStore = useAuthStore();
 
   // Esperamos a que la tienda se inicialice si no lo ha hecho

@@ -3,8 +3,6 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
-// Asumimos que este servicio ya existe
-// import { getEncuestas } from '@/services/mock/encuestas.service.js';
 
 // --- Simulación de Datos ---
 const encuestas = ref([

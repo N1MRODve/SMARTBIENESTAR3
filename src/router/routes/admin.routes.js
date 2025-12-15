@@ -32,25 +32,14 @@ const adminRoutes = [
         component: () => import('@/views/admin/CrearEncuestaView.vue'),
       },
       {
-        path: 'encuestas/crear',
-        name: 'admin-crear-encuesta',
-        component: () => import('@/views/admin/CrearEncuestaView.vue'),
-      },
-      {
         path: 'encuestas/:encuestaId/editar',
         name: 'admin-editar-encuesta',
         component: () => import('@/views/admin/EditarEncuestaView.vue'),
       },
-      // --- RUTA AÑADIDA Y CORREGIDA ---
       {
         path: 'encuestas/:encuestaId/resultados',
         name: 'admin-encuesta-resultados',
         component: () => import('@/views/admin/ResultadosEncuestaView.vue'),
-      },
-      {
-        path: 'encuestas/crear',
-        name: 'admin-crear-encuesta',
-        component: () => import('@/views/admin/CrearEncuestaView.vue'),
       },
       {
         path: 'recompensas',
@@ -73,16 +62,6 @@ const adminRoutes = [
         component: () => import('@/views/admin/CrearComunicadoView.vue'),
       },
       {
-        path: 'servicios',
-        name: 'admin-servicios',
-        component: () => import('@/views/admin/GestionServiciosView.vue'),
-      },
-      {
-        path: 'servicios/:id',
-        name: 'admin-servicio-detalle',
-        component: () => import('@/views/admin/ServicioDetalleView.vue'),
-      },
-      {
         path: 'encuestas/programadas',
         name: 'admin-encuestas-programadas',
         component: () => import('@/views/admin/ScheduledSurveysView.vue'),
@@ -98,6 +77,26 @@ const adminRoutes = [
         component: () => import('@/views/admin/PanelParticipacion.vue'),
       },
       {
+        path: 'servicios',
+        name: 'admin-servicios',
+        component: () => import('@/views/admin/CatalogoServicios.vue'),
+      },
+      {
+        path: 'servicios/:id',
+        name: 'admin-servicio-detalle',
+        component: () => import('@/views/admin/ServicioDetalleView.vue'),
+      },
+      {
+        path: 'solicitudes',
+        name: 'admin-solicitudes',
+        component: () => import('@/views/admin/SolicitudesServicios.vue'),
+      },
+      {
+        path: 'comunicacion',
+        name: 'admin-comunicacion',
+        component: () => import('@/views/admin/CentroComunicacion.vue'),
+      },
+      {
         path: 'configuracion',
         name: 'admin-configuracion',
         component: () => import('@/views/admin/ConfiguracionGlobal.vue'),
@@ -111,21 +110,6 @@ const adminRoutes = [
         path: 'presentacion',
         name: 'admin-presentacion',
         component: () => import('@/views/admin/ModoPresentacion.vue'),
-      },
-      {
-        path: 'servicios',
-        name: 'admin-servicios',
-        component: () => import('@/views/admin/CatalogoServicios.vue'),
-      },
-      {
-        path: 'solicitudes',
-        name: 'admin-solicitudes',
-        component: () => import('@/views/admin/SolicitudesServicios.vue'),
-      },
-      {
-        path: 'comunicacion',
-        name: 'admin-comunicacion',
-        component: () => import('@/views/admin/CentroComunicacion.vue'),
       },
       // Redirección por defecto al dashboard si solo se entra a /admin
       {

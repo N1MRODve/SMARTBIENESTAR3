@@ -205,11 +205,6 @@ import {
   Send,
   Loader2
 } from 'lucide-vue-next';
-import {
-  plantillasComunicado,
-  opcionesDestinatarios,
-  agregarComunicado
-} from '@/utils/comunicadosMock.js';
 
 const props = defineProps({
   isOpen: {
@@ -229,6 +224,31 @@ const props = defineProps({
 const emit = defineEmits(['close', 'comunicado-enviado']);
 
 const toast = useToast();
+
+// Plantillas y opciones de destinatarios
+const plantillasComunicado = ref([
+  {
+    id: 'plan_mejora',
+    titulo: 'Plan de Mejora',
+    icono: '📋',
+    color: 'blue',
+    cuerpo: 'Gracias a tu participación en {nombre_encuesta}, hemos identificado áreas de mejora...'
+  },
+  {
+    id: 'agradecimiento',
+    titulo: 'Agradecimiento',
+    icono: '🙏',
+    color: 'green',
+    cuerpo: 'Queremos agradecer tu valiosa participación en {nombre_encuesta}...'
+  }
+]);
+
+const opcionesDestinatarios = ref([
+  { id: 'todos', label: 'Todos los empleados', icono: '👥', descripcion: 'Enviar a toda la organización' },
+  { id: 'lideres', label: 'Líderes de equipo', icono: '👔', descripcion: 'Solo líderes y gerentes' },
+  { id: 'riesgo_alto', label: 'Empleados en riesgo alto', icono: '⚠️', descripcion: 'Basado en resultados de encuesta' },
+  { id: 'riesgo_moderado', label: 'Empleados en riesgo moderado', icono: '⚡', descripcion: 'Basado en resultados de encuesta' }
+]);
 
 // Estado
 const plantillaSeleccionada = ref(null);
@@ -263,8 +283,8 @@ const restaurarPlantilla = () => {
 const guardarBorrador = () => {
   toast.add({
     severity: 'info',
-    summary: 'Borrador guardado',
-    detail: 'El comunicado ha sido guardado como borrador',
+    summary: 'Función no disponible',
+    detail: 'La funcionalidad de guardar borradores estará disponible próximamente',
     life: 3000
   });
 };
@@ -283,18 +303,8 @@ const enviarComunicado = async () => {
   enviando.value = true;
 
   try {
+    // TODO: Implement real communication sending via Supabase
     await new Promise(resolve => setTimeout(resolve, 1500));
-
-    const comunicado = agregarComunicado({
-      encuesta_id: props.encuestaId,
-      nombre_encuesta: props.nombreEncuesta,
-      tipo: plantillaSeleccionada.value?.id || 'general',
-      cuerpo: mensajeEditado.value,
-      destinatarios: destinatariosSeleccionados.value,
-      total_destinatarios: totalDestinatarios.value
-    });
-
-    ultimoComunicado.value = comunicado;
 
     toast.add({
       severity: 'success',
@@ -303,7 +313,14 @@ const enviarComunicado = async () => {
       life: 5000
     });
 
-    emit('comunicado-enviado', comunicado);
+    emit('comunicado-enviado', {
+      encuesta_id: props.encuestaId,
+      nombre_encuesta: props.nombreEncuesta,
+      tipo: plantillaSeleccionada.value?.id || 'general',
+      cuerpo: mensajeEditado.value,
+      destinatarios: destinatariosSeleccionados.value,
+      total_destinatarios: totalDestinatarios.value
+    });
 
     setTimeout(() => {
       cerrarModal();
@@ -338,7 +355,7 @@ const formatearFecha = (fecha) => {
 };
 
 const obtenerTituloPlantilla = (tipo) => {
-  const plantilla = plantillasComunicado.find(p => p.id === tipo);
+  const plantilla = plantillasComunicado.value.find(p => p.id === tipo);
   return plantilla?.titulo || 'Comunicación General';
 };
 

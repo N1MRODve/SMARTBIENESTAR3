@@ -29,12 +29,12 @@ const props = defineProps({
   variant: {
     type: String,
     default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'outline'].includes(value)
+    validator: (value) => ['primary', 'secondary', 'outline', 'destructive', 'ghost', 'success'].includes(value)
   },
   size: {
     type: String,
     default: 'md',
-    validator: (value) => ['sm', 'md', 'lg'].includes(value)
+    validator: (value) => ['xs', 'sm', 'md', 'lg'].includes(value)
   },
   fullWidth: {
     type: Boolean,
@@ -55,14 +55,18 @@ const props = defineProps({
 });
 
 const variants = {
-  primary: 'bg-primary text-white hover:bg-primary-dark focus:ring-primary',
-  secondary: 'bg-secondary text-white hover:bg-secondary/90 focus:ring-secondary',
-  outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-primary'
+  primary: 'bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-900 shadow-sm',
+  secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500 border border-gray-300',
+  outline: 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500 bg-white',
+  destructive: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-600 shadow-sm',
+  ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
+  success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-600 shadow-sm'
 };
 
 const sizes = {
+  xs: 'px-2 py-1 text-xs',
   sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2',
-  lg: 'px-6 py-3 text-lg'
+  md: 'px-4 py-2 text-sm',
+  lg: 'px-6 py-3 text-base'
 };
 </script>

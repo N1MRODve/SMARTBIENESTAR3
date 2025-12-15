@@ -215,16 +215,25 @@ import {
   Mail,
   AlertTriangle
 } from 'lucide-vue-next';
-import {
-  duplicarComunicado,
-  eliminarComunicado,
-  obtenerColorEstado,
-  obtenerColorInteraccion
-} from '@/utils/comunicadosAvanzadosMock.js';
 
-// TODO: conectar con tablas "comunicados", "departamentos" y "usuarios" cuando BD esté activa.
+// TODO: Load comunicados from Supabase comunicados, departamentos, and usuarios tables
 
 const toast = useToast();
+
+const obtenerColorEstado = (estado) => {
+  const colores = {
+    'Enviado': { badge: 'bg-green-100 text-green-800' },
+    'Programado': { badge: 'bg-yellow-100 text-yellow-800' },
+    'Borrador': { badge: 'bg-gray-100 text-gray-800' }
+  };
+  return colores[estado] || { badge: 'bg-gray-100 text-gray-800' };
+};
+
+const obtenerColorInteraccion = (interacciones) => {
+  if (interacciones >= 80) return 'text-green-600';
+  if (interacciones >= 60) return 'text-orange-600';
+  return 'text-red-600';
+};
 
 const tabs = [
   { id: 'crear', nombre: 'Crear comunicado', icon: Send },
@@ -263,14 +272,12 @@ const verComunicado = (comunicado) => {
 };
 
 const duplicar = (comunicado) => {
-  const duplicado = duplicarComunicado(comunicado.id);
-  if (duplicado) {
-    comunicadoEditando.value = duplicado;
-    tabActiva.value = 'crear';
-    toast.info('Comunicado duplicado. Puedes editarlo y enviarlo nuevamente', {
-      timeout: 4000
-    });
-  }
+  // TODO: Implement duplication with Supabase
+  comunicadoEditando.value = { ...comunicado, id: null };
+  tabActiva.value = 'crear';
+  toast.info('Comunicado duplicado. Puedes editarlo y enviarlo nuevamente', {
+    timeout: 4000
+  });
 };
 
 const confirmarEliminar = (comunicado) => {
@@ -280,7 +287,8 @@ const confirmarEliminar = (comunicado) => {
 
 const eliminar = () => {
   if (comunicadoAEliminar.value) {
-    eliminarComunicado(comunicadoAEliminar.value.id);
+    // TODO: Delete from Supabase
+    console.log('Eliminando comunicado:', comunicadoAEliminar.value.id);
     toast.success('Comunicado eliminado correctamente', {
       timeout: 3000
     });

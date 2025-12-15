@@ -136,9 +136,33 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { X, Check, FileText, ArrowRight, Pencil, Blocks } from 'lucide-vue-next';
-import { plantillasEncuestas as plantillas } from '@/utils/encuestasDemoData.js';
 
 const emit = defineEmits(['close', 'seleccionar-desde-cero', 'seleccionar-plantilla']);
+
+const plantillas = ref([
+  {
+    id: 'clima_laboral',
+    nombre: 'Clima Laboral',
+    descripcion: 'Evalúa la satisfacción general y ambiente de trabajo',
+    icon: '🌡️',
+    categoria: 'Clima',
+    preguntas: [
+      { texto: '¿Cómo calificarías el ambiente laboral?', tipo: 'escala_1_5' },
+      { texto: '¿Te sientes valorado en tu trabajo?', tipo: 'si_no' }
+    ]
+  },
+  {
+    id: 'bienestar_360',
+    nombre: 'Bienestar 360',
+    descripcion: 'Evaluación integral de bienestar físico, mental y social',
+    icon: '🧘',
+    categoria: 'Bienestar',
+    preguntas: [
+      { texto: '¿Cómo calificarías tu bienestar general?', tipo: 'escala_1_5' },
+      { texto: '¿Qué aspectos de tu bienestar te gustaría mejorar?', tipo: 'texto_abierto' }
+    ]
+  }
+]);
 
 const opcionSeleccionada = ref(null);
 const plantillaSeleccionada = ref(null);

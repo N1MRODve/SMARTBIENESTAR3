@@ -7,9 +7,11 @@ import { MessageSquare, Plus, AlertCircle, RefreshCw, Edit, Trash2, Eye, AlertOc
 import Button from '@/components/common/Button.vue';
 import Card from '@/components/ui/Card.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
+import { useToast } from '@/composables/useToast';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const toast = useToast();
 
 const comunicados = ref([]);
 const loading = ref(true);
@@ -71,9 +73,10 @@ const confirmarEliminar = async (id) => {
 
     if (err) throw err;
     await cargarComunicados();
+    toast.success('Comunicado eliminado correctamente', { icon: '🗑️' });
   } catch (err) {
     console.error('Error eliminando comunicado:', err);
-    alert('Error al eliminar el comunicado');
+    toast.error('Error al eliminar el comunicado. Por favor, intenta de nuevo.');
   }
 };
 

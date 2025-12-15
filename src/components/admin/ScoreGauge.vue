@@ -65,7 +65,14 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-vue-next';
-import { getScoreColor } from '@/services/mock/analytics.service';
+
+// Helper function to get score color and label
+const getScoreColor = (score) => {
+  if (score >= 8) return { color: '#10b981', label: 'Excelente' };
+  if (score >= 6) return { color: '#f59e0b', label: 'Bueno' };
+  if (score >= 4) return { color: '#f97316', label: 'Regular' };
+  return { color: '#ef4444', label: 'Crítico' };
+};
 
 const props = defineProps({
   score: {

@@ -309,17 +309,17 @@ import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { storeToRefs } from 'pinia';
 import { useEncuestasStore } from '@/stores/encuestas.store';
-import { getSurveyById } from '@/services/mock/encuestas.service';
+import { encuestasService } from '@/services/encuestas.service';
 import Button from '@/components/common/Button.vue';
-import { 
-  ArrowLeft, 
-  AlertCircle, 
+import {
+  ArrowLeft,
+  AlertCircle,
   RefreshCw,
-  Plus, 
-  HelpCircle, 
-  Trash2, 
-  X, 
-  Save 
+  Plus,
+  HelpCircle,
+  Trash2,
+  X,
+  Save
 } from 'lucide-vue-next';
 
 const route = useRoute();
@@ -350,11 +350,11 @@ const puedeGuardar = computed(() => {
 const cargarEncuesta = async () => {
   loading.value = true;
   error.value = null;
-  
+
   try {
     const encuestaId = route.params.encuestaId;
-    const encuestaData = await getSurveyById(encuestaId);
-    
+    const encuestaData = await encuestasService.getById(encuestaId);
+
     // Asegurar que la encuesta tenga la estructura correcta
     encuesta.value = {
       id: encuestaData.id,
@@ -362,9 +362,9 @@ const cargarEncuesta = async () => {
       descripcion: encuestaData.descripcion || '',
       categoria: encuestaData.categoria || 'general',
       estado: encuestaData.estado || 'borrador',
-      preguntas: encuestaData.preguntas || []
+      preguntas: encuestaData.preguntas_encuesta || []
     };
-    
+
     // Asegurar que cada pregunta tenga la estructura correcta
     encuesta.value.preguntas = encuesta.value.preguntas.map(p => ({
       id: p.id || Date.now() + Math.random(),
@@ -372,7 +372,7 @@ const cargarEncuesta = async () => {
       tipo: p.tipo || '',
       opciones: p.opciones || (p.tipo === 'opcion_multiple' ? ['', ''] : [])
     }));
-    
+
   } catch (err) {
     error.value = err.message || 'Error al cargar la encuesta';
     console.error('Error cargando encuesta:', err);

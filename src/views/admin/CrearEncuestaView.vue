@@ -1,681 +1,960 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    
-    <!-- Main Content -->
     <div class="py-8">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header con progreso -->
         <div class="mb-8">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between mb-6">
             <div>
-              <h1 class="text-3xl font-bold text-gray-900">Crear Nueva Encuesta</h1>
-              <p class="mt-2 text-lg text-gray-600">Diseña una encuesta de bienestar para tus empleados</p>
+              <h1 class="text-3xl font-bold text-gray-900">Crear Encuesta de Medición</h1>
+              <p class="mt-2 text-gray-600">
+                Diseña una herramienta de medición que genere datos accionables para mejorar el bienestar
+              </p>
             </div>
-            <Button 
+            <Button
               @click="volverAlDashboard"
               variant="outline"
             >
               <ArrowLeft class="h-5 w-5 mr-2" />
-              Volver al Dashboard
+              Cancelar
             </Button>
           </div>
-        </div>
 
-        <!-- Banner de Plantilla -->
-        <div v-if="plantillaUsada" class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
-          <div class="flex items-start">
-            <div class="flex-shrink-0 text-2xl mr-3">{{ plantillaUsada.icon }}</div>
-            <div class="flex-1">
-              <h3 class="text-sm font-semibold text-indigo-900">
-                Basado en la plantilla: {{ plantillaUsada.nombre }}
-              </h3>
-              <p class="text-sm text-indigo-700 mt-1">
-                {{ plantillaUsada.descripcion }} Puedes editar las preguntas o agregar nuevas antes de lanzar la encuesta.
-              </p>
+          <!-- Stepper visual -->
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between">
+              <div
+                v-for="(step, index) in steps"
+                :key="step.id"
+                class="flex items-center"
+                :class="{ 'flex-1': index < steps.length - 1 }"
+              >
+                <div class="flex items-center">
+                  <div
+                    class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300"
+                    :class="{
+                      'bg-indigo-600 text-white': currentStep === index,
+                      'bg-green-500 text-white': currentStep > index,
+                      'bg-gray-200 text-gray-500': currentStep < index
+                    }"
+                  >
+                    <Check v-if="currentStep > index" class="h-5 w-5" />
+                    <span v-else>{{ index + 1 }}</span>
+                  </div>
+                  <div class="ml-3 hidden md:block">
+                    <p
+                      class="text-sm font-medium"
+                      :class="{
+                        'text-indigo-600': currentStep === index,
+                        'text-green-600': currentStep > index,
+                        'text-gray-500': currentStep < index
+                      }"
+                    >
+                      {{ step.name }}
+                    </p>
+                    <p class="text-xs text-gray-400">{{ step.description }}</p>
+                  </div>
+                </div>
+                <div
+                  v-if="index < steps.length - 1"
+                  class="flex-1 h-1 mx-4 rounded-full transition-all duration-300"
+                  :class="{
+                    'bg-green-500': currentStep > index,
+                    'bg-gray-200': currentStep <= index
+                  }"
+                ></div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Formulario Principal -->
-        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-          <form @submit.prevent="handleLanzarEncuesta" class="space-y-8">
-            <!-- Información Básica -->
-            <div class="p-6 border-b border-gray-200">
-              <h2 class="text-xl font-semibold text-gray-900 mb-6">Información Básica</h2>
-              
-              <div class="space-y-6">
-                <!-- Título de la Encuesta -->
-                <div class="form-group">
-                  <label for="titulo" class="form-label">
-                    Título de la Encuesta *
-                  </label>
-                  <input
-                    id="titulo"
-                    v-model="nuevaEncuesta.titulo"
-                    type="text"
-                    class="input"
-                    placeholder="Ej: Encuesta de Satisfacción Laboral"
-                    required
-                  />
-                  <p class="mt-1 text-sm text-gray-500">
-                    Este será el título principal que verán los empleados
-                  </p>
-                </div>
+        <!-- Contenido del paso actual -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
 
-                <!-- Descripción -->
-                <div class="form-group">
-                  <label for="descripcion" class="form-label">
-                    Descripción (Opcional)
-                  </label>
-                  <textarea
-                    id="descripcion"
-                    v-model="nuevaEncuesta.descripcion"
-                    rows="3"
-                    class="input"
-                    placeholder="Describe brevemente el propósito de esta encuesta..."
-                  ></textarea>
-                </div>
-
-                <!-- Categoría de la Encuesta -->
-                <div class="form-group">
-                  <label for="categoria" class="form-label">
-                    Categoría de la Encuesta *
-                  </label>
-                  <select
-                    id="categoria"
-                    v-model="nuevaEncuesta.categoria"
-                    class="input"
-                    required
-                    @change="actualizarPreguntasSugeridas"
-                  >
-                    <option value="">Selecciona una categoría</option>
-                    <option value="clima-laboral">Clima Laboral Deportivo</option>
-                    <option value="bienestar">Salud y Bienestar Personal</option>
-                    <option value="desempeno">Carga Laboral y Desempeño</option>
-                    <option value="integral">Evaluación Trimestral 360</option>
-                    <option value="salud-mental">Salud Mental</option>
-                    <option value="comunicacion">Comunicación</option>
-                    <option value="general">Bienestar General</option>
-                  </select>
-                  <p class="mt-1 text-sm text-gray-500">
-                    Selecciona el área principal que evaluará esta encuesta
-                  </p>
-                </div>
-
-                <!-- Preguntas Sugeridas -->
-                <div v-if="preguntasSugeridas.length > 0" class="form-group">
-                  <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div class="flex items-start">
-                      <Lightbulb class="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
-                      <div class="flex-1">
-                        <h4 class="text-sm font-medium text-blue-800 mb-2">Preguntas Sugeridas para {{ getCategoriaLabel(nuevaEncuesta.categoria) }}</h4>
-                        <div class="space-y-2">
-                          <div 
-                            v-for="(preguntaSugerida, index) in preguntasSugeridas" 
-                            :key="index"
-                            class="flex items-start justify-between p-3 bg-white border border-blue-200 rounded-lg"
-                          >
-                            <div class="flex-1">
-                              <p class="text-sm text-blue-900 font-medium">{{ preguntaSugerida.texto }}</p>
-                              <p class="text-xs text-blue-700 mt-1">Tipo: {{ getTipoLabel(preguntaSugerida.tipo) }}</p>
-                            </div>
-                            <Button 
-                              type="button"
-                              @click="añadirPreguntaSugerida(preguntaSugerida)"
-                              variant="outline"
-                              class="ml-3 text-blue-600 border-blue-300 hover:bg-blue-50"
-                            >
-                              <Plus class="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                        <p class="text-xs text-blue-600 mt-3">
-                          💡 Estas preguntas están diseñadas específicamente para evaluar {{ getCategoriaLabel(nuevaEncuesta.categoria).toLowerCase() }}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          <!-- PASO 1: Objetivo y Dimensión -->
+          <div v-if="currentStep === 0" class="p-6 space-y-6">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <Target class="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-900">¿Qué quieres medir?</h2>
+                <p class="text-gray-600">Define el objetivo de negocio y la dimensión del bienestar que evaluarás</p>
               </div>
             </div>
 
-            <!-- Configuración de Privacidad y Anonimato -->
-            <div class="p-6 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
-              <div class="flex items-center mb-6">
-                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                  <Shield class="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h2 class="text-xl font-semibold text-gray-900">Configuración de Privacidad y Anonimato</h2>
-                  <p class="text-sm text-gray-600 mt-1">
-                    Define cómo se gestionarán las respuestas y qué nivel de anonimato tendrán los participantes
-                  </p>
-                </div>
+            <!-- Título de la encuesta -->
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-700">
+                Nombre de la encuesta <span class="text-red-500">*</span>
+              </label>
+              <input
+                v-model="encuesta.titulo"
+                type="text"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Ej: Pulso de Bienestar Q4 2024"
+              />
+              <p class="text-xs text-gray-500">
+                Usa un nombre descriptivo que los empleados reconozcan fácilmente
+              </p>
+            </div>
+
+            <!-- Descripción -->
+            <div class="space-y-2">
+              <label class="block text-sm font-semibold text-gray-700">
+                Descripción para empleados
+              </label>
+              <textarea
+                v-model="encuesta.descripcion"
+                rows="2"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Explica brevemente para qué servirá esta encuesta..."
+              ></textarea>
+            </div>
+
+            <!-- Dimensión de bienestar -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <label class="block text-sm font-semibold text-gray-700">
+                  Dimensión a medir <span class="text-red-500">*</span>
+                </label>
+                <button
+                  @click="showDimensionHelp = !showDimensionHelp"
+                  class="text-indigo-600 text-sm hover:underline flex items-center gap-1"
+                >
+                  <HelpCircle class="h-4 w-4" />
+                  ¿Por qué importa esto?
+                </button>
               </div>
 
-              <div class="space-y-4">
-                <!-- Anonimato completo -->
-                <label class="flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md" :class="{
-                  'border-green-500 bg-green-50 ring-2 ring-green-200': nuevaEncuesta.privacidadNivel === 'anonimato_completo',
-                  'border-gray-300 bg-white': nuevaEncuesta.privacidadNivel !== 'anonimato_completo'
-                }">
-                  <div class="flex items-start flex-1">
-                    <div class="flex-shrink-0 mr-4">
-                      <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                        <span class="text-2xl">🟢</span>
-                      </div>
-                    </div>
-                    <div class="flex-1">
-                      <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center">
-                          <input
-                            type="radio"
-                            v-model="nuevaEncuesta.privacidadNivel"
-                            value="anonimato_completo"
-                            class="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300"
-                          />
-                          <span class="ml-3 text-lg font-bold text-gray-900">Anónimo completo</span>
-                        </div>
-                        <span class="px-3 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full border border-green-300">
-                          Recomendado
-                        </span>
-                      </div>
-                      <p class="text-sm text-gray-700 leading-relaxed mb-3">
-                        No se guarda ningún identificador personal. Solo se muestran resultados agregados globales.
-                      </p>
-                      <div class="flex items-start bg-white/70 border border-green-200 rounded-lg p-3">
-                        <ShieldCheck class="h-5 w-5 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
-                        <p class="text-xs text-green-800 font-medium">
-                          Máxima confianza: Los empleados se sentirán seguros compartiendo su opinión honesta
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </label>
-
-                <!-- Anonimato parcial -->
-                <label class="flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md" :class="{
-                  'border-orange-500 bg-orange-50 ring-2 ring-orange-200': nuevaEncuesta.privacidadNivel === 'anonimato_parcial',
-                  'border-gray-300 bg-white': nuevaEncuesta.privacidadNivel !== 'anonimato_parcial'
-                }">
-                  <div class="flex items-start flex-1">
-                    <div class="flex-shrink-0 mr-4">
-                      <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                        <span class="text-2xl">🟠</span>
-                      </div>
-                    </div>
-                    <div class="flex-1">
-                      <div class="flex items-center mb-2">
-                        <input
-                          type="radio"
-                          v-model="nuevaEncuesta.privacidadNivel"
-                          value="anonimato_parcial"
-                          class="h-5 w-5 text-orange-600 focus:ring-orange-500 border-gray-300"
-                        />
-                        <span class="ml-3 text-lg font-bold text-gray-900">Anónimo parcial</span>
-                      </div>
-                      <p class="text-sm text-gray-700 leading-relaxed mb-3">
-                        Se agrupan las respuestas por departamento, sin mostrar datos individuales.
-                      </p>
-                      <div class="space-y-2">
-                        <div class="flex items-start bg-white/70 border border-orange-200 rounded-lg p-3">
-                          <BarChart3 class="h-5 w-5 text-orange-600 mt-0.5 mr-2 flex-shrink-0" />
-                          <p class="text-xs text-orange-800 font-medium">
-                            Análisis por área: Identifica departamentos con oportunidades de mejora
-                          </p>
-                        </div>
-                        <div class="flex items-start bg-white/70 border border-orange-200 rounded-lg p-3">
-                          <Lock class="h-5 w-5 text-orange-600 mt-0.5 mr-2 flex-shrink-0" />
-                          <p class="text-xs text-orange-800 font-medium">
-                            Protección garantizada: No se revelan identidades individuales
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </label>
-
-                <!-- Identificado -->
-                <label class="flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md" :class="{
-                  'border-blue-500 bg-blue-50 ring-2 ring-blue-200': nuevaEncuesta.privacidadNivel === 'identificado',
-                  'border-gray-300 bg-white': nuevaEncuesta.privacidadNivel !== 'identificado'
-                }">
-                  <div class="flex items-start flex-1">
-                    <div class="flex-shrink-0 mr-4">
-                      <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span class="text-2xl">🔵</span>
-                      </div>
-                    </div>
-                    <div class="flex-1">
-                      <div class="flex items-center mb-2">
-                        <input
-                          type="radio"
-                          v-model="nuevaEncuesta.privacidadNivel"
-                          value="identificado"
-                          class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300"
-                        />
-                        <span class="ml-3 text-lg font-bold text-gray-900">Identificado (con propósito)</span>
-                      </div>
-                      <p class="text-sm text-gray-700 leading-relaxed mb-3">
-                        Las respuestas se asocian al usuario solo con fines de seguimiento interno. Requiere consentimiento.
-                      </p>
-                      <div class="space-y-2">
-                        <div class="flex items-start bg-white/70 border border-blue-200 rounded-lg p-3">
-                          <UserCheck class="h-5 w-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
-                          <p class="text-xs text-blue-800 font-medium">
-                            Seguimiento personalizado: Permite dar feedback directo y apoyo individualizado
-                          </p>
-                        </div>
-                        <div class="flex items-start bg-yellow-50 border border-yellow-300 rounded-lg p-3">
-                          <AlertTriangle class="h-5 w-5 text-yellow-600 mt-0.5 mr-2 flex-shrink-0" />
-                          <p class="text-xs text-yellow-800 font-medium">
-                            Importante: Puede reducir la sinceridad de las respuestas. Comunica claramente el propósito
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </label>
-              </div>
-
-              <!-- Mensaje de Confianza Global -->
-              <div class="mt-6 bg-white border-2 border-indigo-200 rounded-xl p-5">
-                <div class="flex items-start">
-                  <div class="flex-shrink-0">
-                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <Heart class="h-5 w-5 text-indigo-600" />
-                    </div>
-                  </div>
-                  <div class="ml-4">
-                    <h4 class="text-sm font-bold text-gray-900 mb-1">Compromiso con la privacidad</h4>
-                    <p class="text-xs text-gray-700 leading-relaxed">
-                      SMART Bienestar cumple con las normativas de protección de datos (GDPR).
-                      Todas las respuestas se cifran y almacenan de forma segura.
-                      Tu configuración será visible para los empleados antes de responder.
+              <!-- Tooltip educativo -->
+              <div v-if="showDimensionHelp" class="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+                <div class="flex items-start gap-3">
+                  <Lightbulb class="h-5 w-5 text-indigo-600 mt-0.5" />
+                  <div class="text-sm text-indigo-800">
+                    <p class="font-medium mb-1">La dimensión define qué métricas alimentará esta encuesta</p>
+                    <p class="text-indigo-700">
+                      Al elegir una dimensión, los resultados se integrarán automáticamente en tu dashboard de analítica,
+                      permitiendo comparaciones históricas y benchmarks con otras empresas del sector.
                     </p>
                   </div>
                 </div>
               </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label
+                  v-for="dim in dimensiones"
+                  :key="dim.id"
+                  class="flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all hover:shadow-md"
+                  :class="{
+                    'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200': encuesta.categoria === dim.id,
+                    'border-gray-200 bg-white hover:border-gray-300': encuesta.categoria !== dim.id
+                  }"
+                >
+                  <input
+                    type="radio"
+                    v-model="encuesta.categoria"
+                    :value="dim.id"
+                    class="sr-only"
+                  />
+                  <div class="flex-shrink-0 mr-4">
+                    <div
+                      class="w-12 h-12 rounded-lg flex items-center justify-center"
+                      :class="dim.bgColor"
+                    >
+                      <component :is="dim.icon" class="h-6 w-6" :class="dim.iconColor" />
+                    </div>
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="font-semibold text-gray-900">{{ dim.nombre }}</h4>
+                    <p class="text-sm text-gray-600 mt-1">{{ dim.descripcion }}</p>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                        {{ dim.indicador }}
+                      </span>
+                    </div>
+                  </div>
+                </label>
+              </div>
             </div>
 
-            <!-- Preguntas -->
-            <div class="p-6">
-              <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-semibold text-gray-900">
-                  Preguntas ({{ nuevaEncuesta.preguntas.length }})
-                </h2>
-                <Button 
-                  type="button"
-                  @click="añadirPregunta"
-                  variant="outline"
-                >
-                  <Plus class="h-5 w-5 mr-2" />
-                  Añadir Pregunta
-                </Button>
+            <!-- Preview de impacto -->
+            <div v-if="encuesta.categoria" class="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <TrendingUp class="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <h4 class="font-semibold text-green-900">Esta encuesta alimentará:</h4>
+                  <ul class="mt-2 space-y-1">
+                    <li v-for="metric in getMetricasImpactadas" :key="metric" class="text-sm text-green-800 flex items-center gap-2">
+                      <Check class="h-4 w-4 text-green-600" />
+                      {{ metric }}
+                    </li>
+                  </ul>
+                </div>
               </div>
+            </div>
+          </div>
 
-              <!-- Lista de Preguntas -->
-              <div v-if="nuevaEncuesta.preguntas.length === 0" class="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
-                <HelpCircle class="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 class="text-lg font-medium text-gray-900 mb-2">No hay preguntas aún</h3>
-                <p class="text-gray-500 mb-4">Comienza agregando tu primera pregunta</p>
-                <Button 
-                  type="button"
-                  @click="añadirPregunta"
-                >
-                  <Plus class="h-5 w-5 mr-2" />
-                  Añadir Primera Pregunta
-                </Button>
+          <!-- PASO 2: Preguntas -->
+          <div v-if="currentStep === 1" class="p-6 space-y-6">
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center">
+                  <FileText class="h-7 w-7 text-white" />
+                </div>
+                <div>
+                  <h2 class="text-xl font-bold text-gray-900">Diseña las preguntas</h2>
+                  <p class="text-gray-600">Cada pregunta debe medir algo específico y accionable</p>
+                </div>
               </div>
+              <div class="text-right">
+                <span class="text-2xl font-bold text-indigo-600">{{ encuesta.preguntas.length }}</span>
+                <span class="text-gray-500 text-sm"> preguntas</span>
+              </div>
+            </div>
 
-              <div v-else class="space-y-6">
-                <div 
-                  v-for="(pregunta, index) in nuevaEncuesta.preguntas" 
-                  :key="pregunta.id"
-                  class="border border-gray-200 rounded-lg p-6 bg-gray-50"
+            <!-- Preguntas sugeridas por categoría -->
+            <div v-if="preguntasSugeridas.length > 0 && encuesta.preguntas.length === 0" class="p-4 bg-blue-50 border border-blue-200 rounded-xl mb-6">
+              <div class="flex items-start gap-3 mb-4">
+                <Sparkles class="h-5 w-5 text-blue-600 mt-0.5" />
+                <div>
+                  <h4 class="font-semibold text-blue-900">Preguntas recomendadas para {{ getDimensionLabel }}</h4>
+                  <p class="text-sm text-blue-700">Estas preguntas están validadas científicamente para medir esta dimensión</p>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div
+                  v-for="(pregunta, index) in preguntasSugeridas.slice(0, 3)"
+                  :key="index"
+                  class="flex items-center justify-between p-3 bg-white border border-blue-200 rounded-lg"
                 >
-                  <!-- Header de la Pregunta -->
-                  <div class="flex items-start justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">
-                      Pregunta {{ index + 1 }}
-                    </h3>
-                    <Button 
-                      type="button"
-                      @click="eliminarPregunta(index)"
-                      variant="outline"
-                      class="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 class="h-4 w-4" />
-                    </Button>
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900">{{ pregunta.texto }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ getTipoLabel(pregunta.tipo) }}</p>
                   </div>
+                  <button
+                    @click="agregarPreguntaSugerida(pregunta)"
+                    class="ml-3 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 flex items-center gap-1"
+                  >
+                    <Plus class="h-4 w-4" />
+                    Añadir
+                  </button>
+                </div>
+              </div>
+              <button
+                @click="agregarTodasSugeridas"
+                class="mt-3 w-full py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 text-sm font-medium"
+              >
+                Añadir todas las recomendadas
+              </button>
+            </div>
 
-                  <!-- Texto de la Pregunta -->
-                  <div class="form-group mb-4">
-                    <label :for="`pregunta-texto-${index}`" class="form-label">
-                      Texto de la Pregunta *
+            <!-- Lista de preguntas -->
+            <div v-if="encuesta.preguntas.length === 0" class="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl">
+              <MessageSquare class="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 class="text-lg font-medium text-gray-900 mb-2">Sin preguntas aún</h3>
+              <p class="text-gray-500 mb-4">Añade preguntas desde las sugerencias o crea las tuyas</p>
+              <Button @click="agregarPregunta">
+                <Plus class="h-5 w-5 mr-2" />
+                Crear pregunta personalizada
+              </Button>
+            </div>
+
+            <div v-else class="space-y-4">
+              <div
+                v-for="(pregunta, index) in encuesta.preguntas"
+                :key="pregunta.id"
+                class="border border-gray-200 rounded-xl p-5 bg-gray-50"
+              >
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex items-center gap-3">
+                    <span class="w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold text-sm">
+                      {{ index + 1 }}
+                    </span>
+                    <div>
+                      <span v-if="pregunta.esValidada" class="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                        Validada científicamente
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    @click="eliminarPregunta(index)"
+                    class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 class="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Texto de la pregunta <span class="text-red-500">*</span>
                     </label>
                     <textarea
-                      :id="`pregunta-texto-${index}`"
                       v-model="pregunta.texto"
                       rows="2"
-                      class="input"
-                      placeholder="Escribe tu pregunta aquí..."
-                      required
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="¿Qué quieres preguntar?"
                     ></textarea>
                   </div>
 
-                  <!-- Tipo de Pregunta -->
-                  <div class="form-group mb-4">
-                    <label :for="`pregunta-tipo-${index}`" class="form-label">
-                      Tipo de Pregunta *
-                    </label>
-                    <select
-                      :id="`pregunta-tipo-${index}`"
-                      v-model="pregunta.tipo"
-                      class="input"
-                      required
-                      @change="actualizarOpcionesPregunta(index)"
-                    >
-                      <option value="">Selecciona un tipo</option>
-                      <option value="opcion_multiple">Opción Múltiple</option>
-                      <option value="si_no">Sí / No</option>
-                      <option value="escala_1_5">Escala 1-5</option>
-                      <option value="texto_abierto">Texto Abierto (Anónimo)</option>
-                    </select>
-                  </div>
-
-                  <!-- Opciones para Opción Múltiple -->
-                  <div v-if="pregunta.tipo === 'opcion_multiple'" class="form-group">
-                    <label class="form-label">Opciones de Respuesta *</label>
-                    <div class="space-y-3">
-                      <div 
-                        v-for="(opcion, opcionIndex) in pregunta.opciones" 
-                        :key="opcionIndex"
-                        class="flex items-center space-x-3"
-                      >
-                        <input
-                          v-model="pregunta.opciones[opcionIndex]"
-                          type="text"
-                          class="input flex-1"
-                          :placeholder="`Opción ${opcionIndex + 1}`"
-                          required
-                        />
-                        <Button 
-                          v-if="pregunta.opciones.length > 2"
-                          type="button"
-                          @click="eliminarOpcion(index, opcionIndex)"
-                          variant="outline"
-                          class="text-red-600 hover:text-red-700"
-                        >
-                          <X class="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <Button 
-                        type="button"
-                        @click="agregarOpcion(index)"
-                        variant="outline"
-                        class="w-full"
-                      >
-                        <Plus class="h-4 w-4 mr-2" />
-                        Agregar Opción
-                      </Button>
-                    </div>
-                  </div>
-
-                  <!-- Información para Texto Abierto -->
-                  <div v-if="pregunta.tipo === 'texto_abierto'" class="form-group">
-                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div class="flex items-start">
-                        <svg class="h-5 w-5 text-blue-500 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <div>
-                          <h4 class="text-sm font-medium text-blue-800 mb-1">Pregunta de Texto Abierto</h4>
-                          <p class="text-sm text-blue-700">
-                            Los empleados podrán escribir respuestas libres y anónimas. 
-                            Ideal para recopilar feedback cualitativo y sugerencias.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Preview de la Pregunta -->
-                  <div class="mt-6 p-4 bg-white border border-gray-200 rounded-lg">
-                    <h4 class="text-sm font-medium text-gray-700 mb-3">Vista Previa:</h4>
-                    <div class="space-y-3">
-                      <p class="font-medium text-gray-900">{{ pregunta.texto || 'Texto de la pregunta...' }}</p>
-                      
-                      <!-- Preview Opción Múltiple -->
-                      <div v-if="pregunta.tipo === 'opcion_multiple'" class="space-y-2">
-                        <div 
-                          v-for="(opcion, opcionIndex) in pregunta.opciones" 
-                          :key="opcionIndex"
-                          class="flex items-center"
-                        >
-                          <input type="radio" :name="`preview-${index}`" class="mr-2" disabled />
-                          <span class="text-gray-700">{{ opcion || `Opción ${opcionIndex + 1}` }}</span>
-                        </div>
-                      </div>
-
-                      <!-- Preview Sí/No -->
-                      <div v-else-if="pregunta.tipo === 'si_no'" class="space-y-2">
-                        <div class="flex items-center">
-                          <input type="radio" name="preview-sino" class="mr-2" disabled />
-                          <span class="text-gray-700">Sí</span>
-                        </div>
-                        <div class="flex items-center">
-                          <input type="radio" name="preview-sino" class="mr-2" disabled />
-                          <span class="text-gray-700">No</span>
-                        </div>
-                      </div>
-
-                      <!-- Preview Escala 1-5 -->
-                      <div v-else-if="pregunta.tipo === 'escala_1_5'" class="space-y-3">
-                        <div class="flex items-center justify-between text-sm text-gray-500">
-                          <span>Muy insatisfecho</span>
-                          <span>Muy satisfecho</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                          <div v-for="valor in [1, 2, 3, 4, 5]" :key="valor" class="flex flex-col items-center">
-                            <input type="radio" name="preview-escala" class="mb-2" disabled />
-                            <span class="text-sm font-medium text-gray-700">{{ valor }}</span>
-                          </div>
-                        </div>
-                      </div>
-                     <!-- Preview Texto Abierto -->
-                     <div v-else-if="pregunta.tipo === 'texto_abierto'" class="space-y-3">
-                       <textarea 
-                         class="w-full px-3 py-2 border border-gray-300 rounded-md resize-none"
-                         rows="4"
-                         placeholder="Los empleados podrán escribir su respuesta aquí..."
-                         disabled
-                       ></textarea>
-                       <p class="text-xs text-green-600 flex items-center">
-                         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                         </svg>
-                         Tu respuesta a esta pregunta es 100% anónima
-                       </p>
-                     </div>
-                    </div>
-                </div>
-              </div>
-
-              <!-- Configuración de Recurrencia -->
-              <div class="form-group">
-                <div class="flex items-center space-x-3 mb-4">
-                  <input
-                    id="es-recurrente"
-                    v-model="nuevaEncuesta.esRecurrente"
-                    type="checkbox"
-                    class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                  />
-                  <label for="es-recurrente" class="text-sm font-medium text-gray-700">
-                    Hacer esta encuesta recurrente
-                  </label>
-                </div>
-
-                <!-- Opciones de Recurrencia -->
-                <div v-if="nuevaEncuesta.esRecurrente" class="ml-7 space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h4 class="text-sm font-medium text-blue-800 mb-3">Configuración de Recurrencia</h4>
-                  
-                  <!-- Frecuencia -->
-                  <div class="grid grid-cols-2 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label for="frecuencia" class="block text-sm font-medium text-gray-700 mb-1">
-                        Frecuencia *
+                      <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Tipo de respuesta <span class="text-red-500">*</span>
                       </label>
                       <select
-                        id="frecuencia"
-                        v-model="nuevaEncuesta.recurrencia.frecuencia"
-                        class="input"
-                        required
+                        v-model="pregunta.tipo"
+                        @change="actualizarOpcionesPregunta(index)"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       >
-                        <option value="">Selecciona frecuencia</option>
-                        <option value="semanal">Semanal</option>
-                        <option value="quincenal">Quincenal</option>
-                        <option value="mensual">Mensual</option>
-                        <option value="trimestral">Trimestral</option>
+                        <option value="">Seleccionar tipo...</option>
+                        <option value="escala_1_5">Escala 1-5 (Recomendado para métricas)</option>
+                        <option value="si_no">Sí / No</option>
+                        <option value="opcion_multiple">Opción múltiple</option>
+                        <option value="texto_abierto">Texto abierto</option>
                       </select>
                     </div>
-
-                    <!-- Día de la semana (solo para semanal/quincenal) -->
-                    <div v-if="nuevaEncuesta.recurrencia.frecuencia === 'semanal' || nuevaEncuesta.recurrencia.frecuencia === 'quincenal'">
-                      <label for="dia-semana" class="block text-sm font-medium text-gray-700 mb-1">
-                        Día de la semana *
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Dimensión que mide
                       </label>
                       <select
-                        id="dia-semana"
-                        v-model="nuevaEncuesta.recurrencia.diaSemana"
-                        class="input"
-                        required
+                        v-model="pregunta.dimension"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       >
-                        <option value="">Selecciona día</option>
-                        <option value="lunes">Lunes</option>
-                        <option value="martes">Martes</option>
-                        <option value="miercoles">Miércoles</option>
-                        <option value="jueves">Jueves</option>
-                        <option value="viernes">Viernes</option>
-                      </select>
-                    </div>
-
-                    <!-- Día del mes (solo para mensual/trimestral) -->
-                    <div v-if="nuevaEncuesta.recurrencia.frecuencia === 'mensual' || nuevaEncuesta.recurrencia.frecuencia === 'trimestral'">
-                      <label for="dia-mes" class="block text-sm font-medium text-gray-700 mb-1">
-                        Día del mes *
-                      </label>
-                      <select
-                        id="dia-mes"
-                        v-model="nuevaEncuesta.recurrencia.diaMes"
-                        class="input"
-                        required
-                      >
-                        <option value="">Selecciona día</option>
-                        <option v-for="dia in 28" :key="dia" :value="dia">
-                          {{ dia }}
+                        <option value="">Igual que la encuesta</option>
+                        <option v-for="dim in dimensiones" :key="dim.id" :value="dim.id">
+                          {{ dim.nombre }}
                         </option>
                       </select>
                     </div>
                   </div>
 
-                  <!-- Hora de envío -->
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label for="hora-envio" class="block text-sm font-medium text-gray-700 mb-1">
-                        Hora de envío *
-                      </label>
-                      <input
-                        id="hora-envio"
-                        v-model="nuevaEncuesta.recurrencia.horaEnvio"
-                        type="time"
-                        class="input"
-                        required
-                      />
-                    </div>
-
-                    <!-- Duración activa -->
-                    <div>
-                      <label for="duracion-activa" class="block text-sm font-medium text-gray-700 mb-1">
-                        Días activa *
-                      </label>
-                      <select
-                        id="duracion-activa"
-                        v-model="nuevaEncuesta.recurrencia.duracionActiva"
-                        class="input"
-                        required
-                      >
-                        <option value="">Selecciona duración</option>
-                        <option value="1">1 día</option>
-                        <option value="3">3 días</option>
-                        <option value="7">7 días</option>
-                        <option value="14">14 días</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <!-- Fecha de inicio -->
-                  <div>
-                    <label for="fecha-inicio" class="block text-sm font-medium text-gray-700 mb-1">
-                      Fecha de inicio *
+                  <!-- Opciones para opción múltiple -->
+                  <div v-if="pregunta.tipo === 'opcion_multiple'" class="space-y-3">
+                    <label class="block text-sm font-medium text-gray-700">
+                      Opciones de respuesta
                     </label>
-                    <input
-                      id="fecha-inicio"
-                      v-model="nuevaEncuesta.recurrencia.fechaInicio"
-                      type="date"
-                      class="input"
-                      :min="fechaMinima"
-                      required
-                    />
+                    <div
+                      v-for="(opcion, opcionIndex) in pregunta.opciones"
+                      :key="opcionIndex"
+                      class="flex items-center gap-2"
+                    >
+                      <input
+                        v-model="pregunta.opciones[opcionIndex]"
+                        type="text"
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                        :placeholder="`Opción ${opcionIndex + 1}`"
+                      />
+                      <button
+                        v-if="pregunta.opciones.length > 2"
+                        @click="eliminarOpcion(index, opcionIndex)"
+                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      >
+                        <X class="h-4 w-4" />
+                      </button>
+                    </div>
+                    <button
+                      @click="agregarOpcion(index)"
+                      class="text-indigo-600 text-sm hover:underline flex items-center gap-1"
+                    >
+                      <Plus class="h-4 w-4" />
+                      Añadir opción
+                    </button>
                   </div>
 
-                  <!-- Preview de la recurrencia -->
-                  <div v-if="previewRecurrencia" class="mt-4 p-3 bg-white border border-blue-300 rounded-lg">
-                    <h5 class="text-sm font-medium text-blue-800 mb-2">Vista previa del cronograma:</h5>
-                    <p class="text-sm text-blue-700">{{ previewRecurrencia }}</p>
+                  <!-- Preview visual -->
+                  <div class="p-4 bg-white border border-gray-200 rounded-lg">
+                    <p class="text-xs text-gray-500 mb-2">Vista previa:</p>
+                    <p class="font-medium text-gray-900 mb-3">{{ pregunta.texto || 'Tu pregunta aquí...' }}</p>
+
+                    <!-- Preview escala -->
+                    <div v-if="pregunta.tipo === 'escala_1_5'" class="flex items-center justify-between">
+                      <span class="text-xs text-gray-500">Muy insatisfecho</span>
+                      <div class="flex gap-2">
+                        <div v-for="n in 5" :key="n" class="w-10 h-10 border-2 border-gray-300 rounded-lg flex items-center justify-center text-gray-600 font-medium">
+                          {{ n }}
+                        </div>
+                      </div>
+                      <span class="text-xs text-gray-500">Muy satisfecho</span>
+                    </div>
+
+                    <!-- Preview sí/no -->
+                    <div v-else-if="pregunta.tipo === 'si_no'" class="flex gap-4">
+                      <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                        <span class="text-gray-700">Sí</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                        <span class="text-gray-700">No</span>
+                      </div>
+                    </div>
+
+                    <!-- Preview opción múltiple -->
+                    <div v-else-if="pregunta.tipo === 'opcion_multiple'" class="space-y-2">
+                      <div v-for="(op, i) in pregunta.opciones" :key="i" class="flex items-center gap-2">
+                        <div class="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                        <span class="text-gray-700">{{ op || `Opción ${i + 1}` }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Preview texto abierto -->
+                    <div v-else-if="pregunta.tipo === 'texto_abierto'" class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                      <p class="text-sm text-gray-400 italic">Respuesta de texto libre...</p>
+                    </div>
                   </div>
+                </div>
+              </div>
+
+              <button
+                @click="agregarPregunta"
+                class="w-full py-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-indigo-300 hover:text-indigo-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <Plus class="h-5 w-5" />
+                Añadir otra pregunta
+              </button>
+            </div>
+          </div>
+
+          <!-- PASO 3: Audiencia -->
+          <div v-if="currentStep === 2" class="p-6 space-y-6">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl flex items-center justify-center">
+                <Users class="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-900">¿A quién quieres encuestar?</h2>
+                <p class="text-gray-600">Define la audiencia para obtener datos representativos</p>
+              </div>
+            </div>
+
+            <!-- Estadísticas de audiencia -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+              <div class="bg-indigo-50 rounded-xl p-4 text-center">
+                <p class="text-3xl font-bold text-indigo-600">{{ audienciaEstimada }}</p>
+                <p class="text-sm text-indigo-700">Empleados alcanzados</p>
+              </div>
+              <div class="bg-green-50 rounded-xl p-4 text-center">
+                <p class="text-3xl font-bold text-green-600">{{ departamentosSeleccionados.length || departamentos.length }}</p>
+                <p class="text-sm text-green-700">Departamentos</p>
+              </div>
+              <div class="bg-purple-50 rounded-xl p-4 text-center">
+                <p class="text-3xl font-bold text-purple-600">{{ estimacionRespuestas }}%</p>
+                <p class="text-sm text-purple-700">Tasa estimada de respuesta</p>
+              </div>
+            </div>
+
+            <!-- Tipo de segmentación -->
+            <div class="space-y-4">
+              <label class="block text-sm font-semibold text-gray-700">
+                Alcance de la encuesta
+              </label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label
+                  class="flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all"
+                  :class="{
+                    'border-indigo-500 bg-indigo-50': encuesta.alcance === 'todos',
+                    'border-gray-200 hover:border-gray-300': encuesta.alcance !== 'todos'
+                  }"
+                >
+                  <input type="radio" v-model="encuesta.alcance" value="todos" class="sr-only" />
+                  <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
+                    <Globe class="h-5 w-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Toda la empresa</h4>
+                    <p class="text-sm text-gray-600">Enviar a todos los {{ totalEmpleados }} empleados</p>
+                  </div>
+                </label>
+
+                <label
+                  class="flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all"
+                  :class="{
+                    'border-indigo-500 bg-indigo-50': encuesta.alcance === 'segmentado',
+                    'border-gray-200 hover:border-gray-300': encuesta.alcance !== 'segmentado'
+                  }"
+                >
+                  <input type="radio" v-model="encuesta.alcance" value="segmentado" class="sr-only" />
+                  <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                    <Filter class="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Segmentado</h4>
+                    <p class="text-sm text-gray-600">Seleccionar departamentos específicos</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Selector de departamentos -->
+            <div v-if="encuesta.alcance === 'segmentado'" class="space-y-4">
+              <label class="block text-sm font-semibold text-gray-700">
+                Selecciona los departamentos
+              </label>
+
+              <div v-if="loadingDepartamentos" class="text-center py-8">
+                <div class="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+                <p class="text-gray-500 mt-2">Cargando departamentos...</p>
+              </div>
+
+              <div v-else-if="departamentos.length === 0" class="text-center py-8 bg-gray-50 rounded-xl">
+                <Building class="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                <p class="text-gray-600">No hay departamentos configurados</p>
+                <p class="text-sm text-gray-500">Configura departamentos en la sección de empleados</p>
+              </div>
+
+              <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label
+                  v-for="dept in departamentos"
+                  :key="dept.id"
+                  class="flex items-center p-4 border rounded-xl cursor-pointer transition-all"
+                  :class="{
+                    'border-indigo-500 bg-indigo-50': departamentosSeleccionados.includes(dept.id),
+                    'border-gray-200 hover:border-gray-300': !departamentosSeleccionados.includes(dept.id)
+                  }"
+                >
+                  <input
+                    type="checkbox"
+                    :value="dept.id"
+                    v-model="departamentosSeleccionados"
+                    class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+                  />
+                  <div class="ml-3 flex-1">
+                    <h4 class="font-medium text-gray-900">{{ dept.nombre }}</h4>
+                    <p class="text-sm text-gray-500">{{ getEmpleadosPorDepartamento(dept.id) }} empleados</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Aviso de representatividad -->
+            <div v-if="audienciaEstimada < 5" class="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <div class="flex items-start gap-3">
+                <AlertTriangle class="h-5 w-5 text-yellow-600 mt-0.5" />
+                <div>
+                  <h4 class="font-semibold text-yellow-900">Muestra pequeña</h4>
+                  <p class="text-sm text-yellow-800">
+                    Con menos de 5 empleados, los resultados pueden no ser estadísticamente representativos.
+                    Considera ampliar la audiencia para obtener datos más fiables.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-            <!-- Botones de Acción -->
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-              <div class="flex justify-between items-center">
-                <div class="text-sm text-gray-500">
-                  <span v-if="nuevaEncuesta.preguntas.length === 0">
-                    Agrega al menos una pregunta para continuar
-                  </span>
-                  <span v-else>
-                    {{ nuevaEncuesta.preguntas.length }} pregunta{{ nuevaEncuesta.preguntas.length !== 1 ? 's' : '' }} lista{{ nuevaEncuesta.preguntas.length !== 1 ? 's' : '' }}
-                  </span>
+          <!-- PASO 4: Privacidad -->
+          <div v-if="currentStep === 3" class="p-6 space-y-6">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <Shield class="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-900">Configura la privacidad</h2>
+                <p class="text-gray-600">El nivel de anonimato impacta directamente en la sinceridad de las respuestas</p>
+              </div>
+            </div>
+
+            <!-- Niveles de privacidad -->
+            <div class="space-y-4">
+              <!-- Anónimo completo -->
+              <label
+                class="flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all"
+                :class="{
+                  'border-green-500 bg-green-50 ring-2 ring-green-200': encuesta.privacidadNivel === 'anonimato_completo',
+                  'border-gray-200 hover:border-gray-300': encuesta.privacidadNivel !== 'anonimato_completo'
+                }"
+              >
+                <input type="radio" v-model="encuesta.privacidadNivel" value="anonimato_completo" class="sr-only" />
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                  <ShieldCheck class="h-6 w-6 text-green-600" />
                 </div>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between">
+                    <h4 class="font-bold text-gray-900 text-lg">Anónimo completo</h4>
+                    <span class="px-3 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                      Recomendado
+                    </span>
+                  </div>
+                  <p class="text-gray-600 mt-1">
+                    No se guarda ningún identificador. Solo se muestran resultados agregados globales.
+                  </p>
+                  <div class="mt-3 p-3 bg-white border border-green-200 rounded-lg">
+                    <p class="text-sm text-green-800 flex items-center gap-2">
+                      <Check class="h-4 w-4" />
+                      Máxima tasa de respuestas sinceras
+                    </p>
+                  </div>
+                </div>
+              </label>
 
-                <div class="flex space-x-4">
-                  <Button
-                    type="button"
-                    @click="guardarBorrador"
-                    variant="outline"
-                    :disabled="loading || !nuevaEncuesta.titulo.trim()"
-                  >
-                    <Save class="h-4 w-4 mr-2" />
-                    Guardar Borrador
-                  </Button>
+              <!-- Anónimo parcial -->
+              <label
+                class="flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all"
+                :class="{
+                  'border-orange-500 bg-orange-50 ring-2 ring-orange-200': encuesta.privacidadNivel === 'anonimato_parcial',
+                  'border-gray-200 hover:border-gray-300': encuesta.privacidadNivel !== 'anonimato_parcial'
+                }"
+              >
+                <input type="radio" v-model="encuesta.privacidadNivel" value="anonimato_parcial" class="sr-only" />
+                <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+                  <BarChart3 class="h-6 w-6 text-orange-600" />
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-bold text-gray-900 text-lg">Anónimo por departamento</h4>
+                  <p class="text-gray-600 mt-1">
+                    Las respuestas se agrupan por departamento. No se revelan identidades individuales.
+                  </p>
+                  <div class="mt-3 p-3 bg-white border border-orange-200 rounded-lg">
+                    <p class="text-sm text-orange-800 flex items-center gap-2">
+                      <BarChart3 class="h-4 w-4" />
+                      Permite análisis comparativo entre áreas
+                    </p>
+                  </div>
+                </div>
+              </label>
 
-                  <Button
-                    type="button"
-                    @click="continuarAEnvio"
-                    :loading="loading"
-                    :disabled="!puedeSerLanzada"
-                    class="bg-indigo-600 text-white hover:bg-indigo-700"
-                  >
-                    Continuar a envío
-                    <ArrowRight class="h-4 w-4 ml-2" />
-                  </Button>
+              <!-- Aviso de privacidad parcial -->
+              <div v-if="encuesta.privacidadNivel === 'anonimato_parcial' && hayDepartamentoPequeno" class="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                <div class="flex items-start gap-3">
+                  <AlertTriangle class="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <div>
+                    <h4 class="font-semibold text-yellow-900">Riesgo de identificación</h4>
+                    <p class="text-sm text-yellow-800">
+                      Tienes departamentos con menos de 5 personas. Con anonimato parcial,
+                      las respuestas podrían ser fácilmente identificables.
+                      <strong>Recomendamos anonimato completo</strong> para garantizar la privacidad.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Identificado -->
+              <label
+                class="flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all"
+                :class="{
+                  'border-blue-500 bg-blue-50 ring-2 ring-blue-200': encuesta.privacidadNivel === 'identificado',
+                  'border-gray-200 hover:border-gray-300': encuesta.privacidadNivel !== 'identificado'
+                }"
+              >
+                <input type="radio" v-model="encuesta.privacidadNivel" value="identificado" class="sr-only" />
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                  <UserCheck class="h-6 w-6 text-blue-600" />
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-bold text-gray-900 text-lg">Identificado (con consentimiento)</h4>
+                  <p class="text-gray-600 mt-1">
+                    Las respuestas se asocian al empleado. Requiere consentimiento explícito.
+                  </p>
+                  <div class="mt-3 p-3 bg-white border border-blue-200 rounded-lg space-y-2">
+                    <p class="text-sm text-blue-800 flex items-center gap-2">
+                      <UserCheck class="h-4 w-4" />
+                      Permite seguimiento personalizado
+                    </p>
+                    <p class="text-sm text-yellow-700 flex items-center gap-2">
+                      <AlertTriangle class="h-4 w-4" />
+                      Puede reducir la sinceridad de las respuestas
+                    </p>
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            <!-- Mensaje GDPR -->
+            <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+              <div class="flex items-start gap-3">
+                <Lock class="h-5 w-5 text-indigo-600 mt-0.5" />
+                <div>
+                  <h4 class="font-semibold text-indigo-900">Cumplimiento GDPR</h4>
+                  <p class="text-sm text-indigo-800">
+                    SMART Bienestar cumple con el Reglamento General de Protección de Datos.
+                    Todos los datos se cifran y almacenan en servidores europeos.
+                    Los empleados verán la configuración de privacidad antes de responder.
+                  </p>
                 </div>
               </div>
             </div>
-          </form>
+          </div>
+
+          <!-- PASO 5: Resumen y envío -->
+          <div v-if="currentStep === 4" class="p-6 space-y-6">
+            <div class="flex items-center gap-4 mb-6">
+              <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                <Rocket class="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-900">Revisa y lanza tu encuesta</h2>
+                <p class="text-gray-600">Confirma todos los detalles antes de enviar</p>
+              </div>
+            </div>
+
+            <!-- Resumen de la encuesta -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Info básica -->
+              <div class="bg-gray-50 rounded-xl p-5">
+                <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <FileText class="h-5 w-5 text-indigo-600" />
+                  Información básica
+                </h3>
+                <div class="space-y-3">
+                  <div>
+                    <p class="text-xs text-gray-500">Título</p>
+                    <p class="font-medium text-gray-900">{{ encuesta.titulo || 'Sin título' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">Dimensión</p>
+                    <p class="font-medium text-gray-900">{{ getDimensionLabel }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">Preguntas</p>
+                    <p class="font-medium text-gray-900">{{ encuesta.preguntas.length }} preguntas</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Audiencia -->
+              <div class="bg-gray-50 rounded-xl p-5">
+                <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Users class="h-5 w-5 text-green-600" />
+                  Audiencia
+                </h3>
+                <div class="space-y-3">
+                  <div>
+                    <p class="text-xs text-gray-500">Alcance</p>
+                    <p class="font-medium text-gray-900">
+                      {{ encuesta.alcance === 'todos' ? 'Toda la empresa' : `${departamentosSeleccionados.length} departamentos` }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">Empleados</p>
+                    <p class="font-medium text-gray-900">{{ audienciaEstimada }} personas</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">Respuestas estimadas</p>
+                    <p class="font-medium text-gray-900">~{{ Math.round(audienciaEstimada * estimacionRespuestas / 100) }} respuestas</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Privacidad -->
+              <div class="bg-gray-50 rounded-xl p-5">
+                <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Shield class="h-5 w-5 text-blue-600" />
+                  Privacidad
+                </h3>
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-10 h-10 rounded-full flex items-center justify-center"
+                    :class="{
+                      'bg-green-100': encuesta.privacidadNivel === 'anonimato_completo',
+                      'bg-orange-100': encuesta.privacidadNivel === 'anonimato_parcial',
+                      'bg-blue-100': encuesta.privacidadNivel === 'identificado'
+                    }"
+                  >
+                    <ShieldCheck v-if="encuesta.privacidadNivel === 'anonimato_completo'" class="h-5 w-5 text-green-600" />
+                    <BarChart3 v-else-if="encuesta.privacidadNivel === 'anonimato_parcial'" class="h-5 w-5 text-orange-600" />
+                    <UserCheck v-else class="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-900">{{ getPrivacidadLabel }}</p>
+                    <p class="text-xs text-gray-500">{{ getPrivacidadDescripcion }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Impacto en métricas -->
+              <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200">
+                <h3 class="font-semibold text-green-900 mb-4 flex items-center gap-2">
+                  <TrendingUp class="h-5 w-5 text-green-600" />
+                  Impacto en analítica
+                </h3>
+                <ul class="space-y-2">
+                  <li v-for="metric in getMetricasImpactadas" :key="metric" class="text-sm text-green-800 flex items-center gap-2">
+                    <Check class="h-4 w-4 text-green-600" />
+                    {{ metric }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Programación -->
+            <div class="bg-white border border-gray-200 rounded-xl p-5">
+              <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Clock class="h-5 w-5 text-purple-600" />
+                Programación
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label
+                  class="flex items-center p-4 border rounded-xl cursor-pointer transition-all"
+                  :class="{
+                    'border-indigo-500 bg-indigo-50': !encuesta.esRecurrente && !encuesta.programada,
+                    'border-gray-200 hover:border-gray-300': encuesta.esRecurrente || encuesta.programada
+                  }"
+                >
+                  <input
+                    type="radio"
+                    :value="false"
+                    v-model="encuesta.esRecurrente"
+                    @change="encuesta.programada = false"
+                    class="w-5 h-5 text-indigo-600"
+                  />
+                  <div class="ml-3">
+                    <h4 class="font-medium text-gray-900">Enviar ahora</h4>
+                    <p class="text-sm text-gray-500">La encuesta estará disponible inmediatamente</p>
+                  </div>
+                </label>
+
+                <label
+                  class="flex items-center p-4 border rounded-xl cursor-pointer transition-all"
+                  :class="{
+                    'border-indigo-500 bg-indigo-50': encuesta.esRecurrente,
+                    'border-gray-200 hover:border-gray-300': !encuesta.esRecurrente
+                  }"
+                >
+                  <input
+                    type="radio"
+                    :value="true"
+                    v-model="encuesta.esRecurrente"
+                    class="w-5 h-5 text-indigo-600"
+                  />
+                  <div class="ml-3">
+                    <h4 class="font-medium text-gray-900">Hacer recurrente</h4>
+                    <p class="text-sm text-gray-500">Programar envíos periódicos</p>
+                  </div>
+                </label>
+              </div>
+
+              <!-- Configuración de recurrencia -->
+              <div v-if="encuesta.esRecurrente" class="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-xl">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Frecuencia</label>
+                    <select v-model="encuesta.recurrencia.frecuencia" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                      <option value="semanal">Semanal</option>
+                      <option value="quincenal">Quincenal</option>
+                      <option value="mensual">Mensual</option>
+                      <option value="trimestral">Trimestral</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hora de envío</label>
+                    <input type="time" v-model="encuesta.recurrencia.horaEnvio" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Días activa</label>
+                    <select v-model="encuesta.recurrencia.duracionActiva" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                      <option value="1">1 día</option>
+                      <option value="3">3 días</option>
+                      <option value="7">7 días</option>
+                      <option value="14">14 días</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Checklist final -->
+            <div class="p-4 bg-gray-50 border border-gray-200 rounded-xl">
+              <h4 class="font-semibold text-gray-900 mb-3">Checklist antes de lanzar</h4>
+              <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-5 h-5 rounded-full flex items-center justify-center"
+                    :class="encuesta.titulo ? 'bg-green-500' : 'bg-gray-300'"
+                  >
+                    <Check v-if="encuesta.titulo" class="h-3 w-3 text-white" />
+                  </div>
+                  <span class="text-sm" :class="encuesta.titulo ? 'text-gray-900' : 'text-gray-500'">
+                    Título definido
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-5 h-5 rounded-full flex items-center justify-center"
+                    :class="encuesta.categoria ? 'bg-green-500' : 'bg-gray-300'"
+                  >
+                    <Check v-if="encuesta.categoria" class="h-3 w-3 text-white" />
+                  </div>
+                  <span class="text-sm" :class="encuesta.categoria ? 'text-gray-900' : 'text-gray-500'">
+                    Dimensión seleccionada
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-5 h-5 rounded-full flex items-center justify-center"
+                    :class="encuesta.preguntas.length > 0 ? 'bg-green-500' : 'bg-gray-300'"
+                  >
+                    <Check v-if="encuesta.preguntas.length > 0" class="h-3 w-3 text-white" />
+                  </div>
+                  <span class="text-sm" :class="encuesta.preguntas.length > 0 ? 'text-gray-900' : 'text-gray-500'">
+                    Al menos una pregunta
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-5 h-5 rounded-full flex items-center justify-center"
+                    :class="preguntasCompletas ? 'bg-green-500' : 'bg-gray-300'"
+                  >
+                    <Check v-if="preguntasCompletas" class="h-3 w-3 text-white" />
+                  </div>
+                  <span class="text-sm" :class="preguntasCompletas ? 'text-gray-900' : 'text-gray-500'">
+                    Todas las preguntas completas
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer con navegación -->
+          <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div class="flex justify-between items-center">
+              <Button
+                v-if="currentStep > 0"
+                @click="currentStep--"
+                variant="outline"
+              >
+                <ArrowLeft class="h-4 w-4 mr-2" />
+                Anterior
+              </Button>
+              <div v-else></div>
+
+              <div class="flex gap-3">
+                <Button
+                  v-if="currentStep === 4"
+                  @click="guardarBorrador"
+                  variant="outline"
+                  :disabled="loading"
+                >
+                  <Save class="h-4 w-4 mr-2" />
+                  Guardar borrador
+                </Button>
+
+                <Button
+                  v-if="currentStep < 4"
+                  @click="siguientePaso"
+                  :disabled="!puedeAvanzar"
+                  class="bg-indigo-600 text-white hover:bg-indigo-700"
+                >
+                  Siguiente
+                  <ArrowRight class="h-4 w-4 ml-2" />
+                </Button>
+
+                <Button
+                  v-else
+                  @click="lanzarEncuesta"
+                  :disabled="!puedeSerLanzada || loading"
+                  :loading="loading"
+                  class="bg-green-600 text-white hover:bg-green-700"
+                >
+                  <Rocket class="h-4 w-4 mr-2" />
+                  Lanzar encuesta
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -683,654 +962,445 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 import { useEncuestasStore } from '@/stores/encuestas.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { departamentosService } from '@/services/departamentos.service';
+import { empleadosService } from '@/services/empleados.service';
 import Button from '@/components/ui/Button.vue';
 import {
   ArrowLeft,
+  ArrowRight,
+  Target,
+  FileText,
+  Users,
+  Shield,
+  Rocket,
   Plus,
-  HelpCircle,
   Trash2,
   X,
-  Save,
-  Rocket,
+  Check,
+  HelpCircle,
   Lightbulb,
-  ArrowRight,
-  Shield,
+  TrendingUp,
+  Sparkles,
+  MessageSquare,
+  Globe,
+  Filter,
+  Building,
+  AlertTriangle,
   ShieldCheck,
   BarChart3,
   Lock,
   UserCheck,
-  AlertTriangle,
-  Heart
+  Clock,
+  Save,
+  Heart,
+  Brain,
+  Activity,
+  MessageCircle,
+  Briefcase,
+  Smile
 } from 'lucide-vue-next';
-import { plantillasEncuestas } from '@/utils/encuestasDemoData.js';
-import { DEMO_MODE } from '@/utils/demoData';
-import * as mockEncuestasService from '@/services/mock/encuestas.service';
 
 const router = useRouter();
-const route = useRoute();
 const toast = useToast();
 const encuestasStore = useEncuestasStore();
-const plantillaUsada = ref(null);
+const authStore = useAuthStore();
 
-// Estados reactivos
+// Estado
+const currentStep = ref(0);
 const loading = ref(false);
-const nuevaEncuesta = ref({
+const loadingDepartamentos = ref(false);
+const showDimensionHelp = ref(false);
+const departamentos = ref([]);
+const empleados = ref([]);
+const departamentosSeleccionados = ref([]);
+
+// Steps del wizard
+const steps = [
+  { id: 'objetivo', name: 'Objetivo', description: 'Qué medir' },
+  { id: 'preguntas', name: 'Preguntas', description: 'Diseñar' },
+  { id: 'audiencia', name: 'Audiencia', description: 'A quién' },
+  { id: 'privacidad', name: 'Privacidad', description: 'Cómo proteger' },
+  { id: 'resumen', name: 'Lanzar', description: 'Confirmar' }
+];
+
+// Dimensiones de bienestar con metadata para analítica
+const dimensiones = [
+  {
+    id: 'salud-mental',
+    nombre: 'Salud Mental',
+    descripcion: 'Estrés, ansiedad, bienestar emocional',
+    indicador: 'Índice de Salud Mental',
+    icon: Brain,
+    bgColor: 'bg-purple-100',
+    iconColor: 'text-purple-600',
+    metricas: ['Índice de Salud Mental', 'Nivel de Estrés', 'Riesgo de Burnout']
+  },
+  {
+    id: 'clima-laboral',
+    nombre: 'Clima Laboral',
+    descripcion: 'Ambiente de trabajo, relaciones, cultura',
+    indicador: 'eNPS',
+    icon: Smile,
+    bgColor: 'bg-blue-100',
+    iconColor: 'text-blue-600',
+    metricas: ['eNPS', 'Índice de Satisfacción', 'Calidad de Relaciones']
+  },
+  {
+    id: 'carga-laboral',
+    nombre: 'Carga de Trabajo',
+    descripcion: 'Balance vida-trabajo, productividad',
+    indicador: 'Índice de Balance',
+    icon: Activity,
+    bgColor: 'bg-orange-100',
+    iconColor: 'text-orange-600',
+    metricas: ['Índice de Balance', 'Horas Extra', 'Sobrecarga Percibida']
+  },
+  {
+    id: 'comunicacion',
+    nombre: 'Comunicación',
+    descripcion: 'Claridad, feedback, transparencia',
+    indicador: 'Efectividad Comunicación',
+    icon: MessageCircle,
+    bgColor: 'bg-cyan-100',
+    iconColor: 'text-cyan-600',
+    metricas: ['Efectividad Comunicación', 'Calidad Feedback', 'Transparencia']
+  },
+  {
+    id: 'desarrollo',
+    nombre: 'Desarrollo Profesional',
+    descripcion: 'Crecimiento, formación, oportunidades',
+    indicador: 'Índice de Desarrollo',
+    icon: Briefcase,
+    bgColor: 'bg-green-100',
+    iconColor: 'text-green-600',
+    metricas: ['Índice de Desarrollo', 'Satisfacción Carrera', 'Acceso a Formación']
+  },
+  {
+    id: 'general',
+    nombre: 'Bienestar General',
+    descripcion: 'Evaluación global multidimensional',
+    indicador: 'Índice de Bienestar',
+    icon: Heart,
+    bgColor: 'bg-pink-100',
+    iconColor: 'text-pink-600',
+    metricas: ['Índice de Bienestar Global', 'Satisfacción General', 'Compromiso']
+  }
+];
+
+// Preguntas sugeridas por categoría (validadas científicamente)
+const preguntasPorCategoria = {
+  'salud-mental': [
+    { texto: '¿Cómo calificarías tu nivel de estrés en el trabajo durante la última semana?', tipo: 'escala_1_5', opciones: [], esValidada: true },
+    { texto: '¿Te sientes emocionalmente agotado al final del día laboral?', tipo: 'si_no', opciones: [], esValidada: true },
+    { texto: '¿Qué factores contribuyen más a tu estrés laboral?', tipo: 'opcion_multiple', opciones: ['Carga de trabajo', 'Plazos ajustados', 'Conflictos', 'Incertidumbre', 'Falta de reconocimiento'], esValidada: true },
+    { texto: '¿Qué recursos te ayudarían a gestionar mejor el estrés?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+  ],
+  'clima-laboral': [
+    { texto: 'Del 1 al 10, ¿qué tan probable es que recomiendes esta empresa como lugar para trabajar?', tipo: 'escala_1_5', opciones: [], esValidada: true },
+    { texto: '¿Te sientes valorado por tu trabajo?', tipo: 'si_no', opciones: [], esValidada: true },
+    { texto: '¿Cómo describirías el ambiente en tu equipo?', tipo: 'opcion_multiple', opciones: ['Colaborativo', 'Competitivo', 'Tenso', 'Amigable', 'Indiferente'], esValidada: true },
+    { texto: '¿Qué mejoraría el clima laboral en tu área?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+  ],
+  'carga-laboral': [
+    { texto: '¿Consideras que tu carga de trabajo actual es manejable?', tipo: 'escala_1_5', opciones: [], esValidada: true },
+    { texto: '¿Logras desconectar del trabajo fuera del horario laboral?', tipo: 'si_no', opciones: [], esValidada: true },
+    { texto: '¿Con qué frecuencia trabajas fuera de tu horario?', tipo: 'opcion_multiple', opciones: ['Nunca', 'Ocasionalmente', 'Frecuentemente', 'Casi siempre'], esValidada: true },
+    { texto: '¿Qué cambios mejorarían tu balance vida-trabajo?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+  ],
+  'comunicacion': [
+    { texto: '¿Qué tan clara es la comunicación en tu equipo?', tipo: 'escala_1_5', opciones: [], esValidada: true },
+    { texto: '¿Recibes feedback regular sobre tu trabajo?', tipo: 'si_no', opciones: [], esValidada: true },
+    { texto: '¿Cuál es el principal problema de comunicación?', tipo: 'opcion_multiple', opciones: ['Falta de claridad', 'Comunicación tardía', 'Demasiadas reuniones', 'Canales inadecuados'], esValidada: true },
+    { texto: '¿Cómo mejorarías la comunicación?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+  ],
+  'desarrollo': [
+    { texto: '¿Sientes que tienes oportunidades de crecimiento?', tipo: 'escala_1_5', opciones: [], esValidada: true },
+    { texto: '¿Has recibido formación en el último año?', tipo: 'si_no', opciones: [], esValidada: true },
+    { texto: '¿Qué tipo de desarrollo te interesa más?', tipo: 'opcion_multiple', opciones: ['Técnico', 'Liderazgo', 'Certificaciones', 'Mentoring', 'Proyectos desafiantes'], esValidada: true },
+    { texto: '¿Qué obstáculos encuentras para tu desarrollo?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+  ],
+  'general': [
+    { texto: '¿Cómo calificarías tu bienestar general en el trabajo?', tipo: 'escala_1_5', opciones: [], esValidada: true },
+    { texto: '¿Recomendarías esta empresa como buen lugar para trabajar?', tipo: 'si_no', opciones: [], esValidada: true },
+    { texto: '¿Cuál es el aspecto más positivo de trabajar aquí?', tipo: 'opcion_multiple', opciones: ['Ambiente', 'Beneficios', 'Flexibilidad', 'Crecimiento', 'Compañeros'], esValidada: true },
+    { texto: '¿Qué sugerencias tienes para mejorar el bienestar?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+  ]
+};
+
+// Datos de la encuesta
+const encuesta = ref({
   titulo: '',
   descripcion: '',
   categoria: '',
   privacidadNivel: 'anonimato_completo',
   preguntas: [],
+  alcance: 'todos',
   esRecurrente: false,
-  creada_desde: 'custom',
+  programada: false,
   recurrencia: {
-    frecuencia: '',
-    diaSemana: '',
-    diaMes: '',
+    frecuencia: 'mensual',
     horaEnvio: '09:00',
-    duracionActiva: '7',
-    fechaInicio: ''
+    duracionActiva: '7'
   }
 });
-
-// TODO: al activar BD, vincular con tabla "plantillas_encuestas" y "encuestas_creadas".
-
-onMounted(() => {
-  const plantillaId = route.query.plantilla;
-  if (plantillaId) {
-    cargarPlantilla(plantillaId);
-  }
-});
-
-const cargarPlantilla = (plantillaId) => {
-  const plantilla = plantillasEncuestas.find(p => p.id === plantillaId);
-  if (plantilla) {
-    plantillaUsada.value = plantilla;
-
-    // Cargar datos de la plantilla
-    nuevaEncuesta.value.titulo = plantilla.nombre;
-    nuevaEncuesta.value.descripcion = plantilla.descripcion;
-    nuevaEncuesta.value.categoria = plantilla.categoria;
-    nuevaEncuesta.value.creada_desde = 'plantilla';
-
-    // Cargar preguntas
-    nuevaEncuesta.value.preguntas = plantilla.preguntas.map(p => ({
-      id: Date.now() + Math.random(),
-      texto: p.texto,
-      tipo: p.tipo,
-      opciones: p.opciones ? [...p.opciones] : []
-    }));
-
-    // Cargar métricas si existen
-    if (plantilla.metricas && plantilla.metricas.length > 0) {
-      plantilla.metricas.forEach(m => {
-        nuevaEncuesta.value.preguntas.push({
-          id: Date.now() + Math.random(),
-          texto: m.texto,
-          tipo: m.tipo,
-          opciones: m.opciones ? [...m.opciones] : []
-        });
-      });
-    }
-
-    toast.add({
-      severity: 'info',
-      summary: 'Plantilla cargada',
-      detail: `Plantilla "${plantilla.nombre}" cargada. Puedes editar y personalizar las preguntas.`,
-      life: 5000
-    });
-  }
-};
-
-const mapearCategoria = (categoriaPlantilla) => {
-  const mapeo = {
-    'Clima laboral': 'general',
-    'Bienestar emocional': 'salud-mental',
-    'Satisfacción general': 'general'
-  };
-  return mapeo[categoriaPlantilla] || 'general';
-};
-
-// Preguntas sugeridas por categoría
-const preguntasSugeridas = ref([]);
-
-// Catálogo de preguntas por dimensión
-const preguntasPorCategoria = {
-  'salud-mental': [
-    {
-      texto: '¿Cómo calificarías tu nivel de estrés en el trabajo durante la última semana?',
-      tipo: 'escala_1_5',
-      opciones: []
-    },
-    {
-      texto: '¿Te sientes emocionalmente agotado al final del día laboral?',
-      tipo: 'si_no',
-      opciones: []
-    },
-    {
-      texto: '¿Qué factores contribuyen más a tu estrés laboral?',
-      tipo: 'opcion_multiple',
-      opciones: ['Carga de trabajo excesiva', 'Falta de tiempo', 'Presión de deadlines', 'Conflictos interpersonales', 'Incertidumbre laboral']
-    },
-    {
-      texto: '¿Qué estrategias o recursos te ayudarían a gestionar mejor el estrés?',
-      tipo: 'texto_abierto',
-      opciones: []
-    }
-  ],
-  'carga-laboral': [
-    {
-      texto: '¿Consideras que tu carga de trabajo actual es manejable?',
-      tipo: 'escala_1_5',
-      opciones: []
-    },
-    {
-      texto: '¿Logras mantener un equilibrio saludable entre trabajo y vida personal?',
-      tipo: 'si_no',
-      opciones: []
-    },
-    {
-      texto: '¿Con qué frecuencia trabajas fuera de tu horario habitual?',
-      tipo: 'opcion_multiple',
-      opciones: ['Nunca', 'Ocasionalmente', 'Frecuentemente', 'Casi siempre', 'Siempre']
-    },
-    {
-      texto: '¿Qué cambios en la organización del trabajo mejorarían tu bienestar?',
-      tipo: 'texto_abierto',
-      opciones: []
-    }
-  ],
-  'comunicacion': [
-    {
-      texto: '¿Qué tan clara y efectiva consideras la comunicación en tu equipo?',
-      tipo: 'escala_1_5',
-      opciones: []
-    },
-    {
-      texto: '¿Te sientes cómodo expresando tus ideas y opiniones en el trabajo?',
-      tipo: 'si_no',
-      opciones: []
-    },
-    {
-      texto: '¿Cuál es el principal desafío en la comunicación de tu equipo?',
-      tipo: 'opcion_multiple',
-      opciones: ['Falta de claridad en instrucciones', 'Comunicación tardía', 'Demasiadas reuniones', 'Canales inadecuados', 'Falta de feedback']
-    },
-    {
-      texto: '¿Cómo podríamos mejorar la comunicación en tu área de trabajo?',
-      tipo: 'texto_abierto',
-      opciones: []
-    }
-  ],
-  'ergonomia': [
-    {
-      texto: '¿Qué tan cómodo te sientes físicamente en tu puesto de trabajo?',
-      tipo: 'escala_1_5',
-      opciones: []
-    },
-    {
-      texto: '¿Experimentas dolores o molestias físicas relacionadas con tu trabajo?',
-      tipo: 'si_no',
-      opciones: []
-    },
-    {
-      texto: '¿Qué aspectos de tu espacio de trabajo te causan más incomodidad?',
-      tipo: 'opcion_multiple',
-      opciones: ['Silla inadecuada', 'Altura del escritorio', 'Iluminación', 'Ruido', 'Temperatura', 'Espacio insuficiente']
-    },
-    {
-      texto: '¿Qué mejoras en tu espacio de trabajo tendrían mayor impacto en tu comodidad?',
-      tipo: 'texto_abierto',
-      opciones: []
-    }
-  ],
-  'desarrollo': [
-    {
-      texto: '¿Sientes que tienes oportunidades de crecimiento profesional en la empresa?',
-      tipo: 'escala_1_5',
-      opciones: []
-    },
-    {
-      texto: '¿Recibes feedback regular sobre tu desempeño y desarrollo?',
-      tipo: 'si_no',
-      opciones: []
-    },
-    {
-      texto: '¿Qué tipo de desarrollo profesional te interesa más?',
-      tipo: 'opcion_multiple',
-      opciones: ['Capacitación técnica', 'Habilidades de liderazgo', 'Certificaciones', 'Mentoring', 'Proyectos desafiantes']
-    },
-    {
-      texto: '¿Qué obstáculos encuentras para tu desarrollo profesional en la empresa?',
-      tipo: 'texto_abierto',
-      opciones: []
-    }
-  ],
-  'general': [
-    {
-      texto: '¿Cómo calificarías tu satisfacción general con el trabajo?',
-      tipo: 'escala_1_5',
-      opciones: []
-    },
-    {
-      texto: '¿Recomendarías esta empresa como un buen lugar para trabajar?',
-      tipo: 'si_no',
-      opciones: []
-    },
-    {
-      texto: '¿Cuál es el aspecto más positivo de trabajar en esta empresa?',
-      tipo: 'opcion_multiple',
-      opciones: ['Ambiente de trabajo', 'Beneficios', 'Flexibilidad', 'Oportunidades de crecimiento', 'Compañeros de trabajo']
-    },
-    {
-      texto: '¿Qué sugerencias tienes para mejorar el bienestar general en la empresa?',
-      tipo: 'texto_abierto',
-      opciones: []
-    }
-  ]
-};
 
 // Computed properties
-const puedeSerLanzada = computed(() => {
-  const basico = nuevaEncuesta.value.titulo.trim() &&
-         nuevaEncuesta.value.categoria &&
-         nuevaEncuesta.value.privacidadNivel &&
-         nuevaEncuesta.value.preguntas.length > 0 &&
-         nuevaEncuesta.value.preguntas.every(p =>
-           p.texto.trim() &&
-           p.tipo &&
-           (p.tipo !== 'opcion_multiple' || (p.opciones && p.opciones.every(o => o.trim())))
-         );
+const totalEmpleados = computed(() => empleados.value.length);
 
-  if (!basico) return false;
-  
-  // Si es recurrente, validar configuración de recurrencia
-  if (nuevaEncuesta.value.esRecurrente) {
-    const rec = nuevaEncuesta.value.recurrencia;
-    return rec.frecuencia && 
-           rec.horaEnvio && 
-           rec.duracionActiva && 
-           rec.fechaInicio &&
-           (
-             (rec.frecuencia === 'semanal' || rec.frecuencia === 'quincenal') ? rec.diaSemana :
-             (rec.frecuencia === 'mensual' || rec.frecuencia === 'trimestral') ? rec.diaMes :
-             true
-           );
+const audienciaEstimada = computed(() => {
+  if (encuesta.value.alcance === 'todos') {
+    return totalEmpleados.value;
   }
-  
-  return true;
+  if (departamentosSeleccionados.value.length === 0) {
+    return 0;
+  }
+  return empleados.value.filter(e =>
+    departamentosSeleccionados.value.includes(e.departamento_id)
+  ).length;
 });
 
-const fechaMinima = computed(() => {
-  return new Date().toISOString().split('T')[0];
+const estimacionRespuestas = computed(() => {
+  // Base 70%, ajustar según privacidad
+  let base = 70;
+  if (encuesta.value.privacidadNivel === 'anonimato_completo') base = 80;
+  if (encuesta.value.privacidadNivel === 'identificado') base = 50;
+  return base;
 });
 
-const previewRecurrencia = computed(() => {
-  if (!nuevaEncuesta.value.esRecurrente || !nuevaEncuesta.value.recurrencia.frecuencia) {
-    return null;
+const hayDepartamentoPequeno = computed(() => {
+  if (encuesta.value.alcance === 'todos') {
+    return departamentos.value.some(d => getEmpleadosPorDepartamento(d.id) < 5);
   }
-  
-  const rec = nuevaEncuesta.value.recurrencia;
-  let texto = '';
-  
-  switch (rec.frecuencia) {
-    case 'semanal':
-      texto = `Cada ${rec.diaSemana || '[día]'} a las ${rec.horaEnvio || '[hora]'}`;
-      break;
-    case 'quincenal':
-      texto = `Cada dos semanas los ${rec.diaSemana || '[día]'} a las ${rec.horaEnvio || '[hora]'}`;
-      break;
-    case 'mensual':
-      texto = `El día ${rec.diaMes || '[día]'} de cada mes a las ${rec.horaEnvio || '[hora]'}`;
-      break;
-    case 'trimestral':
-      texto = `El día ${rec.diaMes || '[día]'} cada 3 meses a las ${rec.horaEnvio || '[hora]'}`;
-      break;
-  }
-  
-  if (rec.duracionActiva) {
-    texto += `. Estará activa por ${rec.duracionActiva} día${rec.duracionActiva !== '1' ? 's' : ''}.`;
-  }
-  
-  if (rec.fechaInicio) {
-    texto += ` Comenzará el ${new Date(rec.fechaInicio).toLocaleDateString('es-ES')}.`;
-  }
-  
-  return texto;
+  return departamentosSeleccionados.value.some(deptId =>
+    getEmpleadosPorDepartamento(deptId) < 5
+  );
 });
 
-// Métodos para categorías y preguntas sugeridas
-const getCategoriaLabel = (categoria) => {
+const preguntasSugeridas = computed(() => {
+  if (!encuesta.value.categoria) return [];
+  return preguntasPorCategoria[encuesta.value.categoria] || [];
+});
+
+const getDimensionLabel = computed(() => {
+  const dim = dimensiones.find(d => d.id === encuesta.value.categoria);
+  return dim?.nombre || 'No seleccionada';
+});
+
+const getMetricasImpactadas = computed(() => {
+  const dim = dimensiones.find(d => d.id === encuesta.value.categoria);
+  return dim?.metricas || [];
+});
+
+const getPrivacidadLabel = computed(() => {
   const labels = {
-    'salud-mental': 'Salud Mental',
-    'carga-laboral': 'Carga Laboral',
-    'comunicacion': 'Comunicación',
-    'ergonomia': 'Ergonomía',
-    'desarrollo': 'Desarrollo Profesional',
-    'general': 'Bienestar General'
+    'anonimato_completo': 'Anónimo completo',
+    'anonimato_parcial': 'Anónimo por departamento',
+    'identificado': 'Identificado'
   };
-  return labels[categoria] || categoria;
+  return labels[encuesta.value.privacidadNivel];
+});
+
+const getPrivacidadDescripcion = computed(() => {
+  const desc = {
+    'anonimato_completo': 'Máxima privacidad garantizada',
+    'anonimato_parcial': 'Resultados agrupados por área',
+    'identificado': 'Requiere consentimiento del empleado'
+  };
+  return desc[encuesta.value.privacidadNivel];
+});
+
+const preguntasCompletas = computed(() => {
+  return encuesta.value.preguntas.every(p =>
+    p.texto.trim() &&
+    p.tipo &&
+    (p.tipo !== 'opcion_multiple' || (p.opciones && p.opciones.every(o => o.trim())))
+  );
+});
+
+const puedeAvanzar = computed(() => {
+  switch (currentStep.value) {
+    case 0: return encuesta.value.titulo.trim() && encuesta.value.categoria;
+    case 1: return encuesta.value.preguntas.length > 0 && preguntasCompletas.value;
+    case 2: return audienciaEstimada.value > 0;
+    case 3: return encuesta.value.privacidadNivel;
+    default: return true;
+  }
+});
+
+const puedeSerLanzada = computed(() => {
+  return encuesta.value.titulo.trim() &&
+         encuesta.value.categoria &&
+         encuesta.value.preguntas.length > 0 &&
+         preguntasCompletas.value &&
+         audienciaEstimada.value > 0 &&
+         encuesta.value.privacidadNivel;
+});
+
+// Métodos
+const cargarDatos = async () => {
+  loadingDepartamentos.value = true;
+  try {
+    const [deptData, empData] = await Promise.all([
+      departamentosService.getAll(),
+      empleadosService.getAll()
+    ]);
+    departamentos.value = deptData || [];
+    empleados.value = empData || [];
+  } catch (error) {
+    console.error('Error cargando datos:', error);
+    toast.error('Error al cargar datos de la empresa');
+  } finally {
+    loadingDepartamentos.value = false;
+  }
+};
+
+const getEmpleadosPorDepartamento = (deptId) => {
+  return empleados.value.filter(e => e.departamento_id === deptId).length;
 };
 
 const getTipoLabel = (tipo) => {
   const labels = {
-    'opcion_multiple': 'Opción Múltiple',
-    'si_no': 'Sí / No',
     'escala_1_5': 'Escala 1-5',
-    'texto_abierto': 'Texto Abierto'
+    'si_no': 'Sí / No',
+    'opcion_multiple': 'Opción múltiple',
+    'texto_abierto': 'Texto abierto'
   };
   return labels[tipo] || tipo;
 };
 
-const actualizarPreguntasSugeridas = () => {
-  if (nuevaEncuesta.value.categoria && preguntasPorCategoria[nuevaEncuesta.value.categoria]) {
-    preguntasSugeridas.value = preguntasPorCategoria[nuevaEncuesta.value.categoria];
-  } else {
-    preguntasSugeridas.value = [];
-  }
-};
-
-const añadirPreguntaSugerida = (preguntaSugerida) => {
-  const nuevaPregunta = {
+const agregarPreguntaSugerida = (pregunta) => {
+  encuesta.value.preguntas.push({
     id: Date.now() + Math.random(),
-    texto: preguntaSugerida.texto,
-    tipo: preguntaSugerida.tipo,
-    opciones: [...preguntaSugerida.opciones]
-  };
-  
-  nuevaEncuesta.value.preguntas.push(nuevaPregunta);
-  
-  toast.add({
-    severity: 'success',
-    summary: 'Pregunta añadida',
-    detail: 'La pregunta sugerida ha sido agregada a tu encuesta',
-    life: 3000
+    texto: pregunta.texto,
+    tipo: pregunta.tipo,
+    opciones: [...(pregunta.opciones || [])],
+    dimension: '',
+    esValidada: pregunta.esValidada
   });
+  toast.success('Pregunta añadida');
 };
 
-// Métodos para gestionar preguntas
-const añadirPregunta = () => {
-  const nuevaPregunta = {
+const agregarTodasSugeridas = () => {
+  preguntasSugeridas.value.forEach(pregunta => {
+    encuesta.value.preguntas.push({
+      id: Date.now() + Math.random(),
+      texto: pregunta.texto,
+      tipo: pregunta.tipo,
+      opciones: [...(pregunta.opciones || [])],
+      dimension: '',
+      esValidada: pregunta.esValidada
+    });
+  });
+  toast.success(`${preguntasSugeridas.value.length} preguntas añadidas`);
+};
+
+const agregarPregunta = () => {
+  encuesta.value.preguntas.push({
     id: Date.now() + Math.random(),
     texto: '',
     tipo: '',
-    opciones: ['', '']
-  };
-  nuevaEncuesta.value.preguntas.push(nuevaPregunta);
-};
-
-const eliminarPregunta = (index) => {
-  nuevaEncuesta.value.preguntas.splice(index, 1);
-  toast.add({
-    severity: 'info',
-    summary: 'Pregunta eliminada',
-    detail: 'La pregunta ha sido removida de la encuesta',
-    life: 3000
+    opciones: ['', ''],
+    dimension: '',
+    esValidada: false
   });
 };
 
+const eliminarPregunta = (index) => {
+  encuesta.value.preguntas.splice(index, 1);
+};
+
 const actualizarOpcionesPregunta = (index) => {
-  const pregunta = nuevaEncuesta.value.preguntas[index];
+  const pregunta = encuesta.value.preguntas[index];
   if (pregunta.tipo === 'opcion_multiple') {
-    pregunta.opciones = ['', ''];
+    pregunta.opciones = pregunta.opciones.length ? pregunta.opciones : ['', ''];
   } else {
     pregunta.opciones = [];
   }
 };
 
 const agregarOpcion = (preguntaIndex) => {
-  nuevaEncuesta.value.preguntas[preguntaIndex].opciones.push('');
+  encuesta.value.preguntas[preguntaIndex].opciones.push('');
 };
 
 const eliminarOpcion = (preguntaIndex, opcionIndex) => {
-  nuevaEncuesta.value.preguntas[preguntaIndex].opciones.splice(opcionIndex, 1);
+  encuesta.value.preguntas[preguntaIndex].opciones.splice(opcionIndex, 1);
 };
 
-// Métodos principales
+const siguientePaso = () => {
+  if (puedeAvanzar.value && currentStep.value < 4) {
+    currentStep.value++;
+  }
+};
+
 const volverAlDashboard = () => {
-  router.push('/admin/dashboard');
-};
-
-const continuarAEnvio = async () => {
-  // Validación básica
-  if (!nuevaEncuesta.value.titulo.trim()) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Título requerido',
-      detail: 'Debes escribir un título para la encuesta',
-      life: 4000
-    });
-    return;
-  }
-
-  if (nuevaEncuesta.value.preguntas.length === 0) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Preguntas requeridas',
-      detail: 'Debes agregar al menos una pregunta',
-      life: 4000
-    });
-    return;
-  }
-
-  // Validar que todas las preguntas estén completas
-  for (let i = 0; i < nuevaEncuesta.value.preguntas.length; i++) {
-    const pregunta = nuevaEncuesta.value.preguntas[i];
-
-    if (!pregunta.texto.trim()) {
-      toast.add({
-        severity: 'warn',
-        summary: 'Pregunta incompleta',
-        detail: `La pregunta ${i + 1} necesita un texto`,
-        life: 4000
-      });
-      return;
-    }
-
-    if (!pregunta.tipo) {
-      toast.add({
-        severity: 'warn',
-        summary: 'Tipo de pregunta requerido',
-        detail: `Selecciona un tipo para la pregunta ${i + 1}`,
-        life: 4000
-      });
-      return;
-    }
-
-    if (pregunta.tipo === 'opcion_multiple') {
-      if (!pregunta.opciones || pregunta.opciones.length < 2) {
-        toast.add({
-          severity: 'warn',
-          summary: 'Opciones insuficientes',
-          detail: `La pregunta ${i + 1} necesita al menos 2 opciones`,
-          life: 4000
-        });
-        return;
-      }
-
-      for (let j = 0; j < pregunta.opciones.length; j++) {
-        if (!pregunta.opciones[j].trim()) {
-          toast.add({
-            severity: 'warn',
-            summary: 'Opción vacía',
-            detail: `Completa todas las opciones de la pregunta ${i + 1}`,
-            life: 4000
-          });
-          return;
-        }
-      }
-    }
-  }
-
-  // Guardar datos en sessionStorage para la vista de previsualización
-  sessionStorage.setItem('encuesta_preview', JSON.stringify(nuevaEncuesta.value));
-
-  // Redirigir a vista previa de envío
-  router.push('/admin/encuestas/preview-envio');
+  router.push('/admin/encuestas');
 };
 
 const guardarBorrador = async () => {
-  if (!nuevaEncuesta.value.titulo.trim()) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Título requerido',
-      detail: 'Debes escribir un título para guardar el borrador',
-      life: 4000
-    });
+  if (!encuesta.value.titulo.trim()) {
+    toast.warning('Añade un título para guardar el borrador');
     return;
   }
 
   loading.value = true;
-  
   try {
     await encuestasStore.createNewSurvey({
-      ...nuevaEncuesta.value,
+      titulo: encuesta.value.titulo,
+      descripcion: encuesta.value.descripcion,
+      categoria: encuesta.value.categoria,
+      privacidad_nivel: encuesta.value.privacidadNivel,
+      preguntas: encuesta.value.preguntas,
       estado: 'borrador',
-      privacidadNivel: nuevaEncuesta.value.privacidadNivel,
-      esRecurrente: nuevaEncuesta.value.esRecurrente,
-      recurrencia: nuevaEncuesta.value.esRecurrente ? nuevaEncuesta.value.recurrencia : null
+      es_recurrente: encuesta.value.esRecurrente,
+      recurrencia: encuesta.value.esRecurrente ? encuesta.value.recurrencia : null,
+      empresa_id: authStore.empresaId
     });
-    
-    toast.add({
-      severity: 'success',
-      summary: 'Borrador guardado',
-      detail: 'La encuesta ha sido guardada como borrador',
-      life: 4000
-    });
-    
-    router.push('/admin/dashboard');
+    toast.success('Borrador guardado correctamente');
+    router.push('/admin/encuestas');
   } catch (error) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error al guardar',
-      detail: error.message || 'No se pudo guardar el borrador',
-      life: 5000
-    });
+    toast.error(error.message || 'Error al guardar el borrador');
   } finally {
     loading.value = false;
   }
 };
 
-const handleLanzarEncuesta = async () => {
-  // Validación básica
-  if (!nuevaEncuesta.value.titulo.trim()) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Título requerido',
-      detail: 'Debes escribir un título para la encuesta',
-      life: 4000
-    });
-    return;
-  }
-
-  if (nuevaEncuesta.value.preguntas.length === 0) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Preguntas requeridas',
-      detail: 'Debes agregar al menos una pregunta',
-      life: 4000
-    });
-    return;
-  }
-
-  // Validar que todas las preguntas estén completas
-  for (let i = 0; i < nuevaEncuesta.value.preguntas.length; i++) {
-    const pregunta = nuevaEncuesta.value.preguntas[i];
-    
-    if (!pregunta.texto.trim()) {
-      toast.add({
-        severity: 'warn',
-        summary: 'Pregunta incompleta',
-        detail: `La pregunta ${i + 1} necesita un texto`,
-        life: 4000
-      });
-      return;
-    }
-
-    if (!pregunta.tipo) {
-      toast.add({
-        severity: 'warn',
-        summary: 'Tipo de pregunta requerido',
-        detail: `Selecciona un tipo para la pregunta ${i + 1}`,
-        life: 4000
-      });
-      return;
-    }
-
-    if (pregunta.tipo === 'opcion_multiple') {
-      if (!pregunta.opciones || pregunta.opciones.length < 2) {
-        toast.add({
-          severity: 'warn',
-          summary: 'Opciones insuficientes',
-          detail: `La pregunta ${i + 1} necesita al menos 2 opciones`,
-          life: 4000
-        });
-        return;
-      }
-
-      for (let j = 0; j < pregunta.opciones.length; j++) {
-        if (!pregunta.opciones[j].trim()) {
-          toast.add({
-            severity: 'warn',
-            summary: 'Opción vacía',
-            detail: `Completa todas las opciones de la pregunta ${i + 1}`,
-            life: 4000
-          });
-          return;
-        }
-      }
-    }
-  }
+const lanzarEncuesta = async () => {
+  if (!puedeSerLanzada.value) return;
 
   loading.value = true;
-  
   try {
-    // Llamar a la acción del store
     await encuestasStore.createNewSurvey({
-      ...nuevaEncuesta.value,
+      titulo: encuesta.value.titulo,
+      descripcion: encuesta.value.descripcion,
+      categoria: encuesta.value.categoria,
+      privacidad_nivel: encuesta.value.privacidadNivel,
+      preguntas: encuesta.value.preguntas,
       estado: 'activa',
-      privacidadNivel: nuevaEncuesta.value.privacidadNivel,
-      esRecurrente: nuevaEncuesta.value.esRecurrente,
-      recurrencia: nuevaEncuesta.value.esRecurrente ? nuevaEncuesta.value.recurrencia : null
+      es_recurrente: encuesta.value.esRecurrente,
+      recurrencia: encuesta.value.esRecurrente ? encuesta.value.recurrencia : null,
+      empresa_id: authStore.empresaId
     });
-    
-    const tipoEncuesta = nuevaEncuesta.value.esRecurrente ? 'recurrente' : 'única';
-    toast.add({
-      severity: 'success',
-      summary: '¡Encuesta lanzada!',
-      detail: `La encuesta ${tipoEncuesta} está ahora ${nuevaEncuesta.value.esRecurrente ? 'programada' : 'disponible'} para los empleados`,
-      life: 5000
-    });
-    
-    // Redirigir al dashboard
-    router.push('/admin/dashboard');
+    toast.success('¡Encuesta lanzada exitosamente!');
+    router.push('/admin/encuestas');
   } catch (error) {
-    console.error('Error al lanzar encuesta:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error al lanzar',
-      detail: error.message || 'No se pudo lanzar la encuesta',
-      life: 5000
-    });
+    toast.error(error.message || 'Error al lanzar la encuesta');
   } finally {
     loading.value = false;
   }
 };
+
+onMounted(() => {
+  cargarDatos();
+});
 </script>
 
 <style scoped>
-.form-group {
-  @apply mb-4;
-}
-
-.form-label {
-  @apply block text-sm font-medium text-gray-700 mb-1;
-}
-
 .input {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary;
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500;
 }
 </style>

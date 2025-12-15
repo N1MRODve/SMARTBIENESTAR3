@@ -3,9 +3,11 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
-import { addComunicado } from '@/services/mock/comunicados.service.js';
+import { comunicadosService } from '@/services/comunicados.service.js';
+import { useAuthStore } from '@/stores/auth.store';
 
 const router = useRouter();
+const authStore = useAuthStore();
 const titulo = ref('');
 const contenido = ref('');
 
@@ -14,9 +16,20 @@ const handlePublicar = async () => {
     alert('El título y el contenido son obligatorios.');
     return;
   }
-  await addComunicado({ titulo: titulo.value, contenido: contenido.value });
-  alert('Comunicado publicado con éxito.');
-  router.push('/admin/dashboard'); // Vuelve al dashboard
+
+  try {
+    await comunicadosService.create({
+      titulo: titulo.value,
+      contenido: contenido.value,
+      autor_id: authStore.empleado?.id,
+      fecha_publicacion: new Date().toISOString()
+    });
+    alert('Comunicado publicado con éxito.');
+    router.push('/admin/dashboard'); // Vuelve al dashboard
+  } catch (error) {
+    console.error('Error al publicar comunicado:', error);
+    alert('Error al publicar el comunicado.');
+  }
 };
 </script>
 

@@ -92,19 +92,22 @@ ALTER TABLE encuestas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE preguntas_encuesta ENABLE ROW LEVEL SECURITY;
 ALTER TABLE respuestas_encuesta ENABLE ROW LEVEL SECURITY;
 
--- Policies for encuestas table
+-- Policies for encuestas table (drop if exists to avoid duplicates)
+DROP POLICY IF EXISTS "Users can view all surveys" ON encuestas;
 CREATE POLICY "Users can view all surveys"
   ON encuestas
   FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Users can create surveys" ON encuestas;
 CREATE POLICY "Users can create surveys"
   ON encuestas
   FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users can update their own surveys" ON encuestas;
 CREATE POLICY "Users can update their own surveys"
   ON encuestas
   FOR UPDATE
@@ -112,25 +115,29 @@ CREATE POLICY "Users can update their own surveys"
   USING (true)
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users can delete their own surveys" ON encuestas;
 CREATE POLICY "Users can delete their own surveys"
   ON encuestas
   FOR DELETE
   TO authenticated
   USING (true);
 
--- Policies for preguntas_encuesta table
+-- Policies for preguntas_encuesta table (drop if exists to avoid duplicates)
+DROP POLICY IF EXISTS "Users can view all questions" ON preguntas_encuesta;
 CREATE POLICY "Users can view all questions"
   ON preguntas_encuesta
   FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Users can create questions for their surveys" ON preguntas_encuesta;
 CREATE POLICY "Users can create questions for their surveys"
   ON preguntas_encuesta
   FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users can update questions for their surveys" ON preguntas_encuesta;
 CREATE POLICY "Users can update questions for their surveys"
   ON preguntas_encuesta
   FOR UPDATE
@@ -138,19 +145,22 @@ CREATE POLICY "Users can update questions for their surveys"
   USING (true)
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Users can delete questions for their surveys" ON preguntas_encuesta;
 CREATE POLICY "Users can delete questions for their surveys"
   ON preguntas_encuesta
   FOR DELETE
   TO authenticated
   USING (true);
 
--- Policies for respuestas_encuesta table
+-- Policies for respuestas_encuesta table (drop if exists to avoid duplicates)
+DROP POLICY IF EXISTS "Users can view responses for their surveys" ON respuestas_encuesta;
 CREATE POLICY "Users can view responses for their surveys"
   ON respuestas_encuesta
   FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Users can submit responses to active surveys" ON respuestas_encuesta;
 CREATE POLICY "Users can submit responses to active surveys"
   ON respuestas_encuesta
   FOR INSERT

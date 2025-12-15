@@ -27,22 +27,26 @@ CREATE TABLE IF NOT EXISTS departamentos (
 
 ALTER TABLE departamentos ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Usuarios autenticados pueden leer departamentos" ON departamentos;
 CREATE POLICY "Usuarios autenticados pueden leer departamentos"
   ON departamentos FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Usuarios autenticados pueden crear departamentos" ON departamentos;
 CREATE POLICY "Usuarios autenticados pueden crear departamentos"
   ON departamentos FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Usuarios autenticados pueden actualizar departamentos" ON departamentos;
 CREATE POLICY "Usuarios autenticados pueden actualizar departamentos"
   ON departamentos FOR UPDATE
   TO authenticated
   USING (true)
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Usuarios autenticados pueden eliminar departamentos" ON departamentos;
 CREATE POLICY "Usuarios autenticados pueden eliminar departamentos"
   ON departamentos FOR DELETE
   TO authenticated

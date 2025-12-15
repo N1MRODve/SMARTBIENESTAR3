@@ -32,21 +32,24 @@ CREATE TABLE IF NOT EXISTS acciones_recomendadas (
 -- Enable RLS
 ALTER TABLE acciones_recomendadas ENABLE ROW LEVEL SECURITY;
 
--- Policy: Users can insert their own actions
+-- Policy: Users can insert their own actions (drop if exists to avoid duplicates)
+DROP POLICY IF EXISTS "Users can insert own actions" ON acciones_recomendadas;
 CREATE POLICY "Users can insert own actions"
   ON acciones_recomendadas
   FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id);
 
--- Policy: Users can read their own actions
+-- Policy: Users can read their own actions (drop if exists to avoid duplicates)
+DROP POLICY IF EXISTS "Users can read own actions" ON acciones_recomendadas;
 CREATE POLICY "Users can read own actions"
   ON acciones_recomendadas
   FOR SELECT
   TO authenticated
   USING (auth.uid() = user_id);
 
--- Policy: Admins can read all actions
+-- Policy: Admins can read all actions (drop if exists to avoid duplicates)
+DROP POLICY IF EXISTS "Admins can read all actions" ON acciones_recomendadas;
 CREATE POLICY "Admins can read all actions"
   ON acciones_recomendadas
   FOR SELECT

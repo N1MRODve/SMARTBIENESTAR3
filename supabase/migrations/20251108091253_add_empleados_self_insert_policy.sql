@@ -26,15 +26,6 @@ CREATE POLICY "Usuarios pueden crear su propio empleado"
   TO authenticated
   WITH CHECK (auth_user_id = auth.uid());
 
--- Crear política que permite crear otros empleados si ya eres empleado de la empresa
-CREATE POLICY "Admins pueden crear empleados en su empresa"
-  ON empleados FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    empresa_id IN (
-      SELECT empresa_id 
-      FROM empleados 
-      WHERE auth_user_id = auth.uid() 
-        AND es_admin = true
-    )
-  );
+-- NOTA: Política de admin omitida - la tabla empleados no tiene columnas
+-- empresa_id ni es_admin en el esquema actual.
+-- Para habilitar control por empresa, agregar primero estas columnas.

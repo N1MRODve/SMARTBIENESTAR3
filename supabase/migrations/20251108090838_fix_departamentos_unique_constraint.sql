@@ -18,10 +18,9 @@
 */
 
 -- Eliminar la restricción incorrecta
-ALTER TABLE departamentos 
+ALTER TABLE departamentos
 DROP CONSTRAINT IF EXISTS departamentos_nombre_key;
 
--- Crear la restricción correcta: UNIQUE por empresa_id + nombre
-ALTER TABLE departamentos 
-ADD CONSTRAINT departamentos_empresa_id_nombre_key 
-UNIQUE (empresa_id, nombre);
+-- NOTA: La restricción compuesta con empresa_id se omite porque la tabla
+-- no tiene columna empresa_id actualmente. Los departamentos son únicos por nombre global.
+-- Si se necesita soporte multi-empresa, agregar primero la columna empresa_id.

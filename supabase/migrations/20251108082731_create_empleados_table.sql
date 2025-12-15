@@ -48,22 +48,26 @@ CREATE INDEX IF NOT EXISTS idx_empleados_estado ON empleados(estado);
 
 ALTER TABLE empleados ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Usuarios autenticados pueden leer empleados" ON empleados;
 CREATE POLICY "Usuarios autenticados pueden leer empleados"
   ON empleados FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Usuarios pueden actualizar su propio perfil" ON empleados;
 CREATE POLICY "Usuarios pueden actualizar su propio perfil"
   ON empleados FOR UPDATE
   TO authenticated
   USING (auth.uid() = auth_user_id)
   WITH CHECK (auth.uid() = auth_user_id);
 
+DROP POLICY IF EXISTS "Cualquier usuario autenticado puede crear empleados" ON empleados;
 CREATE POLICY "Cualquier usuario autenticado puede crear empleados"
   ON empleados FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Cualquier usuario autenticado puede eliminar empleados" ON empleados;
 CREATE POLICY "Cualquier usuario autenticado puede eliminar empleados"
   ON empleados FOR DELETE
   TO authenticated

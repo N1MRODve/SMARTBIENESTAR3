@@ -17,11 +17,12 @@
 */
 
 -- Permitir a usuarios autenticados actualizar su propia empresa
+DROP POLICY IF EXISTS "Usuarios pueden actualizar su propia empresa" ON empresas;
 CREATE POLICY "Usuarios pueden actualizar su propia empresa"
   ON empresas FOR UPDATE
   TO authenticated
-  USING (dominio = substring(auth.jwt()->>'email' from '@(.*)$'))
-  WITH CHECK (dominio = substring(auth.jwt()->>'email' from '@(.*)$'));
+  USING (dominio_email = substring(auth.jwt()->>'email' from '@(.*)$'))
+  WITH CHECK (dominio_email = substring(auth.jwt()->>'email' from '@(.*)$'));
 
 -- Nota: Las funciones SECURITY DEFINER pueden insertar sin necesitar política INSERT
 -- porque bypasean RLS. Esto es intencional y seguro porque la función tiene validaciones.

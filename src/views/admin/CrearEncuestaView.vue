@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="py-8">
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Sin min-h-screen: el contenido fluye naturalmente en el scroll del AdminLayout -->
+  <div class="bg-gray-50 -m-4 md:-m-8 p-4 md:p-8">
+    <div class="max-w-5xl mx-auto">
         <!-- Header con progreso -->
         <div class="mb-8">
           <div class="flex items-center justify-between mb-6">
@@ -71,117 +71,447 @@
         <!-- Contenido del paso actual -->
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
 
-          <!-- PASO 1: Objetivo y Dimensión -->
-          <div v-if="currentStep === 0" class="p-6 space-y-6">
-            <div class="flex items-center gap-4 mb-6">
+          <!-- PASO 1: Objetivo y Dimensión con Selección de Preguntas -->
+          <div v-if="currentStep === 0" class="p-6 space-y-8">
+            <!-- Header del paso -->
+            <div class="flex items-center gap-4">
               <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
                 <Target class="h-7 w-7 text-white" />
               </div>
               <div>
                 <h2 class="text-xl font-bold text-gray-900">¿Qué quieres medir?</h2>
-                <p class="text-gray-600">Define el objetivo de negocio y la dimensión del bienestar que evaluarás</p>
+                <p class="text-gray-600">Elige una dimensión y el sistema te sugerirá las mejores preguntas</p>
               </div>
             </div>
 
-            <!-- Título de la encuesta -->
-            <div class="space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">
-                Nombre de la encuesta <span class="text-red-500">*</span>
-              </label>
-              <input
-                v-model="encuesta.titulo"
-                type="text"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Ej: Pulso de Bienestar Q4 2024"
-              />
-              <p class="text-xs text-gray-500">
-                Usa un nombre descriptivo que los empleados reconozcan fácilmente
-              </p>
+            <!-- SECCIÓN 1: Información básica -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Título -->
+              <div class="space-y-2">
+                <label class="block text-sm font-semibold text-gray-700">
+                  Nombre de la encuesta <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="encuesta.titulo"
+                  type="text"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Ej: Pulso de Bienestar Q4 2024"
+                />
+                <p class="text-xs text-gray-500">Un nombre que los empleados reconozcan fácilmente</p>
+              </div>
+
+              <!-- Descripción -->
+              <div class="space-y-2">
+                <label class="block text-sm font-semibold text-gray-700">
+                  Descripción breve
+                </label>
+                <input
+                  v-model="encuesta.descripcion"
+                  type="text"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  placeholder="Queremos conocer tu opinión sobre..."
+                />
+              </div>
             </div>
 
-            <!-- Descripción -->
-            <div class="space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">
-                Descripción para empleados
-              </label>
-              <textarea
-                v-model="encuesta.descripcion"
-                rows="2"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="Explica brevemente para qué servirá esta encuesta..."
-              ></textarea>
-            </div>
-
-            <!-- Dimensión de bienestar -->
+            <!-- SECCIÓN 2: Selección de Dimensión -->
             <div class="space-y-4">
               <div class="flex items-center justify-between">
-                <label class="block text-sm font-semibold text-gray-700">
-                  Dimensión a medir <span class="text-red-500">*</span>
-                </label>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700">
+                    ¿Qué dimensión quieres evaluar? <span class="text-red-500">*</span>
+                  </label>
+                  <p class="text-xs text-gray-500 mt-1">La dimensión determina qué preguntas te sugerimos</p>
+                </div>
                 <button
                   @click="showDimensionHelp = !showDimensionHelp"
                   class="text-indigo-600 text-sm hover:underline flex items-center gap-1"
                 >
                   <HelpCircle class="h-4 w-4" />
-                  ¿Por qué importa esto?
+                  ¿Por qué importa?
                 </button>
               </div>
 
-              <!-- Tooltip educativo -->
+              <!-- Help tooltip -->
               <div v-if="showDimensionHelp" class="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
                 <div class="flex items-start gap-3">
-                  <Lightbulb class="h-5 w-5 text-indigo-600 mt-0.5" />
+                  <Lightbulb class="h-5 w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
                   <div class="text-sm text-indigo-800">
-                    <p class="font-medium mb-1">La dimensión define qué métricas alimentará esta encuesta</p>
+                    <p class="font-medium mb-1">La dimensión conecta tus preguntas con métricas de analítica</p>
                     <p class="text-indigo-700">
-                      Al elegir una dimensión, los resultados se integrarán automáticamente en tu dashboard de analítica,
+                      Al elegir una dimensión, los resultados se integran automáticamente en tu dashboard,
                       permitiendo comparaciones históricas y benchmarks con otras empresas del sector.
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Grid de dimensiones -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <label
                   v-for="dim in dimensiones"
                   :key="dim.id"
-                  class="flex items-start p-4 border-2 rounded-xl cursor-pointer transition-all hover:shadow-md"
+                  class="relative flex flex-col p-4 border-2 rounded-xl cursor-pointer transition-all hover:shadow-md group"
                   :class="{
                     'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200': encuesta.categoria === dim.id,
                     'border-gray-200 bg-white hover:border-gray-300': encuesta.categoria !== dim.id
                   }"
                 >
-                  <input
-                    type="radio"
-                    v-model="encuesta.categoria"
-                    :value="dim.id"
-                    class="sr-only"
-                  />
-                  <div class="flex-shrink-0 mr-4">
-                    <div
-                      class="w-12 h-12 rounded-lg flex items-center justify-center"
-                      :class="dim.bgColor"
-                    >
-                      <component :is="dim.icon" class="h-6 w-6" :class="dim.iconColor" />
-                    </div>
+                  <input type="radio" v-model="encuesta.categoria" :value="dim.id" class="sr-only" />
+
+                  <!-- Indicador de selección -->
+                  <div
+                    v-if="encuesta.categoria === dim.id"
+                    class="absolute top-2 right-2 w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center"
+                  >
+                    <Check class="h-4 w-4 text-white" />
                   </div>
-                  <div class="flex-1">
-                    <h4 class="font-semibold text-gray-900">{{ dim.nombre }}</h4>
-                    <p class="text-sm text-gray-600 mt-1">{{ dim.descripcion }}</p>
-                    <div class="flex items-center gap-2 mt-2">
-                      <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                        {{ dim.indicador }}
-                      </span>
+
+                  <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center" :class="dim.bgColor">
+                      <component :is="dim.icon" class="h-5 w-5" :class="dim.iconColor" />
                     </div>
+                    <h4 class="font-semibold text-gray-900">{{ dim.nombre }}</h4>
+                  </div>
+
+                  <p class="text-sm text-gray-600 mb-3">{{ dim.descripcion }}</p>
+
+                  <div class="mt-auto flex items-center gap-2">
+                    <span class="text-xs px-2 py-1 rounded-full" :class="dim.bgColor + ' ' + dim.iconColor">
+                      {{ dim.indicador }}
+                    </span>
+                    <span class="text-xs text-gray-400">{{ getPreguntasCountForDimension(dim.id) }} preguntas</span>
                   </div>
                 </label>
               </div>
             </div>
 
-            <!-- Preview de impacto -->
-            <div v-if="encuesta.categoria" class="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+            <!-- SECCIÓN 3: Preguntas Sugeridas (aparece tras seleccionar dimensión) -->
+            <div v-if="encuesta.categoria" class="space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Sparkles class="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-900">Preguntas recomendadas para {{ getDimensionLabel }}</h3>
+                    <p class="text-sm text-gray-600">Selecciona las que quieras incluir en tu encuesta</p>
+                  </div>
+                </div>
+
+                <!-- Contador de preguntas -->
+                <div class="text-right">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="text-2xl font-bold"
+                      :class="{
+                        'text-yellow-600': encuesta.preguntas.length < 3,
+                        'text-green-600': encuesta.preguntas.length >= 3 && encuesta.preguntas.length <= 12,
+                        'text-orange-600': encuesta.preguntas.length > 12
+                      }"
+                    >{{ encuesta.preguntas.length }}</span>
+                    <span class="text-gray-500 text-sm">/ 8-12 recomendadas</span>
+                  </div>
+                  <p v-if="encuesta.preguntas.length < 3" class="text-xs text-yellow-600">Añade más para obtener datos fiables</p>
+                  <p v-else-if="encuesta.preguntas.length > 12" class="text-xs text-orange-600">Demasiadas pueden reducir la participación</p>
+                  <p v-else class="text-xs text-green-600">Cantidad óptima</p>
+                </div>
+              </div>
+
+              <!-- Preguntas organizadas por tipo -->
+              <div class="space-y-4">
+                <!-- Preguntas Clave (Indicadores) -->
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4">
+                  <div class="flex items-center gap-2 mb-3">
+                    <Star class="h-5 w-5 text-green-600" />
+                    <h4 class="font-semibold text-green-900">Preguntas clave</h4>
+                    <span class="text-xs px-2 py-0.5 bg-green-200 text-green-800 rounded-full">Indicadores principales</span>
+                  </div>
+                  <p class="text-sm text-green-700 mb-4">Estas preguntas alimentan directamente el {{ getDimensionIndicador }}. Te recomendamos incluirlas.</p>
+
+                  <div class="space-y-2">
+                    <label
+                      v-for="pregunta in getPreguntasClave"
+                      :key="pregunta.id"
+                      class="flex items-start gap-3 p-3 bg-white border border-green-200 rounded-lg cursor-pointer hover:border-green-400 transition-colors"
+                      :class="{ 'ring-2 ring-green-400 border-green-400': isPreguntaSeleccionada(pregunta) }"
+                    >
+                      <input
+                        type="checkbox"
+                        :checked="isPreguntaSeleccionada(pregunta)"
+                        @change="togglePregunta(pregunta)"
+                        class="w-5 h-5 text-green-600 rounded focus:ring-green-500 mt-0.5"
+                      />
+                      <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900">{{ pregunta.texto }}</p>
+                        <div class="flex items-center gap-2 mt-1">
+                          <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">{{ getTipoLabel(pregunta.tipo) }}</span>
+                          <span v-if="pregunta.esValidada" class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded flex items-center gap-1">
+                            <BadgeCheck class="h-3 w-3" />
+                            Validada científicamente
+                          </span>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Preguntas Complementarias -->
+                <div class="bg-white border border-gray-200 rounded-xl p-4">
+                  <div class="flex items-center gap-2 mb-3">
+                    <ListChecks class="h-5 w-5 text-gray-600" />
+                    <h4 class="font-semibold text-gray-900">Preguntas complementarias</h4>
+                    <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">Opcionales</span>
+                  </div>
+                  <p class="text-sm text-gray-600 mb-4">Añaden profundidad al análisis. Selecciona las más relevantes para tu contexto.</p>
+
+                  <div class="space-y-2">
+                    <label
+                      v-for="pregunta in getPreguntasComplementarias"
+                      :key="pregunta.id"
+                      class="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:border-indigo-300 transition-colors"
+                      :class="{ 'ring-2 ring-indigo-400 border-indigo-400 bg-indigo-50': isPreguntaSeleccionada(pregunta) }"
+                    >
+                      <input
+                        type="checkbox"
+                        :checked="isPreguntaSeleccionada(pregunta)"
+                        @change="togglePregunta(pregunta)"
+                        class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 mt-0.5"
+                      />
+                      <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900">{{ pregunta.texto }}</p>
+                        <div class="flex items-center gap-2 mt-1">
+                          <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">{{ getTipoLabel(pregunta.tipo) }}</span>
+                          <span v-if="pregunta.esValidada" class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded flex items-center gap-1">
+                            <BadgeCheck class="h-3 w-3" />
+                            Validada
+                          </span>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Pregunta Abierta (Cualitativa) -->
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4">
+                  <div class="flex items-center gap-2 mb-3">
+                    <MessageSquare class="h-5 w-5 text-purple-600" />
+                    <h4 class="font-semibold text-purple-900">Feedback cualitativo</h4>
+                    <span class="text-xs px-2 py-0.5 bg-purple-200 text-purple-800 rounded-full">Recomendada</span>
+                  </div>
+                  <p class="text-sm text-purple-700 mb-4">Permite a los empleados expresar ideas que no captan las preguntas cerradas.</p>
+
+                  <label
+                    v-for="pregunta in getPreguntasAbiertas"
+                    :key="pregunta.id"
+                    class="flex items-start gap-3 p-3 bg-white border border-purple-200 rounded-lg cursor-pointer hover:border-purple-400 transition-colors"
+                    :class="{ 'ring-2 ring-purple-400 border-purple-400': isPreguntaSeleccionada(pregunta) }"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="isPreguntaSeleccionada(pregunta)"
+                      @change="togglePregunta(pregunta)"
+                      class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 mt-0.5"
+                    />
+                    <div class="flex-1">
+                      <p class="text-sm font-medium text-gray-900">{{ pregunta.texto }}</p>
+                      <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded mt-1 inline-block">Texto libre</span>
+                    </div>
+                  </label>
+                </div>
+
+                <!-- Botones de acción rápida -->
+                <div class="flex flex-wrap gap-3">
+                  <button
+                    @click="seleccionarTodasLasClave"
+                    class="px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-2"
+                  >
+                    <Star class="h-4 w-4" />
+                    Seleccionar todas las clave
+                  </button>
+                  <button
+                    @click="seleccionarPaqueteRecomendado"
+                    class="px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-lg hover:bg-indigo-200 transition-colors flex items-center gap-2"
+                  >
+                    <Sparkles class="h-4 w-4" />
+                    Paquete recomendado (8 preguntas)
+                  </button>
+                  <button
+                    v-if="encuesta.preguntas.length > 0"
+                    @click="limpiarSeleccion"
+                    class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+                  >
+                    <X class="h-4 w-4" />
+                    Limpiar selección
+                  </button>
+                </div>
+
+                <!-- Crear pregunta personalizada -->
+                <button
+                  @click="mostrarCreadorPregunta = true"
+                  class="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-indigo-300 hover:text-indigo-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Plus class="h-5 w-5" />
+                  Crear pregunta personalizada
+                </button>
+
+                <!-- Modal de crear pregunta personalizada -->
+                <div v-if="mostrarCreadorPregunta" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                    <div class="p-6 border-b border-gray-200">
+                      <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-gray-900">Crear pregunta personalizada</h3>
+                        <button @click="mostrarCreadorPregunta = false" class="p-2 hover:bg-gray-100 rounded-lg">
+                          <X class="h-5 w-5 text-gray-500" />
+                        </button>
+                      </div>
+                    </div>
+                    <div class="p-6 space-y-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Texto de la pregunta</label>
+                        <textarea
+                          v-model="nuevaPreguntaPersonalizada.texto"
+                          rows="2"
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                          placeholder="Escribe tu pregunta aquí..."
+                        ></textarea>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de respuesta</label>
+                        <select
+                          v-model="nuevaPreguntaPersonalizada.tipo"
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="">Seleccionar...</option>
+                          <option value="escala_1_5">Escala 1-5 (Ideal para métricas)</option>
+                          <option value="si_no">Sí / No</option>
+                          <option value="opcion_multiple">Opción múltiple</option>
+                          <option value="texto_abierto">Texto abierto</option>
+                        </select>
+                      </div>
+                      <div v-if="nuevaPreguntaPersonalizada.tipo === 'opcion_multiple'" class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">Opciones</label>
+                        <div v-for="(op, i) in nuevaPreguntaPersonalizada.opciones" :key="i" class="flex gap-2">
+                          <input
+                            v-model="nuevaPreguntaPersonalizada.opciones[i]"
+                            type="text"
+                            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                            :placeholder="`Opción ${i + 1}`"
+                          />
+                          <button
+                            v-if="nuevaPreguntaPersonalizada.opciones.length > 2"
+                            @click="nuevaPreguntaPersonalizada.opciones.splice(i, 1)"
+                            class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            <X class="h-4 w-4" />
+                          </button>
+                        </div>
+                        <button
+                          @click="nuevaPreguntaPersonalizada.opciones.push('')"
+                          class="text-indigo-600 text-sm hover:underline flex items-center gap-1"
+                        >
+                          <Plus class="h-4 w-4" /> Añadir opción
+                        </button>
+                      </div>
+                    </div>
+                    <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
+                      <button
+                        @click="mostrarCreadorPregunta = false"
+                        class="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        @click="agregarPreguntaPersonalizada"
+                        :disabled="!nuevaPreguntaPersonalizada.texto || !nuevaPreguntaPersonalizada.tipo"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Añadir pregunta
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECCIÓN 4: Resumen de preguntas seleccionadas -->
+            <div v-if="encuesta.preguntas.length > 0" class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="font-semibold text-gray-900 flex items-center gap-2">
+                  <ClipboardList class="h-5 w-5 text-gray-600" />
+                  Tu encuesta incluye {{ encuesta.preguntas.length }} preguntas
+                </h4>
+                <button
+                  @click="verDetallePreguntas = !verDetallePreguntas"
+                  class="text-indigo-600 text-sm hover:underline"
+                >
+                  {{ verDetallePreguntas ? 'Ocultar detalle' : 'Ver detalle' }}
+                </button>
+              </div>
+
+              <!-- Resumen visual por tipo -->
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span
+                  v-if="getPreguntasPorTipo('escala_1_5').length > 0"
+                  class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full"
+                >
+                  {{ getPreguntasPorTipo('escala_1_5').length }} escala 1-5
+                </span>
+                <span
+                  v-if="getPreguntasPorTipo('si_no').length > 0"
+                  class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full"
+                >
+                  {{ getPreguntasPorTipo('si_no').length }} sí/no
+                </span>
+                <span
+                  v-if="getPreguntasPorTipo('opcion_multiple').length > 0"
+                  class="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full"
+                >
+                  {{ getPreguntasPorTipo('opcion_multiple').length }} opción múltiple
+                </span>
+                <span
+                  v-if="getPreguntasPorTipo('texto_abierto').length > 0"
+                  class="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded-full"
+                >
+                  {{ getPreguntasPorTipo('texto_abierto').length }} texto abierto
+                </span>
+              </div>
+
+              <!-- Lista detallada -->
+              <div v-if="verDetallePreguntas" class="space-y-2 pt-3 border-t border-gray-200">
+                <div
+                  v-for="(pregunta, index) in encuesta.preguntas"
+                  :key="pregunta.id"
+                  class="flex items-center justify-between p-2 bg-white rounded-lg"
+                >
+                  <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-bold">
+                      {{ index + 1 }}
+                    </span>
+                    <span class="text-sm text-gray-900 line-clamp-1">{{ pregunta.texto }}</span>
+                  </div>
+                  <button
+                    @click="eliminarPregunta(index)"
+                    class="p-1 text-red-600 hover:bg-red-50 rounded"
+                  >
+                    <X class="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Estimación de tiempo -->
+              <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200">
+                <Clock class="h-4 w-4 text-gray-500" />
+                <span class="text-sm text-gray-600">
+                  Tiempo estimado: <strong>{{ tiempoEstimado }}</strong>
+                </span>
+              </div>
+            </div>
+
+            <!-- Impacto en métricas -->
+            <div v-if="encuesta.categoria && encuesta.preguntas.length > 0" class="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl">
               <div class="flex items-start gap-3">
-                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                   <TrendingUp class="h-5 w-5 text-green-600" />
                 </div>
                 <div>
@@ -197,7 +527,7 @@
             </div>
           </div>
 
-          <!-- PASO 2: Preguntas -->
+          <!-- PASO 2: Revisar y Editar Preguntas -->
           <div v-if="currentStep === 1" class="p-6 space-y-6">
             <div class="flex items-center justify-between mb-6">
               <div class="flex items-center gap-4">
@@ -205,8 +535,8 @@
                   <FileText class="h-7 w-7 text-white" />
                 </div>
                 <div>
-                  <h2 class="text-xl font-bold text-gray-900">Diseña las preguntas</h2>
-                  <p class="text-gray-600">Cada pregunta debe medir algo específico y accionable</p>
+                  <h2 class="text-xl font-bold text-gray-900">Revisa y personaliza</h2>
+                  <p class="text-gray-600">Ajusta el texto o el orden de las preguntas si lo necesitas</p>
                 </div>
               </div>
               <div class="text-right">
@@ -215,54 +545,22 @@
               </div>
             </div>
 
-            <!-- Preguntas sugeridas por categoría -->
-            <div v-if="preguntasSugeridas.length > 0 && encuesta.preguntas.length === 0" class="p-4 bg-blue-50 border border-blue-200 rounded-xl mb-6">
-              <div class="flex items-start gap-3 mb-4">
-                <Sparkles class="h-5 w-5 text-blue-600 mt-0.5" />
+            <!-- Advertencia si pocas preguntas -->
+            <div v-if="encuesta.preguntas.length < 3" class="p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <div class="flex items-start gap-3">
+                <AlertTriangle class="h-5 w-5 text-yellow-600 mt-0.5" />
                 <div>
-                  <h4 class="font-semibold text-blue-900">Preguntas recomendadas para {{ getDimensionLabel }}</h4>
-                  <p class="text-sm text-blue-700">Estas preguntas están validadas científicamente para medir esta dimensión</p>
+                  <h4 class="font-semibold text-yellow-900">Pocas preguntas seleccionadas</h4>
+                  <p class="text-sm text-yellow-800">
+                    Con menos de 3 preguntas, los datos pueden ser insuficientes para un análisis fiable.
+                    <button @click="currentStep = 0" class="underline font-medium">Volver al paso anterior</button> para añadir más.
+                  </p>
                 </div>
               </div>
-              <div class="space-y-2">
-                <div
-                  v-for="(pregunta, index) in preguntasSugeridas.slice(0, 3)"
-                  :key="index"
-                  class="flex items-center justify-between p-3 bg-white border border-blue-200 rounded-lg"
-                >
-                  <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-900">{{ pregunta.texto }}</p>
-                    <p class="text-xs text-gray-500 mt-1">{{ getTipoLabel(pregunta.tipo) }}</p>
-                  </div>
-                  <button
-                    @click="agregarPreguntaSugerida(pregunta)"
-                    class="ml-3 px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 flex items-center gap-1"
-                  >
-                    <Plus class="h-4 w-4" />
-                    Añadir
-                  </button>
-                </div>
-              </div>
-              <button
-                @click="agregarTodasSugeridas"
-                class="mt-3 w-full py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 text-sm font-medium"
-              >
-                Añadir todas las recomendadas
-              </button>
             </div>
 
-            <!-- Lista de preguntas -->
-            <div v-if="encuesta.preguntas.length === 0" class="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl">
-              <MessageSquare class="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 class="text-lg font-medium text-gray-900 mb-2">Sin preguntas aún</h3>
-              <p class="text-gray-500 mb-4">Añade preguntas desde las sugerencias o crea las tuyas</p>
-              <Button @click="agregarPregunta">
-                <Plus class="h-5 w-5 mr-2" />
-                Crear pregunta personalizada
-              </Button>
-            </div>
-
-            <div v-else class="space-y-4">
+            <!-- Lista de preguntas editables -->
+            <div class="space-y-4">
               <div
                 v-for="(pregunta, index) in encuesta.preguntas"
                 :key="pregunta.id"
@@ -273,9 +571,14 @@
                     <span class="w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold text-sm">
                       {{ index + 1 }}
                     </span>
-                    <div>
-                      <span v-if="pregunta.esValidada" class="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
-                        Validada científicamente
+                    <div class="flex items-center gap-2">
+                      <span v-if="pregunta.esValidada" class="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full flex items-center gap-1">
+                        <BadgeCheck class="h-3 w-3" />
+                        Validada
+                      </span>
+                      <span v-if="pregunta.esClave" class="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full flex items-center gap-1">
+                        <Star class="h-3 w-3" />
+                        Clave
                       </span>
                     </div>
                   </div>
@@ -290,7 +593,7 @@
                 <div class="space-y-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
-                      Texto de la pregunta <span class="text-red-500">*</span>
+                      Texto de la pregunta
                     </label>
                     <textarea
                       v-model="pregunta.texto"
@@ -298,51 +601,42 @@
                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       placeholder="¿Qué quieres preguntar?"
                     ></textarea>
+                    <p v-if="pregunta.esValidada" class="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                      <AlertTriangle class="h-3 w-3" />
+                      Modificar preguntas validadas puede afectar la comparabilidad con benchmarks
+                    </p>
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Tipo de respuesta <span class="text-red-500">*</span>
-                      </label>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de respuesta</label>
                       <select
                         v-model="pregunta.tipo"
                         @change="actualizarOpcionesPregunta(index)"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       >
-                        <option value="">Seleccionar tipo...</option>
-                        <option value="escala_1_5">Escala 1-5 (Recomendado para métricas)</option>
+                        <option value="escala_1_5">Escala 1-5</option>
                         <option value="si_no">Sí / No</option>
                         <option value="opcion_multiple">Opción múltiple</option>
                         <option value="texto_abierto">Texto abierto</option>
                       </select>
                     </div>
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Dimensión que mide
-                      </label>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Dimensión</label>
                       <select
                         v-model="pregunta.dimension"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       >
-                        <option value="">Igual que la encuesta</option>
-                        <option v-for="dim in dimensiones" :key="dim.id" :value="dim.id">
-                          {{ dim.nombre }}
-                        </option>
+                        <option value="">{{ getDimensionLabel }} (principal)</option>
+                        <option v-for="dim in dimensiones" :key="dim.id" :value="dim.id">{{ dim.nombre }}</option>
                       </select>
                     </div>
                   </div>
 
                   <!-- Opciones para opción múltiple -->
                   <div v-if="pregunta.tipo === 'opcion_multiple'" class="space-y-3">
-                    <label class="block text-sm font-medium text-gray-700">
-                      Opciones de respuesta
-                    </label>
-                    <div
-                      v-for="(opcion, opcionIndex) in pregunta.opciones"
-                      :key="opcionIndex"
-                      class="flex items-center gap-2"
-                    >
+                    <label class="block text-sm font-medium text-gray-700">Opciones de respuesta</label>
+                    <div v-for="(opcion, opcionIndex) in pregunta.opciones" :key="opcionIndex" class="flex items-center gap-2">
                       <input
                         v-model="pregunta.opciones[opcionIndex]"
                         type="text"
@@ -366,56 +660,39 @@
                     </button>
                   </div>
 
-                  <!-- Preview visual -->
-                  <div class="p-4 bg-white border border-gray-200 rounded-lg">
-                    <p class="text-xs text-gray-500 mb-2">Vista previa:</p>
-                    <p class="font-medium text-gray-900 mb-3">{{ pregunta.texto || 'Tu pregunta aquí...' }}</p>
-
-                    <!-- Preview escala -->
-                    <div v-if="pregunta.tipo === 'escala_1_5'" class="flex items-center justify-between">
-                      <span class="text-xs text-gray-500">Muy insatisfecho</span>
-                      <div class="flex gap-2">
-                        <div v-for="n in 5" :key="n" class="w-10 h-10 border-2 border-gray-300 rounded-lg flex items-center justify-center text-gray-600 font-medium">
-                          {{ n }}
-                        </div>
-                      </div>
-                      <span class="text-xs text-gray-500">Muy satisfecho</span>
+                  <!-- Preview compacto -->
+                  <div class="p-3 bg-white border border-gray-200 rounded-lg">
+                    <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                      <Eye class="h-3 w-3" />
+                      Vista previa
                     </div>
-
-                    <!-- Preview sí/no -->
-                    <div v-else-if="pregunta.tipo === 'si_no'" class="flex gap-4">
-                      <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                        <span class="text-gray-700">Sí</span>
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                        <span class="text-gray-700">No</span>
-                      </div>
+                    <p class="font-medium text-gray-900 text-sm mb-2">{{ pregunta.texto || 'Tu pregunta aquí...' }}</p>
+                    <div v-if="pregunta.tipo === 'escala_1_5'" class="flex gap-1">
+                      <div v-for="n in 5" :key="n" class="w-8 h-8 border border-gray-300 rounded flex items-center justify-center text-gray-500 text-sm">{{ n }}</div>
                     </div>
-
-                    <!-- Preview opción múltiple -->
-                    <div v-else-if="pregunta.tipo === 'opcion_multiple'" class="space-y-2">
-                      <div v-for="(op, i) in pregunta.opciones" :key="i" class="flex items-center gap-2">
-                        <div class="w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                        <span class="text-gray-700">{{ op || `Opción ${i + 1}` }}</span>
+                    <div v-else-if="pregunta.tipo === 'si_no'" class="flex gap-3 text-sm">
+                      <span class="flex items-center gap-1"><div class="w-3 h-3 border border-gray-300 rounded-full"></div> Sí</span>
+                      <span class="flex items-center gap-1"><div class="w-3 h-3 border border-gray-300 rounded-full"></div> No</span>
+                    </div>
+                    <div v-else-if="pregunta.tipo === 'opcion_multiple'" class="space-y-1 text-sm">
+                      <div v-for="(op, i) in pregunta.opciones.slice(0, 3)" :key="i" class="flex items-center gap-1">
+                        <div class="w-3 h-3 border border-gray-300 rounded-full"></div>
+                        <span class="text-gray-600">{{ op || `Opción ${i + 1}` }}</span>
                       </div>
+                      <span v-if="pregunta.opciones.length > 3" class="text-gray-400 text-xs">+{{ pregunta.opciones.length - 3 }} más</span>
                     </div>
-
-                    <!-- Preview texto abierto -->
-                    <div v-else-if="pregunta.tipo === 'texto_abierto'" class="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                      <p class="text-sm text-gray-400 italic">Respuesta de texto libre...</p>
-                    </div>
+                    <div v-else-if="pregunta.tipo === 'texto_abierto'" class="text-sm text-gray-400 italic">Texto libre...</div>
                   </div>
                 </div>
               </div>
 
+              <!-- Añadir más preguntas -->
               <button
-                @click="agregarPregunta"
+                @click="currentStep = 0"
                 class="w-full py-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-indigo-300 hover:text-indigo-600 transition-colors flex items-center justify-center gap-2"
               >
                 <Plus class="h-5 w-5" />
-                Añadir otra pregunta
+                Añadir más preguntas
               </button>
             </div>
           </div>
@@ -958,7 +1235,6 @@
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -1002,7 +1278,12 @@ import {
   Activity,
   MessageCircle,
   Briefcase,
-  Smile
+  Smile,
+  Star,
+  BadgeCheck,
+  ListChecks,
+  ClipboardList,
+  Eye
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -1018,6 +1299,13 @@ const showDimensionHelp = ref(false);
 const departamentos = ref([]);
 const empleados = ref([]);
 const departamentosSeleccionados = ref([]);
+const mostrarCreadorPregunta = ref(false);
+const verDetallePreguntas = ref(false);
+const nuevaPreguntaPersonalizada = ref({
+  texto: '',
+  tipo: '',
+  opciones: ['', '']
+});
 
 // Steps del wizard
 const steps = [
@@ -1092,43 +1380,85 @@ const dimensiones = [
   }
 ];
 
-// Preguntas sugeridas por categoría (validadas científicamente)
+// Banco de preguntas por categoría con clasificación (clave, complementaria, abierta)
 const preguntasPorCategoria = {
   'salud-mental': [
-    { texto: '¿Cómo calificarías tu nivel de estrés en el trabajo durante la última semana?', tipo: 'escala_1_5', opciones: [], esValidada: true },
-    { texto: '¿Te sientes emocionalmente agotado al final del día laboral?', tipo: 'si_no', opciones: [], esValidada: true },
-    { texto: '¿Qué factores contribuyen más a tu estrés laboral?', tipo: 'opcion_multiple', opciones: ['Carga de trabajo', 'Plazos ajustados', 'Conflictos', 'Incertidumbre', 'Falta de reconocimiento'], esValidada: true },
-    { texto: '¿Qué recursos te ayudarían a gestionar mejor el estrés?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+    // Preguntas clave (indicadores principales)
+    { id: 'sm-1', texto: '¿Cómo calificarías tu nivel de estrés en el trabajo durante la última semana?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'sm-2', texto: 'En general, ¿te sientes emocionalmente equilibrado en tu trabajo?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'sm-3', texto: '¿Con qué frecuencia sientes que tu trabajo afecta negativamente tu bienestar mental?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    // Preguntas complementarias
+    { id: 'sm-4', texto: '¿Te sientes emocionalmente agotado al final del día laboral?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'sm-5', texto: '¿Sientes que tienes suficiente tiempo para descansar y recuperarte?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'sm-6', texto: '¿Qué factores contribuyen más a tu estrés laboral?', tipo: 'opcion_multiple', opciones: ['Carga de trabajo', 'Plazos ajustados', 'Conflictos interpersonales', 'Incertidumbre', 'Falta de reconocimiento', 'Problemas técnicos'], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'sm-7', texto: '¿Conoces los recursos de apoyo psicológico que ofrece la empresa?', tipo: 'si_no', opciones: [], esValidada: false, esClave: false, categoria: 'complementaria' },
+    // Preguntas abiertas
+    { id: 'sm-8', texto: '¿Qué recursos o cambios te ayudarían a gestionar mejor el estrés en tu trabajo?', tipo: 'texto_abierto', opciones: [], esValidada: false, esClave: false, categoria: 'abierta' }
   ],
   'clima-laboral': [
-    { texto: 'Del 1 al 10, ¿qué tan probable es que recomiendes esta empresa como lugar para trabajar?', tipo: 'escala_1_5', opciones: [], esValidada: true },
-    { texto: '¿Te sientes valorado por tu trabajo?', tipo: 'si_no', opciones: [], esValidada: true },
-    { texto: '¿Cómo describirías el ambiente en tu equipo?', tipo: 'opcion_multiple', opciones: ['Colaborativo', 'Competitivo', 'Tenso', 'Amigable', 'Indiferente'], esValidada: true },
-    { texto: '¿Qué mejoraría el clima laboral en tu área?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+    // Preguntas clave (indicadores principales)
+    { id: 'cl-1', texto: 'En una escala del 1 al 5, ¿qué tan probable es que recomiendes esta empresa como lugar para trabajar?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'cl-2', texto: '¿Cómo calificarías el ambiente de trabajo en tu equipo?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'cl-3', texto: '¿Te sientes parte de un equipo que se apoya mutuamente?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    // Preguntas complementarias
+    { id: 'cl-4', texto: '¿Te sientes valorado por tu trabajo y contribuciones?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'cl-5', texto: '¿Sientes que puedes expresar tus opiniones libremente?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'cl-6', texto: '¿Cómo describirías la relación con tu manager directo?', tipo: 'opcion_multiple', opciones: ['Excelente', 'Buena', 'Neutral', 'Necesita mejorar', 'Problemática'], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'cl-7', texto: '¿Existe colaboración efectiva entre diferentes departamentos?', tipo: 'si_no', opciones: [], esValidada: false, esClave: false, categoria: 'complementaria' },
+    // Preguntas abiertas
+    { id: 'cl-8', texto: '¿Qué cambios concretos mejorarían el clima laboral en tu área?', tipo: 'texto_abierto', opciones: [], esValidada: false, esClave: false, categoria: 'abierta' }
   ],
   'carga-laboral': [
-    { texto: '¿Consideras que tu carga de trabajo actual es manejable?', tipo: 'escala_1_5', opciones: [], esValidada: true },
-    { texto: '¿Logras desconectar del trabajo fuera del horario laboral?', tipo: 'si_no', opciones: [], esValidada: true },
-    { texto: '¿Con qué frecuencia trabajas fuera de tu horario?', tipo: 'opcion_multiple', opciones: ['Nunca', 'Ocasionalmente', 'Frecuentemente', 'Casi siempre'], esValidada: true },
-    { texto: '¿Qué cambios mejorarían tu balance vida-trabajo?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+    // Preguntas clave
+    { id: 'ca-1', texto: '¿Consideras que tu carga de trabajo actual es manejable?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'ca-2', texto: '¿Puedes completar tus tareas dentro de tu horario laboral habitual?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'ca-3', texto: '¿Sientes que tienes un buen balance entre trabajo y vida personal?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    // Preguntas complementarias
+    { id: 'ca-4', texto: '¿Logras desconectar del trabajo fuera del horario laboral?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'ca-5', texto: '¿Tienes claridad sobre las prioridades de tu trabajo?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'ca-6', texto: '¿Con qué frecuencia trabajas fuera de tu horario establecido?', tipo: 'opcion_multiple', opciones: ['Nunca', 'Raramente (1-2 veces/mes)', 'Ocasionalmente (1 vez/semana)', 'Frecuentemente (varias veces/semana)', 'Casi siempre'], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'ca-7', texto: '¿Tienes los recursos necesarios para realizar tu trabajo eficientemente?', tipo: 'si_no', opciones: [], esValidada: false, esClave: false, categoria: 'complementaria' },
+    // Preguntas abiertas
+    { id: 'ca-8', texto: '¿Qué cambios concretos mejorarían tu balance entre trabajo y vida personal?', tipo: 'texto_abierto', opciones: [], esValidada: false, esClave: false, categoria: 'abierta' }
   ],
   'comunicacion': [
-    { texto: '¿Qué tan clara es la comunicación en tu equipo?', tipo: 'escala_1_5', opciones: [], esValidada: true },
-    { texto: '¿Recibes feedback regular sobre tu trabajo?', tipo: 'si_no', opciones: [], esValidada: true },
-    { texto: '¿Cuál es el principal problema de comunicación?', tipo: 'opcion_multiple', opciones: ['Falta de claridad', 'Comunicación tardía', 'Demasiadas reuniones', 'Canales inadecuados'], esValidada: true },
-    { texto: '¿Cómo mejorarías la comunicación?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+    // Preguntas clave
+    { id: 'co-1', texto: '¿Qué tan clara es la comunicación sobre objetivos y expectativas en tu equipo?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'co-2', texto: '¿Recibes información oportuna sobre cambios que afectan tu trabajo?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'co-3', texto: '¿Qué tan efectiva es la comunicación de la dirección hacia los empleados?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    // Preguntas complementarias
+    { id: 'co-4', texto: '¿Recibes feedback regular y constructivo sobre tu trabajo?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'co-5', texto: '¿Sientes que tu voz es escuchada cuando compartes ideas o preocupaciones?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'co-6', texto: '¿Cuál es el principal problema de comunicación que percibes?', tipo: 'opcion_multiple', opciones: ['Falta de claridad', 'Comunicación tardía', 'Demasiadas reuniones', 'Canales inadecuados', 'Información contradictoria', 'Falta de transparencia'], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'co-7', texto: '¿Las reuniones que tienes son generalmente productivas?', tipo: 'si_no', opciones: [], esValidada: false, esClave: false, categoria: 'complementaria' },
+    // Preguntas abiertas
+    { id: 'co-8', texto: '¿Qué sugerencias tienes para mejorar la comunicación interna?', tipo: 'texto_abierto', opciones: [], esValidada: false, esClave: false, categoria: 'abierta' }
   ],
   'desarrollo': [
-    { texto: '¿Sientes que tienes oportunidades de crecimiento?', tipo: 'escala_1_5', opciones: [], esValidada: true },
-    { texto: '¿Has recibido formación en el último año?', tipo: 'si_no', opciones: [], esValidada: true },
-    { texto: '¿Qué tipo de desarrollo te interesa más?', tipo: 'opcion_multiple', opciones: ['Técnico', 'Liderazgo', 'Certificaciones', 'Mentoring', 'Proyectos desafiantes'], esValidada: true },
-    { texto: '¿Qué obstáculos encuentras para tu desarrollo?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+    // Preguntas clave
+    { id: 'de-1', texto: '¿Sientes que tienes oportunidades reales de crecimiento profesional?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'de-2', texto: '¿Tu trabajo te permite aprender y desarrollar nuevas habilidades?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'de-3', texto: '¿Tienes claridad sobre tu posible trayectoria profesional en la empresa?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    // Preguntas complementarias
+    { id: 'de-4', texto: '¿Has recibido formación relevante para tu puesto en el último año?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'de-5', texto: '¿Tu manager apoya activamente tu desarrollo profesional?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'de-6', texto: '¿Qué tipo de desarrollo te interesa más en este momento?', tipo: 'opcion_multiple', opciones: ['Habilidades técnicas', 'Liderazgo y gestión', 'Certificaciones profesionales', 'Mentoring', 'Proyectos desafiantes', 'Formación en soft skills'], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'de-7', texto: '¿Conoces los programas de desarrollo que ofrece la empresa?', tipo: 'si_no', opciones: [], esValidada: false, esClave: false, categoria: 'complementaria' },
+    // Preguntas abiertas
+    { id: 'de-8', texto: '¿Qué obstáculos encuentras actualmente para tu desarrollo profesional?', tipo: 'texto_abierto', opciones: [], esValidada: false, esClave: false, categoria: 'abierta' }
   ],
   'general': [
-    { texto: '¿Cómo calificarías tu bienestar general en el trabajo?', tipo: 'escala_1_5', opciones: [], esValidada: true },
-    { texto: '¿Recomendarías esta empresa como buen lugar para trabajar?', tipo: 'si_no', opciones: [], esValidada: true },
-    { texto: '¿Cuál es el aspecto más positivo de trabajar aquí?', tipo: 'opcion_multiple', opciones: ['Ambiente', 'Beneficios', 'Flexibilidad', 'Crecimiento', 'Compañeros'], esValidada: true },
-    { texto: '¿Qué sugerencias tienes para mejorar el bienestar?', tipo: 'texto_abierto', opciones: [], esValidada: false }
+    // Preguntas clave
+    { id: 'ge-1', texto: '¿Cómo calificarías tu bienestar general en el trabajo actualmente?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'ge-2', texto: '¿Te sientes motivado en tu trabajo día a día?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'ge-3', texto: '¿Recomendarías esta empresa como un buen lugar para trabajar?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    // Preguntas complementarias
+    { id: 'ge-4', texto: '¿Sientes orgullo de pertenecer a esta organización?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'ge-5', texto: '¿Te ves trabajando aquí dentro de un año?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'ge-6', texto: '¿Cuál es el aspecto más positivo de trabajar aquí?', tipo: 'opcion_multiple', opciones: ['Ambiente de trabajo', 'Beneficios y compensación', 'Flexibilidad', 'Oportunidades de crecimiento', 'Compañeros de trabajo', 'La misión de la empresa'], esValidada: true, esClave: false, categoria: 'complementaria' },
+    { id: 'ge-7', texto: '¿Qué aspecto necesita más mejora?', tipo: 'opcion_multiple', opciones: ['Comunicación', 'Liderazgo', 'Compensación', 'Balance vida-trabajo', 'Desarrollo profesional', 'Ambiente físico'], esValidada: false, esClave: false, categoria: 'complementaria' },
+    // Preguntas abiertas
+    { id: 'ge-8', texto: '¿Qué sugerencias concretas tienes para mejorar el bienestar en la empresa?', tipo: 'texto_abierto', opciones: [], esValidada: false, esClave: false, categoria: 'abierta' }
   ]
 };
 
@@ -1184,6 +1514,32 @@ const hayDepartamentoPequeno = computed(() => {
 const preguntasSugeridas = computed(() => {
   if (!encuesta.value.categoria) return [];
   return preguntasPorCategoria[encuesta.value.categoria] || [];
+});
+
+// Preguntas filtradas por tipo
+const getPreguntasClave = computed(() => {
+  return preguntasSugeridas.value.filter(p => p.categoria === 'clave');
+});
+
+const getPreguntasComplementarias = computed(() => {
+  return preguntasSugeridas.value.filter(p => p.categoria === 'complementaria');
+});
+
+const getPreguntasAbiertas = computed(() => {
+  return preguntasSugeridas.value.filter(p => p.categoria === 'abierta');
+});
+
+const getDimensionIndicador = computed(() => {
+  const dim = dimensiones.find(d => d.id === encuesta.value.categoria);
+  return dim?.indicador || 'indicador';
+});
+
+const tiempoEstimado = computed(() => {
+  const count = encuesta.value.preguntas.length;
+  if (count <= 5) return '2-3 minutos';
+  if (count <= 10) return '4-5 minutos';
+  if (count <= 15) return '6-8 minutos';
+  return '10+ minutos';
 });
 
 const getDimensionLabel = computed(() => {
@@ -1273,31 +1629,108 @@ const getTipoLabel = (tipo) => {
   return labels[tipo] || tipo;
 };
 
-const agregarPreguntaSugerida = (pregunta) => {
-  encuesta.value.preguntas.push({
-    id: Date.now() + Math.random(),
-    texto: pregunta.texto,
-    tipo: pregunta.tipo,
-    opciones: [...(pregunta.opciones || [])],
-    dimension: '',
-    esValidada: pregunta.esValidada
-  });
-  toast.success('Pregunta añadida');
+const getPreguntasCountForDimension = (dimensionId) => {
+  const preguntas = preguntasPorCategoria[dimensionId] || [];
+  return preguntas.length;
 };
 
-const agregarTodasSugeridas = () => {
-  preguntasSugeridas.value.forEach(pregunta => {
+const isPreguntaSeleccionada = (pregunta) => {
+  return encuesta.value.preguntas.some(p => p.id === pregunta.id);
+};
+
+const togglePregunta = (pregunta) => {
+  const index = encuesta.value.preguntas.findIndex(p => p.id === pregunta.id);
+  if (index >= 0) {
+    encuesta.value.preguntas.splice(index, 1);
+  } else {
     encuesta.value.preguntas.push({
-      id: Date.now() + Math.random(),
+      id: pregunta.id,
       texto: pregunta.texto,
       tipo: pregunta.tipo,
       opciones: [...(pregunta.opciones || [])],
       dimension: '',
-      esValidada: pregunta.esValidada
+      esValidada: pregunta.esValidada,
+      esClave: pregunta.esClave
+    });
+  }
+};
+
+const seleccionarTodasLasClave = () => {
+  getPreguntasClave.value.forEach(pregunta => {
+    if (!isPreguntaSeleccionada(pregunta)) {
+      encuesta.value.preguntas.push({
+        id: pregunta.id,
+        texto: pregunta.texto,
+        tipo: pregunta.tipo,
+        opciones: [...(pregunta.opciones || [])],
+        dimension: '',
+        esValidada: pregunta.esValidada,
+        esClave: pregunta.esClave
+      });
+    }
+  });
+  toast.success('Preguntas clave añadidas');
+};
+
+const seleccionarPaqueteRecomendado = () => {
+  // Limpiar selección actual
+  encuesta.value.preguntas = [];
+  // Añadir todas las clave (3)
+  getPreguntasClave.value.forEach(p => {
+    encuesta.value.preguntas.push({
+      id: p.id, texto: p.texto, tipo: p.tipo, opciones: [...(p.opciones || [])],
+      dimension: '', esValidada: p.esValidada, esClave: p.esClave
     });
   });
-  toast.success(`${preguntasSugeridas.value.length} preguntas añadidas`);
+  // Añadir 4 complementarias
+  getPreguntasComplementarias.value.slice(0, 4).forEach(p => {
+    encuesta.value.preguntas.push({
+      id: p.id, texto: p.texto, tipo: p.tipo, opciones: [...(p.opciones || [])],
+      dimension: '', esValidada: p.esValidada, esClave: p.esClave
+    });
+  });
+  // Añadir 1 abierta
+  if (getPreguntasAbiertas.value.length > 0) {
+    const p = getPreguntasAbiertas.value[0];
+    encuesta.value.preguntas.push({
+      id: p.id, texto: p.texto, tipo: p.tipo, opciones: [...(p.opciones || [])],
+      dimension: '', esValidada: p.esValidada, esClave: p.esClave
+    });
+  }
+  toast.success('Paquete recomendado seleccionado (8 preguntas)');
 };
+
+const limpiarSeleccion = () => {
+  encuesta.value.preguntas = [];
+  toast.info('Selección limpiada');
+};
+
+const getPreguntasPorTipo = (tipo) => {
+  return encuesta.value.preguntas.filter(p => p.tipo === tipo);
+};
+
+const agregarPreguntaPersonalizada = () => {
+  if (!nuevaPreguntaPersonalizada.value.texto || !nuevaPreguntaPersonalizada.value.tipo) return;
+
+  encuesta.value.preguntas.push({
+    id: 'custom-' + Date.now(),
+    texto: nuevaPreguntaPersonalizada.value.texto,
+    tipo: nuevaPreguntaPersonalizada.value.tipo,
+    opciones: nuevaPreguntaPersonalizada.value.tipo === 'opcion_multiple'
+      ? [...nuevaPreguntaPersonalizada.value.opciones.filter(o => o.trim())]
+      : [],
+    dimension: '',
+    esValidada: false,
+    esClave: false
+  });
+
+  // Reset
+  nuevaPreguntaPersonalizada.value = { texto: '', tipo: '', opciones: ['', ''] };
+  mostrarCreadorPregunta.value = false;
+  toast.success('Pregunta personalizada añadida');
+};
+
+// Funciones legacy removidas - ahora se usa togglePregunta y seleccionarPaqueteRecomendado
 
 const agregarPregunta = () => {
   encuesta.value.preguntas.push({

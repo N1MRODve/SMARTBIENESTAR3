@@ -127,11 +127,11 @@
                 <div class="flex items-center space-x-6 text-sm text-gray-500">
                   <div class="flex items-center">
                     <Users class="h-4 w-4 mr-1" />
-                    <span>{{ encuesta.totalParticipantes }} participantes</span>
+                    <span>{{ encuesta.totalParticipantes }} participante{{ encuesta.totalParticipantes !== 1 ? 's' : '' }}</span>
                   </div>
                   <div class="flex items-center">
                     <TrendingUp class="h-4 w-4 mr-1" />
-                    <span>{{ Math.round((encuesta.totalParticipantes / 50) * 100) }}% tasa de participación</span>
+                    <span>{{ tasaParticipacion }}% tasa de participación</span>
                   </div>
                   <div class="flex items-center">
                     <Calendar class="h-4 w-4 mr-1" />
@@ -334,17 +334,18 @@
                     <!-- Estadísticas Detalladas -->
                     <div>
                       <h4 class="text-md font-medium text-gray-900 mb-3">Estadísticas Detalladas</h4>
+                      <p class="text-xs text-gray-500 mb-2">Total: {{ pregunta.resultados.totalRespuestas }} respuesta{{ pregunta.resultados.totalRespuestas !== 1 ? 's' : '' }}</p>
                       <div class="space-y-2">
-                        <div 
-                          v-for="(valor, labelIndex) in pregunta.resultados.data" 
+                        <div
+                          v-for="(valor, labelIndex) in pregunta.resultados.data"
                           :key="labelIndex"
                           class="flex items-center justify-between p-2 bg-gray-50 rounded"
                         >
                           <span class="text-sm text-gray-700">{{ pregunta.resultados.labels[labelIndex] }}</span>
                           <div class="flex items-center">
-                            <span class="text-sm font-medium text-gray-900 mr-2">{{ valor }} respuestas</span>
+                            <span class="text-sm font-medium text-gray-900 mr-2">{{ valor }} respuesta{{ valor !== 1 ? 's' : '' }}</span>
                             <span class="text-xs text-gray-500">
-                              ({{ Math.round((valor / encuesta.totalParticipantes) * 100) }}%)
+                              ({{ pregunta.resultados.porcentajes ? pregunta.resultados.porcentajes[labelIndex] : 0 }}%)
                             </span>
                           </div>
                         </div>
@@ -375,7 +376,10 @@
           </div>
 
           <!-- Resultados por Departamento -->
-          <ResultadosPorDepartamento />
+          <ResultadosPorDepartamento
+            :encuesta-id="encuesta?.id"
+            :respuestas="encuesta?.resultados || []"
+          />
 
           <!-- Resumen General -->
           <div class="bg-white rounded-lg shadow-sm p-6">
@@ -389,18 +393,22 @@
                 Comunicar resultados
               </button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div class="text-center p-4 bg-blue-50 rounded-lg">
                 <p class="text-2xl font-bold text-blue-600">{{ encuesta.totalParticipantes }}</p>
-                <p class="text-sm text-blue-800">Total Participantes</p>
+                <p class="text-sm text-blue-800">Participantes</p>
+              </div>
+              <div class="text-center p-4 bg-gray-50 rounded-lg">
+                <p class="text-2xl font-bold text-gray-600">{{ totalEmpleadosEmpresa }}</p>
+                <p class="text-sm text-gray-700">Total Empleados</p>
               </div>
               <div class="text-center p-4 bg-green-50 rounded-lg">
-                <p class="text-2xl font-bold text-green-600">{{ Math.round((encuesta.totalParticipantes / 50) * 100) }}%</p>
+                <p class="text-2xl font-bold text-green-600">{{ tasaParticipacion }}%</p>
                 <p class="text-sm text-green-800">Tasa de Participación</p>
               </div>
               <div class="text-center p-4 bg-purple-50 rounded-lg">
                 <p class="text-2xl font-bold text-purple-600">{{ encuesta.preguntas?.length || 0 }}</p>
-                <p class="text-sm text-purple-800">Preguntas Analizadas</p>
+                <p class="text-sm text-purple-800">Preguntas</p>
               </div>
             </div>
           </div>
@@ -507,7 +515,15 @@
           </div>
 
           <!-- Recomendaciones SMART -->
-          <RecomendacionesSmart :resultados="encuesta.resultados" />
+          <RecomendacionesSmart
+            :resultados="encuesta.resultados"
+            :encuesta-id="encuesta.id"
+            :empresa-id="authStore.empresaId"
+            :categorias-interpretadas="categoriasInterpretadas"
+            :indice-bienestar-global="indiceBienestarGlobal"
+            @ver-detalle="verDetalleRecomendacion"
+            @recomendacion-actualizada="onRecomendacionActualizada"
+          />
         </div>
       </div>
     </div>
@@ -581,9 +597,16 @@ const encuesta = ref(null);
 const loading = ref(true);
 const error = ref(null);
 const charts = ref({});
+const totalEmpleadosEmpresa = ref(0);
 
 const indiceBienestarGlobal = ref(72);
 const tendenciaBienestar = ref('up'); // 'up', 'down', 'stable'
+
+// Computed for participation rate
+const tasaParticipacion = computed(() => {
+  if (!encuesta.value || totalEmpleadosEmpresa.value === 0) return 0;
+  return Math.round((encuesta.value.totalParticipantes / totalEmpleadosEmpresa.value) * 100);
+});
 
 const modalRecomendacionesAbierto = ref(false);
 const alertaSeleccionada = ref(null);
@@ -597,6 +620,9 @@ const cargarResultados = async () => {
   try {
     const encuestaId = route.params.encuestaId;
 
+    console.log('[ResultadosEncuesta] Cargando encuesta:', encuestaId);
+    console.log('[ResultadosEncuesta] empresa_id del usuario:', authStore.empresaId);
+
     // Load survey data from Supabase
     const { data: encuestaData, error: encuestaError } = await supabase
       .from('encuestas')
@@ -608,7 +634,21 @@ const cargarResultados = async () => {
       .eq('empresa_id', authStore.empresaId)
       .single();
 
+    console.log('[ResultadosEncuesta] Encuesta cargada:', encuestaData);
+    console.log('[ResultadosEncuesta] Error encuesta:', encuestaError);
+
     if (encuestaError) throw encuestaError;
+
+    // Get total employees in the company for participation rate
+    const { count: empleadosCount, error: empleadosError } = await supabase
+      .from('empleados')
+      .select('*', { count: 'exact', head: true })
+      .eq('empresa_id', authStore.empresaId);
+
+    if (!empleadosError && empleadosCount !== null) {
+      totalEmpleadosEmpresa.value = empleadosCount;
+    }
+    console.log('[ResultadosEncuesta] Total empleados empresa:', totalEmpleadosEmpresa.value);
 
     // Load responses
     const { data: respuestasData, error: respuestasError } = await supabase
@@ -616,16 +656,229 @@ const cargarResultados = async () => {
       .select('*')
       .eq('encuesta_id', encuestaId);
 
+    console.log('[ResultadosEncuesta] Respuestas cargadas:', respuestasData?.length || 0, respuestasData);
+    console.log('[ResultadosEncuesta] Error respuestas:', respuestasError);
+
     if (respuestasError) throw respuestasError;
 
-    // Calculate total participants
-    const totalParticipantes = new Set(respuestasData.map(r => r.empleado_id)).size;
+    // Calculate total unique participants (by empleado_id)
+    // Filtrar valores null/undefined para contar solo participantes reales
+    const empleadoIds = respuestasData
+      .map(r => r.empleado_id)
+      .filter(id => id !== null && id !== undefined);
+
+    const uniqueEmpleadoIds = new Set(empleadoIds);
+    const totalParticipantes = uniqueEmpleadoIds.size;
+
+    console.log('[ResultadosEncuesta] empleado_ids encontrados:', empleadoIds);
+    console.log('[ResultadosEncuesta] empleado_ids únicos:', Array.from(uniqueEmpleadoIds));
+    console.log('[ResultadosEncuesta] Total participantes únicos:', totalParticipantes);
+
+    // Calcular departamentos únicos
+    const departamentosUnicos = new Set(
+      respuestasData
+        .map(r => r.departamento)
+        .filter(d => d !== null && d !== undefined && d !== '')
+    );
+    const totalDepartamentos = departamentosUnicos.size;
+    console.log('[ResultadosEncuesta] Departamentos únicos:', Array.from(departamentosUnicos));
+    console.log('[ResultadosEncuesta] Total departamentos:', totalDepartamentos);
+
+    // Process responses per question to generate chart data
+    const preguntasConResultados = (encuestaData.preguntas || []).map(pregunta => {
+      // Filter responses for this question
+      const respuestasPregunta = respuestasData.filter(r => r.pregunta_id === pregunta.id);
+      const totalRespuestasPregunta = respuestasPregunta.length;
+      console.log(`[ResultadosEncuesta] Pregunta "${pregunta.texto}" tiene ${totalRespuestasPregunta} respuestas`);
+
+      // Count responses by value
+      const conteo = {};
+      respuestasPregunta.forEach(r => {
+        const valor = r.respuesta || 'Sin respuesta';
+        conteo[valor] = (conteo[valor] || 0) + 1;
+      });
+
+      // Generate labels and data for charts
+      let labels = [];
+      let data = [];
+      let esRespuestaNegativa = false;
+
+      // Variables para cálculo académico del score
+      let scorePromedio = null; // Score de 0-100 para esta pregunta
+      let esRespuestaNeutral = false; // Mayoría respondió neutral (3 en escala 1-5)
+
+      if (pregunta.tipo === 'escala' || pregunta.tipo === 'escala_numerica' || pregunta.tipo === 'escala_1_5') {
+        // For scale questions, show all scale values
+        const escalaLabels = ['1 - Muy bajo', '2 - Bajo', '3 - Neutral', '4 - Alto', '5 - Muy alto'];
+        labels = escalaLabels;
+        data = escalaLabels.map((_, i) => conteo[String(i + 1)] || 0);
+
+        // CÁLCULO ACADÉMICO: Convertir escala Likert a porcentaje real
+        // 1=0%, 2=25%, 3=50%, 4=75%, 5=100%
+        if (totalRespuestasPregunta > 0) {
+          let sumaScore = 0;
+          for (let i = 1; i <= 5; i++) {
+            const count = conteo[String(i)] || 0;
+            const scoreValor = ((i - 1) / 4) * 100; // 1→0%, 2→25%, 3→50%, 4→75%, 5→100%
+            sumaScore += count * scoreValor;
+          }
+          scorePromedio = sumaScore / totalRespuestasPregunta;
+
+          // Clasificación según umbrales académicos
+          const negativos = (conteo['1'] || 0) + (conteo['2'] || 0);
+          const neutrales = conteo['3'] || 0;
+          const positivos = (conteo['4'] || 0) + (conteo['5'] || 0);
+
+          // Negativo si mayoría es 1-2
+          esRespuestaNegativa = (negativos / totalRespuestasPregunta) > 0.5;
+          // Neutral si mayoría es 3 (ambivalencia)
+          esRespuestaNeutral = (neutrales / totalRespuestasPregunta) > 0.5;
+        }
+      } else if (pregunta.tipo === 'opcion_multiple' || pregunta.tipo === 'seleccion_unica') {
+        // For multiple choice, use the options from the question
+        const opciones = pregunta.opciones || [];
+        labels = opciones;
+        data = opciones.map(op => conteo[op] || 0);
+        // Check for negative keywords in most common response
+        const maxIndex = data.indexOf(Math.max(...data));
+        const maxLabel = (labels[maxIndex] || '').toLowerCase();
+        esRespuestaNegativa = maxLabel.includes('no') || maxLabel.includes('malo') ||
+                             maxLabel.includes('necesita mejorar') || maxLabel.includes('insatisfecho') ||
+                             maxLabel.includes('nunca') || maxLabel.includes('raramente');
+        // Score basado en posición de la opción más común (asumiendo opciones ordenadas de peor a mejor)
+        if (opciones.length > 0 && totalRespuestasPregunta > 0) {
+          scorePromedio = (maxIndex / (opciones.length - 1)) * 100;
+        }
+      } else if (pregunta.tipo === 'si_no') {
+        labels = ['Sí', 'No'];
+        const siCount = conteo['Sí'] || conteo['si'] || conteo['true'] || conteo['SI'] || 0;
+        const noCount = conteo['No'] || conteo['no'] || conteo['false'] || conteo['NO'] || 0;
+        data = [siCount, noCount];
+        // Negative if "No" is majority (depends on question context - assume "No" is generally negative)
+        esRespuestaNegativa = totalRespuestasPregunta > 0 && (noCount / totalRespuestasPregunta) > 0.5;
+        // Score: 100% si Sí, 0% si No
+        if (totalRespuestasPregunta > 0) {
+          scorePromedio = (siCount / totalRespuestasPregunta) * 100;
+        }
+      } else {
+        // For text or other types, just show the distribution of unique responses
+        labels = Object.keys(conteo);
+        data = Object.values(conteo);
+      }
+
+      // Calculate percentages based on total responses for THIS question
+      const porcentajes = data.map(val =>
+        totalRespuestasPregunta > 0 ? Math.round((val / totalRespuestasPregunta) * 100) : 0
+      );
+
+      // Find most common response
+      const maxIndex = data.indexOf(Math.max(...data));
+      const maxLabel = labels[maxIndex] || 'N/A';
+      const maxPorcentaje = porcentajes[maxIndex] || 0;
+      const maxCount = data[maxIndex] || 0;
+
+      // Generate insight with correct count
+      let insight = '';
+      if (totalRespuestasPregunta === 0) {
+        insight = 'No hay respuestas registradas para esta pregunta.';
+      } else if (totalRespuestasPregunta === 1) {
+        insight = `Se recibió 1 respuesta: "${maxLabel}".`;
+      } else {
+        insight = `De ${totalRespuestasPregunta} respuestas, la más frecuente es "${maxLabel}" con ${maxCount} respuesta${maxCount !== 1 ? 's' : ''} (${maxPorcentaje}%).`;
+      }
+
+      // Generar recomendación basada en análisis académico
+      let recomendacion = null;
+      let nivelRiesgo = 'bajo'; // bajo, medio, alto, critico
+
+      if (totalRespuestasPregunta > 0) {
+        // Usar scorePromedio si está disponible, sino usar lógica anterior
+        const scoreParaAnalisis = scorePromedio !== null ? scorePromedio : (esRespuestaNegativa ? 40 : 80);
+
+        if (scoreParaAnalisis < 53) {
+          nivelRiesgo = 'critico';
+          recomendacion = {
+            tipo: 'critico',
+            titulo: 'CRÍTICO - Intervención urgente',
+            descripcion: `Score: ${Math.round(scoreParaAnalisis)}%. Estado crítico que requiere intervención inmediata. Alto riesgo de impacto negativo en rotación y productividad.`
+          };
+        } else if (scoreParaAnalisis < 66) {
+          nivelRiesgo = 'alto';
+          recomendacion = {
+            tipo: 'atencion',
+            titulo: 'Requiere atención prioritaria',
+            descripcion: `Score: ${Math.round(scoreParaAnalisis)}%. Situación preocupante. Se recomienda investigar causas y desarrollar plan de acción inmediato.`
+          };
+        } else if (scoreParaAnalisis < 75 || esRespuestaNeutral) {
+          nivelRiesgo = 'medio';
+          recomendacion = {
+            tipo: 'mejora',
+            titulo: 'Oportunidad de mejora',
+            descripcion: esRespuestaNeutral
+              ? `Score: ${Math.round(scoreParaAnalisis)}%. Mayoría de respuestas neutrales indica ambivalencia. Requiere investigación para entender causas.`
+              : `Score: ${Math.round(scoreParaAnalisis)}%. Área con potencial de mejora. Considere acciones proactivas.`
+          };
+        } else if (scoreParaAnalisis < 88) {
+          nivelRiesgo = 'bajo';
+          // Área saludable, no requiere acción inmediata pero puede mostrar info
+          recomendacion = null;
+        } else {
+          nivelRiesgo = 'optimo';
+          // Área óptima
+          recomendacion = null;
+        }
+      }
+
+      return {
+        ...pregunta,
+        resultados: {
+          labels,
+          data,
+          porcentajes,
+          totalRespuestas: totalRespuestasPregunta
+        },
+        insight,
+        recomendacion,
+        esRespuestaNegativa,
+        esRespuestaNeutral,
+        scorePromedio,
+        nivelRiesgo
+      };
+    });
+
+    // CÁLCULO ACADÉMICO del índice de bienestar global
+    // Promedio ponderado de los scorePromedio de cada pregunta
+    let sumaScores = 0;
+    let preguntasConScore = 0;
+
+    preguntasConResultados.forEach(p => {
+      if (p.resultados.totalRespuestas > 0 && p.scorePromedio !== null) {
+        sumaScores += p.scorePromedio;
+        preguntasConScore++;
+      }
+    });
+
+    // Calcular promedio. Si todas son 3/5, el resultado será 50%, NO 100%
+    const calculatedBienestar = preguntasConScore > 0
+      ? Math.round(sumaScores / preguntasConScore)
+      : 50; // Default a 50% si no hay datos
+
+    console.log('[ResultadosEncuesta] Cálculo de bienestar académico:');
+    console.log(`  - Suma de scores: ${sumaScores}`);
+    console.log(`  - Preguntas con score: ${preguntasConScore}`);
+    console.log(`  - Bienestar calculado: ${calculatedBienestar}%`);
+
+    indiceBienestarGlobal.value = calculatedBienestar;
 
     encuesta.value = {
       ...encuestaData,
+      preguntas: preguntasConResultados,
       totalParticipantes,
       resultados: respuestasData
     };
+
+    console.log('[ResultadosEncuesta] Encuesta procesada:', encuesta.value);
+    console.log('[ResultadosEncuesta] Índice de bienestar calculado:', calculatedBienestar);
 
     await nextTick();
     crearGraficos();
@@ -640,7 +893,7 @@ const cargarResultados = async () => {
 
 const crearGraficos = () => {
   if (!encuesta.value?.preguntas) return;
-  
+
   encuesta.value.preguntas.forEach(pregunta => {
     if (pregunta.resultados) {
       setTimeout(() => {
@@ -649,15 +902,24 @@ const crearGraficos = () => {
           if (charts.value[pregunta.id]) {
             charts.value[pregunta.id].destroy();
           }
-          
+
           const ctx = canvas.getContext('2d');
-          
-          const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
-          
+
+          const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'];
+          const totalRespuestas = pregunta.resultados.totalRespuestas || pregunta.resultados.data.reduce((a, b) => a + b, 0);
+
+          // Generate labels with percentages
+          const labelsConPorcentaje = pregunta.resultados.labels.map((label, i) => {
+            const porcentaje = totalRespuestas > 0
+              ? Math.round((pregunta.resultados.data[i] / totalRespuestas) * 100)
+              : 0;
+            return `${label} (${porcentaje}%)`;
+          });
+
           charts.value[pregunta.id] = new Chart(ctx, {
             type: 'doughnut',
             data: {
-              labels: pregunta.resultados.labels,
+              labels: labelsConPorcentaje,
               datasets: [{
                 data: pregunta.resultados.data,
                 backgroundColor: colors.slice(0, pregunta.resultados.labels.length),
@@ -673,34 +935,54 @@ const crearGraficos = () => {
                 legend: {
                   position: 'bottom',
                   labels: {
-                    padding: 20,
+                    padding: 15,
                     usePointStyle: true,
                     pointStyle: 'circle',
                     font: {
-                      size: 13,
+                      size: 12,
                       weight: '500'
+                    },
+                    generateLabels: function(chart) {
+                      const data = chart.data;
+                      if (data.labels.length && data.datasets.length) {
+                        return data.labels.map((label, i) => {
+                          const value = data.datasets[0].data[i];
+                          const backgroundColor = data.datasets[0].backgroundColor[i];
+                          return {
+                            text: label,
+                            fillStyle: backgroundColor,
+                            strokeStyle: '#ffffff',
+                            lineWidth: 2,
+                            hidden: false,
+                            index: i,
+                            fontColor: value > 0 ? '#374151' : '#9CA3AF'
+                          };
+                        });
+                      }
+                      return [];
                     }
                   }
                 },
                 tooltip: {
-                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.85)',
                   titleColor: '#ffffff',
                   bodyColor: '#ffffff',
                   borderColor: '#ffffff',
                   borderWidth: 1,
+                  padding: 12,
                   callbacks: {
                     label: function(context) {
                       const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                      const percentage = Math.round((context.parsed / total) * 100);
-                      return `${context.label}: ${context.parsed} respuestas (${percentage}%)`;
+                      const percentage = total > 0 ? Math.round((context.parsed / total) * 100) : 0;
+                      return `${context.parsed} respuesta${context.parsed !== 1 ? 's' : ''} (${percentage}%)`;
                     }
                   }
                 }
               },
-              cutout: '65%',
+              cutout: '60%',
               animation: {
                 animateRotate: true,
-                duration: 1000
+                duration: 800
               }
             }
           });
@@ -753,8 +1035,16 @@ const tieneGruposConPocasRespuestas = (pregunta) => {
   return pregunta.resultadosPorGrupo.some(grupo => grupo.total_respuestas < 5);
 };
 
+/**
+ * Colores basados en umbrales académicos validados (IWBS Study)
+ * 0-53: Crítico (rojo)
+ * 53-66: Riesgo alto (naranja)
+ * 66-75: Moderado (amarillo)
+ * 75-88: Saludable (verde claro)
+ * 88-100: Óptimo (verde)
+ */
 const getBienestarColorClasses = (valor) => {
-  if (valor < 60) {
+  if (valor < 53) {
     return {
       bgClass: 'bg-red-100',
       bgLightClass: 'bg-red-50',
@@ -763,7 +1053,7 @@ const getBienestarColorClasses = (valor) => {
       borderClass: 'border-red-200',
       badgeClass: 'bg-red-100 text-red-700'
     };
-  } else if (valor >= 60 && valor <= 80) {
+  } else if (valor < 66) {
     return {
       bgClass: 'bg-orange-100',
       bgLightClass: 'bg-orange-50',
@@ -771,6 +1061,24 @@ const getBienestarColorClasses = (valor) => {
       textDarkClass: 'text-orange-800',
       borderClass: 'border-orange-200',
       badgeClass: 'bg-orange-100 text-orange-700'
+    };
+  } else if (valor < 75) {
+    return {
+      bgClass: 'bg-yellow-100',
+      bgLightClass: 'bg-yellow-50',
+      textClass: 'text-yellow-600',
+      textDarkClass: 'text-yellow-800',
+      borderClass: 'border-yellow-200',
+      badgeClass: 'bg-yellow-100 text-yellow-700'
+    };
+  } else if (valor < 88) {
+    return {
+      bgClass: 'bg-teal-100',
+      bgLightClass: 'bg-teal-50',
+      textClass: 'text-teal-600',
+      textDarkClass: 'text-teal-800',
+      borderClass: 'border-teal-200',
+      badgeClass: 'bg-teal-100 text-teal-700'
     };
   } else {
     return {
@@ -784,42 +1092,67 @@ const getBienestarColorClasses = (valor) => {
   }
 };
 
+/**
+ * Interpretación basada en umbrales académicos validados (IWBS Study)
+ * Basado en investigación con 11,702 empleados
+ */
 const getInterpretacionTexto = (valor) => {
-  if (valor < 60) {
+  if (valor < 53) {
     return {
       nivel: 'Crítico',
-      texto: 'Nivel crítico. Requiere intervención inmediata.'
+      texto: 'Estado crítico. Alto riesgo de rotación, absentismo y baja productividad. Intervención urgente obligatoria.'
     };
-  } else if (valor >= 60 && valor <= 80) {
+  } else if (valor < 66) {
     return {
-      nivel: 'Mejora',
-      texto: 'Área con margen de mejora. Recomendamos acciones preventivas.'
+      nivel: 'Riesgo Alto',
+      texto: 'Situación preocupante. El equipo muestra signos significativos de malestar. Acción prioritaria requerida.'
+    };
+  } else if (valor < 75) {
+    return {
+      nivel: 'Moderado',
+      texto: 'Bienestar moderado con áreas de preocupación. Requiere atención proactiva y plan de mejora.'
+    };
+  } else if (valor < 88) {
+    return {
+      nivel: 'Saludable',
+      texto: 'Bienestar positivo. El equipo está en buenas condiciones. Monitoreo continuo recomendado.'
     };
   } else {
     return {
-      nivel: 'Saludable',
-      texto: 'Área saludable. Mantener prácticas actuales.'
+      nivel: 'Óptimo',
+      texto: 'Bienestar excepcional. Mantener y reforzar las prácticas actuales.'
     };
   }
 };
 
+/**
+ * Interpretación global basada en umbrales académicos
+ */
 const getInterpretacionGlobal = (valor) => {
-  if (valor < 60) {
-    return `El bienestar global actual es del ${valor}%. Este resultado indica un nivel crítico que requiere atención inmediata. Se recomienda implementar acciones de intervención urgente para mejorar el bienestar del equipo y abordar las áreas problemáticas identificadas.`;
-  } else if (valor >= 60 && valor <= 80) {
-    return `El bienestar global actual es del ${valor}%. Este resultado muestra un nivel aceptable con oportunidades de mejora. Se sugiere implementar acciones preventivas y monitorear continuamente las áreas que requieren atención para evitar que la situación se deteriore.`;
+  if (valor < 53) {
+    return `El bienestar global es del ${valor}%. Este resultado indica un estado CRÍTICO con alto riesgo de rotación, absentismo y baja productividad. Se requiere intervención urgente e inmediata para abordar las áreas problemáticas.`;
+  } else if (valor < 66) {
+    return `El bienestar global es del ${valor}%. Este resultado indica una situación PREOCUPANTE. El equipo muestra signos de malestar que requieren acción prioritaria para evitar deterioro.`;
+  } else if (valor < 75) {
+    return `El bienestar global es del ${valor}%. Este resultado muestra un nivel MODERADO con áreas de preocupación. Se recomienda desarrollar un plan de mejora proactivo y monitorear continuamente.`;
+  } else if (valor < 88) {
+    return `El bienestar global es del ${valor}%. Este resultado refleja un estado SALUDABLE. El equipo está en buenas condiciones con oportunidades de mejora incremental. Continuar monitoreando.`;
   } else {
-    return `El bienestar global actual es del ${valor}%. Este resultado refleja un excelente estado de bienestar del equipo. Se recomienda mantener las prácticas actuales, continuar monitoreando y reforzar las iniciativas que han demostrado ser efectivas.`;
+    return `El bienestar global es del ${valor}%. Este resultado refleja un estado ÓPTIMO de bienestar. Se recomienda mantener las prácticas actuales y compartir las mejores prácticas con otros equipos.`;
   }
 };
 
 const getEstadoGeneralTexto = (valor) => {
-  if (valor < 60) {
-    return 'Estado crítico de bienestar. Requiere atención inmediata.';
-  } else if (valor >= 60 && valor <= 80) {
-    return 'Bienestar moderado. Se recomienda aplicar acciones preventivas.';
+  if (valor < 53) {
+    return 'Estado CRÍTICO de bienestar. Intervención urgente obligatoria.';
+  } else if (valor < 66) {
+    return 'Situación PREOCUPANTE. Acción prioritaria requerida.';
+  } else if (valor < 75) {
+    return 'Bienestar MODERADO. Plan de mejora proactivo recomendado.';
+  } else if (valor < 88) {
+    return 'Bienestar SALUDABLE. Monitoreo continuo recomendado.';
   } else {
-    return 'Bienestar general positivo. Mantener las iniciativas actuales.';
+    return 'Bienestar ÓPTIMO. Mantener las prácticas actuales.';
   }
 };
 
@@ -841,45 +1174,87 @@ const getTendenciaTexto = (tendencia) => {
   return 'Estable';
 };
 
+/**
+ * Categorías interpretadas usando cálculo académico de scores
+ */
 const categoriasInterpretadas = computed(() => {
   if (!encuesta.value?.preguntas) return [];
 
-  return [
-    {
-      nombre: 'Gestión del Estrés',
-      valor: 58,
-      icon: Brain,
-      ...getInterpretacionTexto(58),
-      interpretacion: 'Nivel crítico. Requiere intervención inmediata. El 28% del equipo reporta niveles altos de estrés.',
-      colorClasses: getBienestarColorClasses(58)
-    },
-    {
-      nombre: 'Herramientas y Recursos',
-      valor: 83,
-      icon: Zap,
-      ...getInterpretacionTexto(83),
-      interpretacion: 'Área saludable. Mantener prácticas actuales. La mayoría del equipo se siente bien equipado.',
-      colorClasses: getBienestarColorClasses(83)
-    },
-    {
-      nombre: 'Comunicación Interna',
-      valor: 72,
-      icon: Megaphone,
-      ...getInterpretacionTexto(72),
-      interpretacion: 'Área con margen de mejora. Recomendamos acciones preventivas para fortalecer la comunicación.',
-      colorClasses: getBienestarColorClasses(72)
-    },
-    {
-      nombre: 'Balance Vida-Trabajo',
-      valor: 68,
-      icon: Heart,
-      ...getInterpretacionTexto(68),
-      interpretacion: 'Área con margen de mejora. Considerar iniciativas que promuevan un mejor equilibrio.',
-      colorClasses: getBienestarColorClasses(68)
+  // Group questions by category and calculate ACADEMIC score average
+  const categoriaMap = {};
+  const icons = {
+    'salud-mental': Brain,
+    'carga-laboral': Zap,
+    'comunicacion': Megaphone,
+    'bienestar': Heart,
+    'clima-laboral': Smile,
+    'desarrollo': Target,
+    'ergonomia': Activity,
+    'general': Heart
+  };
+
+  encuesta.value.preguntas.forEach(pregunta => {
+    const cat = pregunta.categoria || 'general';
+    if (!categoriaMap[cat]) {
+      categoriaMap[cat] = { total: 0, sumaScores: 0, preguntasConScore: 0 };
     }
-  ];
+    categoriaMap[cat].total++;
+
+    // Usar scorePromedio si está disponible
+    if (pregunta.scorePromedio !== null && pregunta.scorePromedio !== undefined) {
+      categoriaMap[cat].sumaScores += pregunta.scorePromedio;
+      categoriaMap[cat].preguntasConScore++;
+    }
+  });
+
+  const categoriaLabels = {
+    'salud-mental': 'Salud Mental',
+    'carga-laboral': 'Carga Laboral',
+    'comunicacion': 'Comunicación',
+    'bienestar': 'Bienestar Personal',
+    'clima-laboral': 'Clima Laboral',
+    'desarrollo': 'Desarrollo Profesional',
+    'ergonomia': 'Ergonomía',
+    'general': 'General'
+  };
+
+  return Object.entries(categoriaMap).map(([cat, data]) => {
+    // Calcular score promedio de la categoría usando método académico
+    const valor = data.preguntasConScore > 0
+      ? Math.round(data.sumaScores / data.preguntasConScore)
+      : 50;
+
+    const interpretacion = getInterpretacionTexto(valor);
+
+    // Descripción basada en umbrales académicos
+    let descripcion = '';
+    if (valor < 53) {
+      descripcion = `Estado CRÍTICO. Score promedio: ${valor}%. Requiere intervención urgente e inmediata.`;
+    } else if (valor < 66) {
+      descripcion = `Situación PREOCUPANTE. Score promedio: ${valor}%. Acción prioritaria requerida.`;
+    } else if (valor < 75) {
+      descripcion = `Nivel MODERADO. Score promedio: ${valor}%. Área con potencial de mejora. Plan proactivo recomendado.`;
+    } else if (valor < 88) {
+      descripcion = `Estado SALUDABLE. Score promedio: ${valor}%. Mantener monitoreo continuo.`;
+    } else {
+      descripcion = `Estado ÓPTIMO. Score promedio: ${valor}%. Mantener y reforzar prácticas actuales.`;
+    }
+
+    return {
+      nombre: categoriaLabels[cat] || cat,
+      valor,
+      icon: icons[cat] || Heart,
+      ...interpretacion,
+      interpretacion: descripcion,
+      colorClasses: getBienestarColorClasses(valor)
+    };
+  });
 });
 
+/**
+ * Alertas basadas en umbrales académicos validados
+ * <53: Crítico, 53-66: Riesgo Alto, 66-75: Moderado
+ */
 const alertasActivas = computed(() => {
   if (!encuesta.value?.preguntas) return [];
 
@@ -889,27 +1264,38 @@ const alertasActivas = computed(() => {
     const alertaId = `${categoria.nombre}-${categoria.valor}`;
     const gestionada = alertasGestionadas.value.includes(alertaId);
 
-    if (categoria.valor < 60) {
+    if (categoria.valor < 53) {
       alertas.push({
         id: alertaId,
         tipo: 'critica',
         categoria: categoria.nombre,
         valor: categoria.valor,
-        titulo: `Riesgo alto en ${categoria.nombre}`,
-        mensaje: `Requiere acción inmediata. El nivel actual (${categoria.valor}%) indica una situación crítica que necesita intervención urgente para evitar deterioro adicional.`,
+        titulo: `CRÍTICO: ${categoria.nombre}`,
+        mensaje: `Score: ${categoria.valor}%. Estado crítico con alto riesgo de rotación, absentismo y baja productividad. Requiere intervención URGENTE e inmediata.`,
         gestionada
       });
-    } else if (categoria.valor >= 60 && categoria.valor <= 80) {
+    } else if (categoria.valor < 66) {
+      alertas.push({
+        id: alertaId,
+        tipo: 'alta',
+        categoria: categoria.nombre,
+        valor: categoria.valor,
+        titulo: `Riesgo alto en ${categoria.nombre}`,
+        mensaje: `Score: ${categoria.valor}%. Situación preocupante que requiere acción prioritaria para evitar deterioro.`,
+        gestionada
+      });
+    } else if (categoria.valor < 75) {
       alertas.push({
         id: alertaId,
         tipo: 'moderada',
         categoria: categoria.nombre,
         valor: categoria.valor,
         titulo: `Atención moderada en ${categoria.nombre}`,
-        mensaje: `Considera acciones preventivas. El nivel actual (${categoria.valor}%) muestra margen de mejora que puede ser abordado con estrategias proactivas.`,
+        mensaje: `Score: ${categoria.valor}%. Área con potencial de mejora. Se recomienda plan de acción proactivo.`,
         gestionada
       });
     }
+    // Scores >= 75 no generan alertas (saludable/óptimo)
   });
 
   return alertas;
@@ -933,17 +1319,53 @@ const marcarAlertaComoGestionada = (alerta) => {
   });
 };
 
+// Handlers para RecomendacionesSmart
+const verDetalleRecomendacion = (recomendacion) => {
+  console.log('[ResultadosEncuesta] Ver detalle de recomendación:', recomendacion);
+  // Por ahora, mostrar en el modal existente adaptando los datos
+  alertaSeleccionada.value = {
+    id: recomendacion.id,
+    tipo: recomendacion.nivel_riesgo === 'critico' ? 'critica' : recomendacion.nivel_riesgo,
+    categoria: recomendacion.dimension_afectada,
+    valor: recomendacion.score_dimension,
+    titulo: recomendacion.titulo,
+    mensaje: recomendacion.descripcion,
+    recomendacion_id: recomendacion.id,
+    objetivo_smart: recomendacion.objetivo_especifico,
+    metrica_exito: recomendacion.metrica_exito,
+    acciones_sugeridas: recomendacion.acciones_sugeridas,
+    plazo_dias: recomendacion.plazo_dias
+  };
+  modalRecomendacionesAbierto.value = true;
+};
+
+const onRecomendacionActualizada = (recomendacion) => {
+  console.log('[ResultadosEncuesta] Recomendación actualizada:', recomendacion);
+  toast.add({
+    severity: 'success',
+    summary: 'Plan iniciado',
+    detail: `El plan "${recomendacion.titulo}" está ahora en progreso.`,
+    life: 4000
+  });
+};
+
+/**
+ * Conteo de alertas por tipo usando umbrales académicos
+ */
 const alertasPorTipo = computed(() => {
   const conteo = {
-    criticas: 0,
-    moderadas: 0,
-    estables: 0
+    criticas: 0,    // < 53
+    altas: 0,       // 53-66
+    moderadas: 0,   // 66-75
+    estables: 0     // >= 75
   };
 
   categoriasInterpretadas.value.forEach(categoria => {
-    if (categoria.valor < 60) {
+    if (categoria.valor < 53) {
       conteo.criticas++;
-    } else if (categoria.valor >= 60 && categoria.valor <= 80) {
+    } else if (categoria.valor < 66) {
+      conteo.altas++;
+    } else if (categoria.valor < 75) {
       conteo.moderadas++;
     } else {
       conteo.estables++;
@@ -955,43 +1377,50 @@ const alertasPorTipo = computed(() => {
 
 const getAlertaClasses = (tipo) => {
   if (tipo === 'critica') return 'bg-red-50 border-red-200';
-  if (tipo === 'moderada') return 'bg-orange-50 border-orange-200';
+  if (tipo === 'alta') return 'bg-orange-50 border-orange-200';
+  if (tipo === 'moderada') return 'bg-yellow-50 border-yellow-200';
   return 'bg-green-50 border-green-200';
 };
 
 const getAlertaIconClasses = (tipo) => {
   if (tipo === 'critica') return 'bg-red-500';
-  if (tipo === 'moderada') return 'bg-orange-500';
+  if (tipo === 'alta') return 'bg-orange-500';
+  if (tipo === 'moderada') return 'bg-yellow-500';
   return 'bg-green-500';
 };
 
 const getAlertaIcon = (tipo) => {
   if (tipo === 'critica') return AlertTriangle;
-  if (tipo === 'moderada') return ShieldAlert;
+  if (tipo === 'alta') return ShieldAlert;
+  if (tipo === 'moderada') return AlertCircle;
   return CheckCircle;
 };
 
 const getAlertaTitleClasses = (tipo) => {
   if (tipo === 'critica') return 'text-red-900';
-  if (tipo === 'moderada') return 'text-orange-900';
+  if (tipo === 'alta') return 'text-orange-900';
+  if (tipo === 'moderada') return 'text-yellow-900';
   return 'text-green-900';
 };
 
 const getAlertaTextClasses = (tipo) => {
   if (tipo === 'critica') return 'text-red-700';
-  if (tipo === 'moderada') return 'text-orange-700';
+  if (tipo === 'alta') return 'text-orange-700';
+  if (tipo === 'moderada') return 'text-yellow-700';
   return 'text-green-700';
 };
 
 const getAlertaBadgeClasses = (tipo) => {
   if (tipo === 'critica') return 'bg-red-100 text-red-700';
-  if (tipo === 'moderada') return 'bg-orange-100 text-orange-700';
+  if (tipo === 'alta') return 'bg-orange-100 text-orange-700';
+  if (tipo === 'moderada') return 'bg-yellow-100 text-yellow-700';
   return 'bg-green-100 text-green-700';
 };
 
 const getAlertaBorderClasses = (tipo) => {
   if (tipo === 'critica') return 'border-red-200';
-  if (tipo === 'moderada') return 'border-orange-200';
+  if (tipo === 'alta') return 'border-orange-200';
+  if (tipo === 'moderada') return 'border-yellow-200';
   return 'border-green-200';
 };
 

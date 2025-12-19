@@ -11,36 +11,73 @@ export const useGamificacionStore = defineStore('gamificacion', () => {
   const loading = ref(false);
   const error = ref(null);
 
-  const cargarPuntos = async (usuarioId) => {
+  /**
+   * Carga los puntos del empleado.
+   * @param {string} id - Puede ser empleado.id o auth_user_id
+   * @param {boolean} isAuthUserId - Si true, busca por auth_user_id (default: true para compatibilidad)
+   */
+  const cargarPuntos = async (id, isAuthUserId = true) => {
+    if (!id) {
+      console.warn('cargarPuntos: id no proporcionado');
+      return;
+    }
+
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const puntos = await getPuntos(usuarioId);
+      console.log('[cargarPuntos] Cargando puntos para:', id, 'isAuthUserId:', isAuthUserId);
+      const puntos = await gamificacionService.getPuntos(id, isAuthUserId);
       puntosUsuario.value = puntos;
+      console.log('[cargarPuntos] Puntos cargados:', puntos);
     } catch (err) {
-      error.value = err.message || 'Error al cargar los puntos';
-      console.error('Error cargando puntos:', err);
+      // Error 406 ocurre cuando no hay resultados o problemas de RLS
+      // Mantener puntos en 0 sin bloquear la UI
+      if (err?.code === 'PGRST116' || err?.message?.includes('406')) {
+        puntosUsuario.value = 0;
+        console.warn('No se encontraron puntos para el empleado, usando 0');
+      } else {
+        error.value = err.message || 'Error al cargar los puntos';
+        console.error('Error cargando puntos:', err);
+      }
     } finally {
       loading.value = false;
     }
   };
 
-  const otorgarPuntos = async (usuarioId, cantidad, motivo) => {
+  /**
+   * Carga los puntos usando empleado.id (para cuando ya tienes el ID del empleado)
+   */
+  const cargarPuntosPorEmpleadoId = async (empleadoId) => {
+    return cargarPuntos(empleadoId, false);
+  };
+
+  const otorgarPuntos = async (empleadoId, cantidad, motivo, referenciaId = null, referenciaTipo = 'manual') => {
+    if (!empleadoId) {
+      console.warn('otorgarPuntos: empleadoId no proporcionado');
+      return;
+    }
+
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const resultado = await addPuntos(usuarioId, cantidad, motivo);
-      
+      const resultado = await gamificacionService.addPuntos(
+        empleadoId,
+        cantidad,
+        motivo,
+        referenciaId,
+        referenciaTipo
+      );
+
       if (resultado.success) {
         puntosUsuario.value = resultado.puntosTotal;
-        
+
         // Añadir al historial local
-        if (historial.value) {
+        if (historial.value && resultado.transaccion) {
           historial.value.unshift(resultado.transaccion);
         }
-        
+
         console.log(`¡Puntos otorgados! +${cantidad} por: ${motivo}`);
         return resultado;
       }
@@ -53,12 +90,17 @@ export const useGamificacionStore = defineStore('gamificacion', () => {
     }
   };
 
-  const cargarHistorial = async (usuarioId) => {
+  const cargarHistorial = async (empleadoId) => {
+    if (!empleadoId) {
+      console.warn('cargarHistorial: empleadoId no proporcionado');
+      return;
+    }
+
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const historialData = await getHistorialPuntos(usuarioId);
+      const historialData = await gamificacionService.getHistorial(empleadoId);
       historial.value = historialData;
     } catch (err) {
       error.value = err.message || 'Error al cargar el historial';
@@ -71,9 +113,9 @@ export const useGamificacionStore = defineStore('gamificacion', () => {
   const cargarRanking = async () => {
     loading.value = true;
     error.value = null;
-    
+
     try {
-      const rankingData = await getRankingPuntos();
+      const rankingData = await gamificacionService.getRanking();
       ranking.value = rankingData;
     } catch (err) {
       error.value = err.message || 'Error al cargar el ranking';
@@ -84,28 +126,24 @@ export const useGamificacionStore = defineStore('gamificacion', () => {
   };
 
   // Funciones de conveniencia para actividades específicas
-  const otorgarPuntosEncuesta = async (usuarioId) => {
-    return await otorgarPuntos(
-      usuarioId, 
-      PUNTOS_ACTIVIDADES.RESPONDER_ENCUESTA, 
-      'Encuesta completada'
-    );
+  const otorgarPuntosEncuesta = async (empleadoId, encuestaId) => {
+    return await gamificacionService.otorgarPuntosEncuesta(empleadoId, encuestaId);
   };
 
-  const otorgarPuntosReserva = async (usuarioId, nombreSesion) => {
-    return await otorgarPuntos(
-      usuarioId, 
-      PUNTOS_ACTIVIDADES.RESERVAR_SESION, 
-      `Reserva en: ${nombreSesion}`
-    );
+  const otorgarPuntosReserva = async (empleadoId, sesionId, nombreSesion) => {
+    return await gamificacionService.otorgarPuntosReserva(empleadoId, sesionId, nombreSesion);
   };
 
-  const otorgarPuntosAsistencia = async (usuarioId, nombreSesion) => {
-    return await otorgarPuntos(
-      usuarioId, 
-      PUNTOS_ACTIVIDADES.ASISTIR_SESION, 
-      `Asistencia a: ${nombreSesion}`
-    );
+  const otorgarPuntosAsistencia = async (empleadoId, sesionId, nombreSesion) => {
+    return await gamificacionService.otorgarPuntosAsistencia(empleadoId, sesionId, nombreSesion);
+  };
+
+  // Reset del store
+  const reset = () => {
+    puntosUsuario.value = 0;
+    historial.value = [];
+    ranking.value = [];
+    error.value = null;
   };
 
   return {
@@ -115,11 +153,13 @@ export const useGamificacionStore = defineStore('gamificacion', () => {
     loading,
     error,
     cargarPuntos,
+    cargarPuntosPorEmpleadoId,
     otorgarPuntos,
     cargarHistorial,
     cargarRanking,
     otorgarPuntosEncuesta,
     otorgarPuntosReserva,
-    otorgarPuntosAsistencia
+    otorgarPuntosAsistencia,
+    reset
   };
 });

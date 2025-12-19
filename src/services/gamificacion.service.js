@@ -9,15 +9,36 @@ export const PUNTOS_ACTIVIDADES = {
 };
 
 export const gamificacionService = {
-  async getPuntos(empleadoId) {
-    const { data, error } = await supabase
+  /**
+   * Obtiene los puntos del empleado.
+   * Acepta tanto el empleado.id como el auth_user_id para mayor flexibilidad.
+   * @param {string} id - Puede ser empleado.id o auth_user_id
+   * @param {boolean} isAuthUserId - Si true, busca por auth_user_id; si false, busca por id
+   */
+  async getPuntos(id, isAuthUserId = false) {
+    const query = supabase
       .from('empleados')
-      .select('puntos')
-      .eq('id', empleadoId)
-      .single();
+      .select('puntos');
 
+    // Permitir buscar por auth_user_id o por empleado.id
+    if (isAuthUserId) {
+      query.eq('auth_user_id', id);
+    } else {
+      query.eq('id', id);
+    }
+
+    const { data, error } = await query.maybeSingle();
+
+    // maybeSingle() devuelve null si no hay resultados, sin lanzar error
     if (error) throw error;
-    return data.puntos || 0;
+    return data?.puntos || 0;
+  },
+
+  /**
+   * Obtiene los puntos usando auth_user_id (más conveniente desde el layout)
+   */
+  async getPuntosByAuthUser(authUserId) {
+    return this.getPuntos(authUserId, true);
   },
 
   async addPuntos(empleadoId, cantidad, motivo, referenciaId = null, referenciaTipo = 'manual') {

@@ -10,21 +10,148 @@
           Recomendaciones SMART
         </h3>
         <p class="text-sm text-gray-600 mt-2">
-          Programas y servicios sugeridos según los resultados del diagnóstico
+          Objetivos específicos, medibles, alcanzables, relevantes y temporales
         </p>
       </div>
-      <div v-if="recomendaciones.length > 0" class="flex items-center gap-2 px-4 py-2 bg-indigo-100 rounded-full">
-        <Target class="h-5 w-5 text-indigo-600" />
-        <span class="text-sm font-semibold text-indigo-700">
-          {{ recomendaciones.length }} recomendación{{ recomendaciones.length !== 1 ? 'es' : '' }}
-        </span>
+      <div class="flex items-center gap-3">
+        <!-- Indicador de carga -->
+        <div v-if="loading" class="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
+          <Loader2 class="h-4 w-4 text-gray-500 animate-spin" />
+          <span class="text-sm text-gray-600">Generando...</span>
+        </div>
+        <!-- Badge de recomendaciones -->
+        <div v-else-if="recomendacionesVisuales.length > 0" class="flex items-center gap-2 px-4 py-2 bg-indigo-100 rounded-full">
+          <Target class="h-5 w-5 text-indigo-600" />
+          <span class="text-sm font-semibold text-indigo-700">
+            {{ recomendacionesVisuales.length }} recomendación{{ recomendacionesVisuales.length !== 1 ? 'es' : '' }}
+          </span>
+        </div>
       </div>
     </div>
 
-    <!-- Recomendaciones -->
-    <div v-if="recomendaciones.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Estado de carga -->
+    <div v-if="loading" class="bg-white rounded-lg p-8 text-center">
+      <Loader2 class="h-12 w-12 text-indigo-500 animate-spin mx-auto mb-4" />
+      <p class="text-gray-600">Analizando resultados y generando recomendaciones...</p>
+    </div>
+
+    <!-- Recomendaciones SMART (desde BD) -->
+    <div v-else-if="recomendacionesBD.length > 0" class="space-y-4">
       <div
-        v-for="(servicio, index) in recomendaciones"
+        v-for="(rec, index) in recomendacionesBD"
+        :key="rec.id"
+        class="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition-shadow border-l-4"
+        :class="obtenerColorNivelRiesgo(rec.nivel_riesgo).border"
+        :style="{ animationDelay: `${index * 0.1}s` }"
+        style="animation: slideInUp 0.5s ease-out forwards; opacity: 0;"
+      >
+        <div class="flex items-start gap-4">
+          <!-- Indicador de prioridad -->
+          <div class="flex-shrink-0">
+            <div
+              class="w-14 h-14 rounded-xl flex items-center justify-center shadow-sm"
+              :class="obtenerColorNivelRiesgo(rec.nivel_riesgo).bg"
+            >
+              <span class="text-2xl font-bold" :class="obtenerColorNivelRiesgo(rec.nivel_riesgo).text">
+                {{ rec.prioridad }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Contenido SMART -->
+          <div class="flex-1 min-w-0">
+            <!-- Header -->
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h4 class="text-base font-semibold text-gray-900">
+                {{ rec.titulo }}
+              </h4>
+              <div class="flex items-center gap-2">
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
+                  :class="obtenerColorNivelRiesgo(rec.nivel_riesgo).badge"
+                >
+                  {{ formatearNivelRiesgo(rec.nivel_riesgo) }}
+                </span>
+                <span
+                  v-if="rec.estado !== 'pendiente'"
+                  class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                  :class="obtenerColorEstado(rec.estado)"
+                >
+                  {{ formatearEstado(rec.estado) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Descripción -->
+            <p class="text-sm text-gray-600 mb-3">
+              {{ rec.descripcion }}
+            </p>
+
+            <!-- Objetivo SMART -->
+            <div class="bg-indigo-50 rounded-lg p-3 mb-3">
+              <p class="text-xs font-semibold text-indigo-700 mb-1 flex items-center gap-1">
+                <Target class="h-3.5 w-3.5" />
+                OBJETIVO SMART
+              </p>
+              <p class="text-sm text-indigo-900">{{ rec.objetivo_especifico }}</p>
+            </div>
+
+            <!-- Métricas y Plazo -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div class="bg-gray-50 rounded p-2">
+                <p class="text-xs font-medium text-gray-500">Métrica de éxito</p>
+                <p class="text-sm text-gray-800">{{ rec.metrica_exito }}</p>
+              </div>
+              <div class="bg-gray-50 rounded p-2">
+                <p class="text-xs font-medium text-gray-500">Plazo</p>
+                <p class="text-sm text-gray-800 flex items-center gap-1">
+                  <Clock class="h-3.5 w-3.5" />
+                  {{ rec.plazo_dias }} días
+                </p>
+              </div>
+            </div>
+
+            <!-- Acciones sugeridas (preview) -->
+            <div v-if="rec.acciones_sugeridas && rec.acciones_sugeridas.length > 0" class="mb-3">
+              <p class="text-xs font-medium text-gray-500 mb-1">Acciones principales:</p>
+              <ul class="text-sm text-gray-700 space-y-1">
+                <li v-for="accion in rec.acciones_sugeridas.slice(0, 2)" :key="accion.orden" class="flex items-start gap-2">
+                  <CheckCircle class="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>{{ accion.accion }}</span>
+                </li>
+                <li v-if="rec.acciones_sugeridas.length > 2" class="text-gray-500 text-xs pl-6">
+                  +{{ rec.acciones_sugeridas.length - 2 }} acciones más...
+                </li>
+              </ul>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex gap-2">
+              <button
+                @click="verDetalleRecomendacion(rec)"
+                class="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors text-sm font-medium"
+              >
+                <Eye class="h-4 w-4" />
+                Ver plan completo
+              </button>
+              <button
+                v-if="rec.estado === 'pendiente'"
+                @click="marcarEnProgreso(rec)"
+                class="flex items-center justify-center gap-2 px-4 py-2 border border-green-500 text-green-600 rounded-md hover:bg-green-50 transition-colors text-sm font-medium"
+              >
+                <Play class="h-4 w-4" />
+                Iniciar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fallback: Recomendaciones estáticas (serviciosSmart.js) -->
+    <div v-else-if="recomendacionesFallback.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div
+        v-for="(servicio, index) in recomendacionesFallback"
         :key="servicio.id"
         class="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition-shadow border-l-4"
         :class="obtenerColorCategoria(servicio.categoria).border"
@@ -120,41 +247,204 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
 import {
   Sparkles,
   Target,
   Eye,
   CheckCircle,
-  Info
+  Info,
+  Loader2,
+  Clock,
+  Play
 } from 'lucide-vue-next';
 import {
   obtenerRecomendaciones,
   obtenerTextoPrioridad,
   obtenerColorCategoria
 } from '@/utils/serviciosSmart.js';
-
-// TODO: conectar con tabla "servicios" y lógica de recomendaciones personalizada en futuras iteraciones.
+import { recomendacionesService } from '@/services/recomendaciones.service';
 
 const router = useRouter();
-const toast = useToast();
 
 // Props
 const props = defineProps({
   resultados: {
     type: Object,
     required: true
+  },
+  encuestaId: {
+    type: String,
+    default: null
+  },
+  empresaId: {
+    type: String,
+    default: null
+  },
+  categoriasInterpretadas: {
+    type: Array,
+    default: () => []
+  },
+  indiceBienestarGlobal: {
+    type: Number,
+    default: 50
   }
 });
 
-// Computed
-const recomendaciones = computed(() => {
+// Emits
+const emit = defineEmits(['ver-detalle', 'recomendacion-actualizada']);
+
+// Estado
+const loading = ref(false);
+const recomendacionesBD = ref([]);
+const yaGeneradas = ref(false);
+
+// Computed: Recomendaciones estáticas (fallback)
+const recomendacionesFallback = computed(() => {
   return obtenerRecomendaciones(props.resultados);
 });
 
-// Métodos
+// Computed: Recomendaciones para mostrar en UI
+const recomendacionesVisuales = computed(() => {
+  return recomendacionesBD.value.length > 0 ? recomendacionesBD.value : recomendacionesFallback.value;
+});
+
+// Cargar recomendaciones existentes de BD
+const cargarRecomendaciones = async () => {
+  if (!props.encuestaId) return;
+
+  try {
+    const data = await recomendacionesService.getRecomendaciones(props.encuestaId);
+    if (data.length > 0) {
+      recomendacionesBD.value = data;
+      yaGeneradas.value = true;
+      console.log('[RecomendacionesSmart] Recomendaciones cargadas:', data.length);
+    }
+  } catch (error) {
+    console.error('[RecomendacionesSmart] Error cargando recomendaciones:', error);
+  }
+};
+
+// Generar nuevas recomendaciones
+const generarRecomendaciones = async () => {
+  if (!props.encuestaId || !props.empresaId) {
+    console.warn('[RecomendacionesSmart] Faltan props para generar recomendaciones');
+    return;
+  }
+
+  loading.value = true;
+  try {
+    const resultado = await recomendacionesService.generarRecomendacionesAutomaticas(
+      props.encuestaId,
+      {
+        empresa_id: props.empresaId,
+        indiceBienestarGlobal: props.indiceBienestarGlobal,
+        categoriasInterpretadas: props.categoriasInterpretadas
+      }
+    );
+
+    console.log('[RecomendacionesSmart] Resultado generación:', resultado);
+
+    if (resultado.success && resultado.recomendaciones_generadas > 0) {
+      await cargarRecomendaciones();
+    }
+  } catch (error) {
+    console.error('[RecomendacionesSmart] Error generando recomendaciones:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Colores por nivel de riesgo
+const obtenerColorNivelRiesgo = (nivel) => {
+  const colores = {
+    critico: {
+      border: 'border-red-500',
+      bg: 'bg-red-100',
+      text: 'text-red-700',
+      badge: 'bg-red-100 text-red-800'
+    },
+    alto: {
+      border: 'border-orange-500',
+      bg: 'bg-orange-100',
+      text: 'text-orange-700',
+      badge: 'bg-orange-100 text-orange-800'
+    },
+    moderado: {
+      border: 'border-yellow-500',
+      bg: 'bg-yellow-100',
+      text: 'text-yellow-700',
+      badge: 'bg-yellow-100 text-yellow-800'
+    },
+    saludable: {
+      border: 'border-green-500',
+      bg: 'bg-green-100',
+      text: 'text-green-700',
+      badge: 'bg-green-100 text-green-800'
+    },
+    optimo: {
+      border: 'border-emerald-500',
+      bg: 'bg-emerald-100',
+      text: 'text-emerald-700',
+      badge: 'bg-emerald-100 text-emerald-800'
+    }
+  };
+  return colores[nivel] || colores.moderado;
+};
+
+// Colores por estado
+const obtenerColorEstado = (estado) => {
+  const colores = {
+    pendiente: 'bg-gray-100 text-gray-700',
+    en_progreso: 'bg-blue-100 text-blue-700',
+    completada: 'bg-green-100 text-green-700',
+    descartada: 'bg-red-100 text-red-700'
+  };
+  return colores[estado] || colores.pendiente;
+};
+
+// Formatear nivel de riesgo
+const formatearNivelRiesgo = (nivel) => {
+  const nombres = {
+    critico: 'Crítico',
+    alto: 'Riesgo Alto',
+    moderado: 'Moderado',
+    saludable: 'Saludable',
+    optimo: 'Óptimo'
+  };
+  return nombres[nivel] || nivel;
+};
+
+// Formatear estado
+const formatearEstado = (estado) => {
+  const nombres = {
+    pendiente: 'Pendiente',
+    en_progreso: 'En progreso',
+    completada: 'Completada',
+    descartada: 'Descartada'
+  };
+  return nombres[estado] || estado;
+};
+
+// Ver detalle de recomendación SMART
+const verDetalleRecomendacion = (recomendacion) => {
+  emit('ver-detalle', recomendacion);
+};
+
+// Marcar recomendación como en progreso
+const marcarEnProgreso = async (recomendacion) => {
+  try {
+    await recomendacionesService.marcarComoGestionada(recomendacion.id);
+    recomendacion.estado = 'en_progreso';
+    emit('recomendacion-actualizada', recomendacion);
+    console.log('[RecomendacionesSmart] Recomendación marcada en progreso:', recomendacion.id);
+  } catch (error) {
+    console.error('[RecomendacionesSmart] Error actualizando estado:', error);
+  }
+};
+
+// Ver programa (fallback para servicios estáticos)
 const verPrograma = (servicio) => {
   const servicioIdMap = {
     'clima-laboral': 'trabajo_equipo',
@@ -178,6 +468,31 @@ const verPrograma = (servicio) => {
     query: { servicio: servicioMockId }
   });
 };
+
+// Watch: regenerar si cambian las props
+watch(
+  () => [props.encuestaId, props.categoriasInterpretadas],
+  async () => {
+    if (props.encuestaId && props.categoriasInterpretadas.length > 0) {
+      await cargarRecomendaciones();
+      if (!yaGeneradas.value && recomendacionesBD.value.length === 0) {
+        await generarRecomendaciones();
+      }
+    }
+  },
+  { deep: true }
+);
+
+// Lifecycle
+onMounted(async () => {
+  if (props.encuestaId) {
+    await cargarRecomendaciones();
+    // Si no hay recomendaciones y tenemos datos, generar automáticamente
+    if (!yaGeneradas.value && props.categoriasInterpretadas.length > 0) {
+      await generarRecomendaciones();
+    }
+  }
+});
 </script>
 
 <style scoped>

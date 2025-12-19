@@ -36,6 +36,21 @@ const empleadoRoutes = [
         name: 'empleado-reservas',
         component: () => import('@/views/empleado/ReservasView.vue'),
       },
+      {
+        path: 'encuestas',
+        name: 'empleado-encuestas',
+        component: () => import('@/views/empleado/EncuestasEmpleadoView.vue'),
+      },
+      {
+        path: 'encuesta/:id?',
+        name: 'empleado-responder-encuesta',
+        component: () => import('@/views/empleado/ResponderEncuestaView.vue'),
+      },
+      {
+        path: 'comunicados',
+        name: 'empleado-comunicados',
+        component: () => import('@/views/empleado/ComunicadosEmpleadoView.vue'),
+      },
       // Redirección por defecto al dashboard si solo se entra a /empleado
       {
         path: '',

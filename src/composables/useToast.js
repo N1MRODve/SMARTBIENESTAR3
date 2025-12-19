@@ -3,34 +3,54 @@ import { useToast as useVueToast } from 'vue-toastification';
 export function useToast() {
   const toast = useVueToast();
 
+  const success = (message, subtitle = null, options = {}) => {
+    // Support both (message) and (title, subtitle) signatures
+    const displayMessage = subtitle ? `${message}\n${subtitle}` : message;
+    toast.success(displayMessage, {
+      icon: '✅',
+      timeout: 5000,
+      ...options
+    });
+  };
+
+  const error = (message, subtitle = null, options = {}) => {
+    const displayMessage = subtitle ? `${message}\n${subtitle}` : message;
+    toast.error(displayMessage, {
+      icon: '❌',
+      timeout: 5000,
+      ...options
+    });
+  };
+
+  const warning = (message, subtitle = null, options = {}) => {
+    const displayMessage = subtitle ? `${message}\n${subtitle}` : message;
+    toast.warning(displayMessage, {
+      icon: '⚠️',
+      timeout: 5000,
+      ...options
+    });
+  };
+
+  const info = (message, subtitle = null, options = {}) => {
+    const displayMessage = subtitle ? `${message}\n${subtitle}` : message;
+    toast.info(displayMessage, {
+      icon: '💡',
+      timeout: 5000,
+      ...options
+    });
+  };
+
   return {
-    success: (message, options = {}) => {
-      toast.success(message, {
-        icon: '✅',
-        ...options
-      });
-    },
-
-    error: (message, options = {}) => {
-      toast.error(message, {
-        icon: '❌',
-        ...options
-      });
-    },
-
-    warning: (message, options = {}) => {
-      toast.warning(message, {
-        icon: '⚠️',
-        ...options
-      });
-    },
-
-    info: (message, options = {}) => {
-      toast.info(message, {
-        icon: '💡',
-        ...options
-      });
-    },
+    // Original names
+    success,
+    error,
+    warning,
+    info,
+    // Alias names (for components using showSuccess, showError, etc.)
+    showSuccess: success,
+    showError: error,
+    showWarning: warning,
+    showInfo: info,
 
     // Helpers específicos para el negocio
     encuestaCreated: (titulo) => {

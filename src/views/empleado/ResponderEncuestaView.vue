@@ -1,471 +1,669 @@
+<script setup>
+import { onMounted, ref, computed, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import { useGamificacionStore } from '@/stores/gamificacion.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useToast } from '@/composables/useToast';
+// Servicio multiempresa
+import { empleadoEncuestasService } from '@/services/empleado.encuestas.service';
+import {
+  Shield,
+  Lock,
+  CheckCircle,
+  AlertCircle,
+  RefreshCw,
+  RotateCcw,
+  Send,
+  FileText,
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  Award,
+  Clock,
+  Sparkles
+} from 'lucide-vue-next';
+
+const router = useRouter();
+const route = useRoute();
+const { showSuccess, showError, showWarning } = useToast();
+const authStore = useAuthStore();
+
+// --- Stores ---
+const gamificacionStore = useGamificacionStore();
+
+const { puntosUsuario } = storeToRefs(gamificacionStore);
+const { empleado, user } = storeToRefs(authStore);
+const { cargarPuntos } = gamificacionStore;
+
+// --- Estado local para encuesta ---
+const activeSurvey = ref(null);
+const isLoading = ref(false);
+const error = ref(null);
+
+// --- Estado local ---
+const userAnswers = ref({});
+const surveySubmitted = ref(false);
+const currentStep = ref(0); // 0 = intro, 1+ = preguntas
+const showPrivacyDetails = ref(false);
+const submitting = ref(false);
+const puntosGanados = ref(0); // Puntos ganados al completar la encuesta
+
+// --- Computed ---
+const totalPreguntas = computed(() => activeSurvey.value?.preguntas?.length || 0);
+
+const preguntaActual = computed(() => {
+  if (currentStep.value === 0 || !activeSurvey.value?.preguntas) return null;
+  return activeSurvey.value.preguntas[currentStep.value - 1];
+});
+
+const progreso = computed(() => {
+  if (totalPreguntas.value === 0) return 0;
+  const respondidas = Object.keys(userAnswers.value).length;
+  return Math.round((respondidas / totalPreguntas.value) * 100);
+});
+
+const allQuestionsAnswered = computed(() => {
+  if (!activeSurvey.value) return false;
+  return totalPreguntas.value === Object.keys(userAnswers.value).length;
+});
+
+const puedeAvanzar = computed(() => {
+  if (currentStep.value === 0) return true;
+  if (!preguntaActual.value) return false;
+  return userAnswers.value[preguntaActual.value.id] !== undefined;
+});
+
+const esUltimaPregunta = computed(() => {
+  return currentStep.value === totalPreguntas.value;
+});
+
+// Nivel de privacidad con iconos y colores
+const privacidadConfig = computed(() => {
+  const nivel = activeSurvey.value?.privacidad_nivel || activeSurvey.value?.privacidadNivel || 'anonimato_completo';
+  const configs = {
+    'anonimato_completo': {
+      icon: EyeOff,
+      color: 'green',
+      titulo: 'Anonimato Total',
+      descripcion: 'Tus respuestas son completamente anónimas. Nadie, ni siquiera RRHH, puede identificar quién respondió qué.',
+      detalles: [
+        'No se guarda tu nombre ni email junto a las respuestas',
+        'Los resultados se muestran solo como promedios generales',
+        'Tu manager no tiene acceso a respuestas individuales',
+        'La empresa solo ve tendencias agregadas'
+      ]
+    },
+    'anonimato_parcial': {
+      icon: Eye,
+      color: 'blue',
+      titulo: 'Anonimato por Equipo',
+      descripcion: 'Tus respuestas se agrupan con las de tu equipo. Se mostrarán promedios por departamento.',
+      detalles: [
+        'Las respuestas se agrupan por departamento',
+        'Se requiere mínimo 5 respuestas para mostrar resultados',
+        'Tu nombre no aparece en ningún reporte',
+        'Los managers ven solo tendencias de su equipo'
+      ]
+    },
+    'identificado': {
+      icon: Lock,
+      color: 'amber',
+      titulo: 'Respuestas Confidenciales',
+      descripcion: 'Tus respuestas serán visibles solo para el equipo de RRHH autorizado.',
+      detalles: [
+        'Solo personal autorizado de RRHH puede ver respuestas',
+        'Tu manager directo NO tiene acceso',
+        'Se usa para dar seguimiento personalizado',
+        'Puedes solicitar ver qué datos se guardan'
+      ]
+    }
+  };
+  return configs[nivel];
+});
+
+// --- Métodos ---
+const comenzarEncuesta = () => {
+  currentStep.value = 1;
+};
+
+const siguientePregunta = () => {
+  if (esUltimaPregunta.value) {
+    handleSubmit();
+  } else {
+    currentStep.value++;
+  }
+};
+
+const preguntaAnterior = () => {
+  if (currentStep.value > 1) {
+    currentStep.value--;
+  }
+};
+
+const irAPregunta = (index) => {
+  currentStep.value = index + 1;
+};
+
+const handleSubmit = async () => {
+  console.log('[handleSubmit] Iniciando envío...');
+  console.log('[handleSubmit] allQuestionsAnswered:', allQuestionsAnswered.value);
+  console.log('[handleSubmit] submitting:', submitting.value);
+  console.log('[handleSubmit] userAnswers:', JSON.stringify(userAnswers.value));
+  console.log('[handleSubmit] activeSurvey.id:', activeSurvey.value?.id);
+
+  if (!allQuestionsAnswered.value || submitting.value) {
+    console.warn('[handleSubmit] Abortando - condiciones no cumplidas');
+    return;
+  }
+
+  submitting.value = true;
+
+  try {
+    // Formatear respuestas para el servicio
+    const respuestasFormateadas = Object.entries(userAnswers.value).map(([preguntaId, respuesta]) => ({
+      pregunta_id: preguntaId,
+      respuesta
+    }));
+
+    console.log('[handleSubmit] Respuestas formateadas:', JSON.stringify(respuestasFormateadas));
+
+    // Usar el nuevo servicio multiempresa
+    const resultado = await empleadoEncuestasService.enviarRespuestas(
+      activeSurvey.value.id,
+      respuestasFormateadas
+    );
+
+    console.log('[handleSubmit] Resultado del servicio:', resultado);
+
+    // Guardar puntos ganados para mostrar en la pantalla de éxito
+    puntosGanados.value = resultado.puntos_ganados || 0;
+
+    if (resultado.puntos_ganados) {
+      showSuccess('¡Encuesta enviada!', `+${resultado.puntos_ganados} puntos por completar la encuesta`);
+    } else {
+      showSuccess('¡Encuesta enviada!', 'Tus respuestas han sido guardadas correctamente.');
+    }
+
+    surveySubmitted.value = true;
+
+    // Recargar puntos usando auth_user_id (consistente con el layout)
+    if (user.value?.id) {
+      await cargarPuntos(user.value.id, true);
+    }
+  } catch (err) {
+    console.error('[handleSubmit] Error al enviar encuesta:', err);
+
+    if (err.isDuplicate || err.ya_respondida) {
+      showWarning('Encuesta ya completada', 'Ya has respondido esta encuesta anteriormente.');
+      surveySubmitted.value = true;
+    } else {
+      showError('Error al enviar', err.message || 'No se pudo enviar la encuesta. Intenta de nuevo.');
+    }
+  } finally {
+    submitting.value = false;
+  }
+};
+
+const limpiarRespuestas = () => {
+  userAnswers.value = {};
+  currentStep.value = 1;
+};
+
+const volverAlDashboard = () => {
+  router.push('/empleado/dashboard');
+};
+
+const volverAEncuestas = () => {
+  router.push('/empleado/encuestas');
+};
+
+// Cargar encuesta por ID de ruta o la primera pendiente
+const cargarEncuesta = async () => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const encuestaId = route.params.id;
+
+    if (encuestaId) {
+      // Si hay ID en la URL, cargar esa encuesta específica
+      const encuesta = await empleadoEncuestasService.getEncuestaParaResponder(encuestaId);
+      activeSurvey.value = encuesta;
+    } else {
+      // Si no hay ID, obtener la primera encuesta pendiente
+      const pendientes = await empleadoEncuestasService.getPendientes();
+      if (pendientes && pendientes.length > 0) {
+        const encuesta = await empleadoEncuestasService.getEncuestaParaResponder(pendientes[0].id);
+        activeSurvey.value = encuesta;
+      }
+    }
+  } catch (err) {
+    console.error('Error cargando encuesta:', err);
+    if (err.ya_respondida) {
+      showWarning('Encuesta completada', 'Ya has respondido esta encuesta.');
+      surveySubmitted.value = true;
+    } else {
+      error.value = err.message || 'Error al cargar la encuesta';
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// --- Lifecycle ---
+onMounted(async () => {
+  await cargarEncuesta();
+
+  // Cargar puntos del empleado usando auth_user_id
+  if (user.value?.id) {
+    await cargarPuntos(user.value.id, true);
+  }
+});
+</script>
+
 <template>
-  <!-- Header con botón de logout -->
-  <div class="bg-white shadow-sm border-b border-gray-200 mb-8">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-16">
-        <!-- Logo y título -->
-        <div class="flex items-center">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-              </svg>
+  <div class="min-h-[calc(100vh-12rem)]">
+    <!-- Loading State -->
+    <div v-if="isLoading && !activeSurvey" class="flex flex-col items-center justify-center py-20">
+      <div class="w-16 h-16 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin mb-6"></div>
+      <p class="text-gray-600 font-medium">Cargando encuesta...</p>
+      <p class="text-gray-400 text-sm mt-1">Preparando tus preguntas</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="max-w-lg mx-auto">
+      <div class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <AlertCircle class="w-8 h-8 text-red-600" />
+        </div>
+        <h3 class="text-lg font-semibold text-red-800 mb-2">Error al cargar la encuesta</h3>
+        <p class="text-red-600 mb-6">{{ error }}</p>
+        <button
+          @click="cargarEncuesta"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors"
+        >
+          <RefreshCw class="w-4 h-4" />
+          Reintentar
+        </button>
+      </div>
+    </div>
+
+    <!-- No hay encuesta activa -->
+    <div v-else-if="!activeSurvey && !isLoading" class="max-w-lg mx-auto">
+      <div class="bg-white border border-gray-200 rounded-2xl p-8 text-center shadow-sm">
+        <div class="w-20 h-20 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <FileText class="w-10 h-10 text-teal-600" />
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">No hay encuestas pendientes</h3>
+        <p class="text-gray-500 mb-6">
+          ¡Estás al día! Te notificaremos cuando haya una nueva encuesta disponible para ti.
+        </p>
+        <div class="flex items-center justify-center gap-2 text-sm text-teal-600 bg-teal-50 rounded-lg px-4 py-3 mb-6">
+          <Shield class="w-4 h-4" />
+          <span>Tus respuestas siempre serán confidenciales</span>
+        </div>
+        <button
+          @click="volverAlDashboard"
+          class="text-teal-600 hover:text-teal-700 font-medium transition-colors"
+        >
+          ← Volver al inicio
+        </button>
+      </div>
+    </div>
+
+    <!-- Encuesta completada -->
+    <div v-else-if="surveySubmitted" class="max-w-lg mx-auto">
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-8 text-center shadow-sm">
+        <!-- Animación de éxito -->
+        <div class="relative mb-6">
+          <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
+            <CheckCircle class="w-12 h-12 text-white" />
+          </div>
+          <div v-if="puntosGanados > 0" class="absolute -top-2 -right-2 w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+            <span class="text-white font-bold text-sm">+{{ puntosGanados }}</span>
+          </div>
+        </div>
+
+        <h2 class="text-2xl font-bold text-green-800 mb-2">¡Gracias por participar!</h2>
+        <p class="text-green-700 mb-6">
+          Tu opinión nos ayuda a mejorar el bienestar de todos en la empresa.
+        </p>
+
+        <!-- Badge de puntos -->
+        <div class="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm mb-6">
+          <Star class="w-5 h-5 text-amber-500 fill-amber-500" />
+          <span class="font-semibold text-gray-900">{{ puntosUsuario || 0 }} puntos totales</span>
+        </div>
+
+        <!-- Mensaje de privacidad -->
+        <div class="bg-white/60 rounded-xl p-4 mb-6">
+          <div class="flex items-start gap-3">
+            <Shield class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <div class="text-left">
+              <p class="text-sm font-medium text-green-800">Tus respuestas están protegidas</p>
+              <p class="text-xs text-green-600 mt-1">
+                Hemos registrado tu participación de forma anónima.
+                Los resultados se comparten solo como tendencias generales.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <button
+          @click="volverAlDashboard"
+          class="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-medium rounded-xl hover:from-teal-700 hover:to-emerald-700 transition-all shadow-lg shadow-teal-200"
+        >
+          Volver al inicio
+        </button>
+      </div>
+    </div>
+
+    <!-- Encuesta activa -->
+    <div v-else-if="activeSurvey" class="max-w-2xl mx-auto">
+      <!-- Pantalla de introducción -->
+      <div v-if="currentStep === 0" class="space-y-6">
+        <!-- Header de la encuesta -->
+        <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
+              <FileText class="w-7 h-7" />
             </div>
             <div>
-              <h1 class="text-xl font-bold text-gray-900">
-                SMART<span class="text-primary">Bienestar</span>
-              </h1>
-              <p class="text-xs text-gray-500">Portal del Empleado</p>
+              <h1 class="text-2xl font-bold mb-2">{{ activeSurvey.titulo }}</h1>
+              <p class="text-white/80">{{ activeSurvey.descripcion || 'Tu opinión es importante para mejorar nuestro ambiente laboral' }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-6 mt-6 pt-6 border-t border-white/20">
+            <div class="flex items-center gap-2">
+              <FileText class="w-5 h-5 text-white/60" />
+              <span>{{ totalPreguntas }} preguntas</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <Clock class="w-5 h-5 text-white/60" />
+              <span>~{{ Math.ceil(totalPreguntas * 0.5) }} min</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <Award class="w-5 h-5 text-white/60" />
+              <span>+100 puntos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta de privacidad -->
+        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+          <button
+            @click="showPrivacyDetails = !showPrivacyDetails"
+            class="w-full p-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          >
+            <div class="flex items-center gap-4">
+              <div
+                class="w-12 h-12 rounded-xl flex items-center justify-center"
+                :class="{
+                  'bg-green-100': privacidadConfig.color === 'green',
+                  'bg-blue-100': privacidadConfig.color === 'blue',
+                  'bg-amber-100': privacidadConfig.color === 'amber'
+                }"
+              >
+                <component
+                  :is="privacidadConfig.icon"
+                  class="w-6 h-6"
+                  :class="{
+                    'text-green-600': privacidadConfig.color === 'green',
+                    'text-blue-600': privacidadConfig.color === 'blue',
+                    'text-amber-600': privacidadConfig.color === 'amber'
+                  }"
+                />
+              </div>
+              <div class="text-left">
+                <h3 class="font-semibold text-gray-900">{{ privacidadConfig.titulo }}</h3>
+                <p class="text-sm text-gray-500">{{ privacidadConfig.descripcion }}</p>
+              </div>
+            </div>
+            <ChevronRight
+              class="w-5 h-5 text-gray-400 transition-transform"
+              :class="{ 'rotate-90': showPrivacyDetails }"
+            />
+          </button>
+
+          <!-- Detalles de privacidad expandidos -->
+          <div v-if="showPrivacyDetails" class="px-6 pb-6 border-t border-gray-100">
+            <div class="pt-4 space-y-3">
+              <div
+                v-for="(detalle, index) in privacidadConfig.detalles"
+                :key="index"
+                class="flex items-start gap-3"
+              >
+                <CheckCircle class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <span class="text-sm text-gray-600">{{ detalle }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje de confianza -->
+        <div class="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-xl p-5">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Shield class="w-5 h-5 text-teal-600" />
+            </div>
+            <div>
+              <h4 class="font-semibold text-teal-900 mb-1">Tu confianza es nuestra prioridad</h4>
+              <p class="text-sm text-teal-700">
+                Sabemos que responder con honestidad requiere confianza. Por eso, tus respuestas
+                <strong>nunca</strong> se comparten con tu manager ni afectan tu evaluación de desempeño.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón comenzar -->
+        <button
+          @click="comenzarEncuesta"
+          class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+        >
+          <Sparkles class="w-5 h-5" />
+          Comenzar encuesta
+        </button>
+      </div>
+
+      <!-- Vista de preguntas -->
+      <div v-else class="space-y-6">
+        <!-- Barra de progreso -->
+        <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-700">
+              Pregunta {{ currentStep }} de {{ totalPreguntas }}
+            </span>
+            <span class="text-sm font-semibold text-teal-600">{{ progreso }}% completado</span>
+          </div>
+          <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              class="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-500"
+              :style="{ width: `${progreso}%` }"
+            ></div>
+          </div>
+
+          <!-- Indicadores de preguntas -->
+          <div class="flex items-center justify-center gap-2 mt-4">
+            <button
+              v-for="(pregunta, index) in activeSurvey.preguntas"
+              :key="pregunta.id"
+              @click="irAPregunta(index)"
+              class="w-8 h-8 rounded-full text-xs font-medium transition-all"
+              :class="{
+                'bg-teal-600 text-white': currentStep === index + 1,
+                'bg-teal-100 text-teal-700': userAnswers[pregunta.id] !== undefined && currentStep !== index + 1,
+                'bg-gray-100 text-gray-400': userAnswers[pregunta.id] === undefined && currentStep !== index + 1
+              }"
+            >
+              {{ index + 1 }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Pregunta actual -->
+        <div v-if="preguntaActual" class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            {{ preguntaActual.texto }}
+          </h2>
+
+          <!-- Opciones según tipo de pregunta -->
+
+          <!-- Opción múltiple -->
+          <div v-if="preguntaActual.tipo === 'opcion_multiple'" class="space-y-3">
+            <label
+              v-for="opcion in preguntaActual.opciones"
+              :key="opcion"
+              class="flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all"
+              :class="userAnswers[preguntaActual.id] === opcion
+                ? 'border-teal-500 bg-teal-50'
+                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+            >
+              <input
+                type="radio"
+                :name="`pregunta_${preguntaActual.id}`"
+                :value="opcion"
+                v-model="userAnswers[preguntaActual.id]"
+                class="sr-only"
+              />
+              <div
+                class="w-5 h-5 rounded-full border-2 flex items-center justify-center mr-4 flex-shrink-0"
+                :class="userAnswers[preguntaActual.id] === opcion
+                  ? 'border-teal-500 bg-teal-500'
+                  : 'border-gray-300'"
+              >
+                <div v-if="userAnswers[preguntaActual.id] === opcion" class="w-2 h-2 bg-white rounded-full"></div>
+              </div>
+              <span class="text-gray-700">{{ opcion }}</span>
+            </label>
+          </div>
+
+          <!-- Sí/No -->
+          <div v-else-if="preguntaActual.tipo === 'si_no'" class="flex gap-4">
+            <label
+              v-for="opcion in ['Sí', 'No']"
+              :key="opcion"
+              class="flex-1 p-6 border-2 rounded-xl cursor-pointer text-center transition-all"
+              :class="userAnswers[preguntaActual.id] === opcion
+                ? 'border-teal-500 bg-teal-50'
+                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'"
+            >
+              <input
+                type="radio"
+                :name="`pregunta_${preguntaActual.id}`"
+                :value="opcion"
+                v-model="userAnswers[preguntaActual.id]"
+                class="sr-only"
+              />
+              <span class="text-lg font-medium" :class="userAnswers[preguntaActual.id] === opcion ? 'text-teal-700' : 'text-gray-700'">
+                {{ opcion }}
+              </span>
+            </label>
+          </div>
+
+          <!-- Escala 1-5 -->
+          <div v-else-if="preguntaActual.tipo === 'escala_1_5'" class="space-y-4">
+            <div class="flex items-center justify-between text-sm text-gray-500 px-2">
+              <span>Muy insatisfecho</span>
+              <span>Muy satisfecho</span>
+            </div>
+            <div class="flex justify-between gap-2">
+              <label
+                v-for="valor in [1, 2, 3, 4, 5]"
+                :key="valor"
+                class="flex-1 aspect-square flex items-center justify-center border-2 rounded-xl cursor-pointer text-xl font-bold transition-all"
+                :class="userAnswers[preguntaActual.id] === valor
+                  ? 'border-teal-500 bg-teal-500 text-white'
+                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-600'"
+              >
+                <input
+                  type="radio"
+                  :name="`pregunta_${preguntaActual.id}`"
+                  :value="valor"
+                  v-model="userAnswers[preguntaActual.id]"
+                  class="sr-only"
+                />
+                {{ valor }}
+              </label>
+            </div>
+          </div>
+
+          <!-- Texto abierto -->
+          <div v-else-if="preguntaActual.tipo === 'texto_abierto'" class="space-y-4">
+            <textarea
+              v-model="userAnswers[preguntaActual.id]"
+              rows="5"
+              class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-teal-500 resize-none transition-colors"
+              placeholder="Comparte tus pensamientos, sugerencias o comentarios..."
+            ></textarea>
+
+            <!-- Mensaje de anonimato para texto abierto -->
+            <div class="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
+              <Shield class="w-4 h-4 flex-shrink-0" />
+              <span>Tu respuesta de texto es <strong>100% anónima</strong>. Escribe con total libertad.</span>
             </div>
           </div>
         </div>
 
         <!-- Navegación -->
-        <div class="flex items-center space-x-4">
-          <!-- Contador de Puntos -->
-          <div class="flex items-center bg-gradient-to-r from-yellow-100 to-yellow-200 px-3 py-2 rounded-lg border border-yellow-300">
-            <svg class="w-5 h-5 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-            </svg>
-            <span class="text-sm font-bold text-yellow-800">{{ puntosUsuario }} Puntos</span>
-          </div>
-          
-          <router-link 
-            to="/empleado/encuesta"
-            class="bg-primary text-white px-3 py-2 rounded-md text-sm font-medium"
-          >
-            Encuestas
-          </router-link>
-          <router-link 
-            to="/empleado/actividades"
-            class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-          >
-            Actividades
-          </router-link>
-          <router-link 
-            to="/empleado/apoyo-personal"
-            class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-          >
-            Apoyo Personal
-          </router-link>
-          
-          <!-- Botón Cerrar Sesión -->
+        <div class="flex items-center justify-between">
           <button
-            @click="handleLogout"
-            :disabled="loggingOut"
-            class="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="preguntaAnterior"
+            :disabled="currentStep <= 1"
+            class="flex items-center gap-2 px-5 py-3 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg v-if="loggingOut" class="animate-spin -ml-1 mr-2 h-4 w-4 text-red-700" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-            </svg>
-            <span class="hidden sm:inline">{{ loggingOut ? 'Cerrando...' : 'Cerrar Sesión' }}</span>
-            <span class="sm:hidden">{{ loggingOut ? '...' : 'Salir' }}</span>
+            <ChevronLeft class="w-5 h-5" />
+            Anterior
           </button>
+
+          <button
+            @click="siguientePregunta"
+            :disabled="!puedeAvanzar || submitting"
+            class="flex items-center gap-2 px-6 py-3 font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            :class="esUltimaPregunta && allQuestionsAnswered
+              ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-200'
+              : 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700'"
+          >
+            <template v-if="submitting">
+              <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              Enviando...
+            </template>
+            <template v-else-if="esUltimaPregunta && allQuestionsAnswered">
+              <Send class="w-5 h-5" />
+              Enviar respuestas
+            </template>
+            <template v-else>
+              Siguiente
+              <ChevronRight class="w-5 h-5" />
+            </template>
+          </button>
+        </div>
+
+        <!-- Recordatorio de privacidad sutil -->
+        <div class="text-center">
+          <p class="text-xs text-gray-400 flex items-center justify-center gap-1">
+            <Lock class="w-3 h-3" />
+            Tus respuestas son confidenciales y no se comparten con tu manager
+          </p>
         </div>
       </div>
     </div>
   </div>
-
-  <div class="py-8">
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold text-gray-900 mb-2">
-            {{ activeSurvey?.titulo || 'Encuesta de Pulso' }}
-          </h1>
-          <p class="text-lg text-gray-600">Tu opinión es importante para mejorar nuestro ambiente laboral</p>
-        </div>
-
-        <!-- Loading State -->
-        <div v-if="isLoading && !activeSurvey" class="bg-white rounded-lg shadow-sm p-8 text-center">
-          <div class="animate-spin rounded-full h-12 w-12 border-2 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p class="text-gray-600">Cargando encuesta...</p>
-        </div>
-
-        <!-- Error State -->
-        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <AlertCircle class="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 class="text-lg font-medium text-red-800 mb-2">Error al cargar la encuesta</h3>
-          <p class="text-red-600 mb-4">{{ error }}</p>
-          <Button @click="fetchActiveSurvey" variant="outline">
-            <RefreshCw class="h-4 w-4 mr-2" />
-            Reintentar
-          </Button>
-        </div>
-
-        <!-- Encuesta Form -->
-        <div v-else-if="activeSurvey && !surveySubmitted" class="bg-white rounded-lg shadow-sm overflow-hidden">
-          <!-- Encuesta Header -->
-          <div class="bg-primary text-white p-6">
-            <h2 class="text-2xl font-semibold">{{ activeSurvey.titulo }}</h2>
-            <p class="mt-2 text-primary-light">{{ activeSurvey.preguntas.length }} preguntas</p>
-          </div>
-
-          <!-- Privacy Banner -->
-          <div v-if="activeSurvey.privacidadNivel" class="bg-blue-50 text-blue-800 rounded-md p-2 flex items-center gap-2 mx-6 mt-6">
-            <Lock class="h-4 w-4 flex-shrink-0" />
-            <span class="text-sm">{{ getPrivacyMessage(activeSurvey.privacidadNivel) }}</span>
-          </div>
-
-          <!-- Form -->
-          <form @submit.prevent="handleSubmit" class="p-6 space-y-8">
-            <!-- Preguntas -->
-            <div v-for="(pregunta, index) in activeSurvey.preguntas" :key="pregunta.id" class="space-y-4">
-              <div class="border-l-4 border-primary pl-4">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">
-                  {{ index + 1 }}. {{ pregunta.texto }}
-                </h3>
-
-                <!-- Pregunta Opción Multiple -->
-                <div v-if="pregunta.tipo === 'opcion_multiple'" class="space-y-3">
-                  <div 
-                    v-for="opcion in pregunta.opciones" 
-                    :key="opcion"
-                    class="flex items-center"
-                  >
-                    <input
-                      :id="`pregunta_${pregunta.id}_${opcion}`"
-                      v-model="userAnswers[pregunta.id]"
-                      :value="opcion"
-                      type="radio"
-                      :name="`pregunta_${pregunta.id}`"
-                      class="h-4 w-4 text-primary focus:ring-primary border-gray-300"
-                      required
-                    />
-                    <label 
-                      :for="`pregunta_${pregunta.id}_${opcion}`"
-                      class="ml-3 text-gray-700 cursor-pointer hover:text-gray-900"
-                    >
-                      {{ opcion }}
-                    </label>
-                  </div>
-                </div>
-
-                <!-- Pregunta Sí/No -->
-                <div v-else-if="pregunta.tipo === 'si_no'" class="space-y-3">
-                  <div class="flex items-center">
-                    <input
-                      :id="`pregunta_${pregunta.id}_si`"
-                      v-model="userAnswers[pregunta.id]"
-                      value="Sí"
-                      type="radio"
-                      :name="`pregunta_${pregunta.id}`"
-                      class="h-4 w-4 text-primary focus:ring-primary border-gray-300"
-                      required
-                    />
-                    <label 
-                      :for="`pregunta_${pregunta.id}_si`"
-                      class="ml-3 text-gray-700 cursor-pointer hover:text-gray-900"
-                    >
-                      Sí
-                    </label>
-                  </div>
-                  <div class="flex items-center">
-                    <input
-                      :id="`pregunta_${pregunta.id}_no`"
-                      v-model="userAnswers[pregunta.id]"
-                      value="No"
-                      type="radio"
-                      :name="`pregunta_${pregunta.id}`"
-                      class="h-4 w-4 text-primary focus:ring-primary border-gray-300"
-                      required
-                    />
-                    <label 
-                      :for="`pregunta_${pregunta.id}_no`"
-                      class="ml-3 text-gray-700 cursor-pointer hover:text-gray-900"
-                    >
-                      No
-                    </label>
-                  </div>
-                </div>
-
-                <!-- Pregunta Escala 1-5 -->
-                <div v-else-if="pregunta.tipo === 'escala_1_5'" class="space-y-4">
-                  <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
-                    <span>Muy insatisfecho</span>
-                    <span>Muy satisfecho</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <div 
-                      v-for="valor in [1, 2, 3, 4, 5]" 
-                      :key="valor"
-                      class="flex flex-col items-center"
-                    >
-                      <input
-                        :id="`pregunta_${pregunta.id}_${valor}`"
-                        v-model="userAnswers[pregunta.id]"
-                        :value="valor"
-                        type="radio"
-                        :name="`pregunta_${pregunta.id}`"
-                        class="h-5 w-5 text-primary focus:ring-primary border-gray-300"
-                        required
-                      />
-                      <label 
-                        :for="`pregunta_${pregunta.id}_${valor}`"
-                        class="mt-2 text-sm font-medium text-gray-700 cursor-pointer hover:text-gray-900"
-                      >
-                        {{ valor }}
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Pregunta Texto Abierto -->
-                <div v-else-if="pregunta.tipo === 'texto_abierto'" class="space-y-4">
-                  <textarea
-                    :id="`pregunta_${pregunta.id}_texto`"
-                    v-model="userAnswers[pregunta.id]"
-                    :name="`pregunta_${pregunta.id}`"
-                    rows="4"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
-                    placeholder="Comparte tus pensamientos, sugerencias o comentarios..."
-                    :disabled="loading"
-                  ></textarea>
-                  <div class="flex items-center text-sm text-green-600 bg-green-50 p-3 rounded-lg border border-green-200">
-                    <svg class="h-5 w-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.5-2a8.5 8.5 0 11-17 0 8.5 8.5 0 0117 0z"></path>
-                    </svg>
-                    <span class="font-medium">Tu respuesta a esta pregunta es 100% anónima</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="pt-6 border-t border-gray-200">
-              <div class="flex justify-end space-x-4">
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  @click="limpiarRespuestas"
-                  :disabled="isLoading"
-                >
-                  <RotateCcw class="h-4 w-4 mr-2" />
-                  Limpiar
-                </Button>
-                <Button 
-                  type="submit" 
-                  :loading="isLoading"
-                  :disabled="!allQuestionsAnswered"
-                >
-                  <Send class="h-4 w-4 mr-2" />
-                  Enviar Respuestas
-                </Button>
-              </div>
-            </div>
-          </form>
-        </div>
-
-        <!-- Success State -->
-        <div v-if="surveySubmitted" class="bg-green-50 border border-green-200 rounded-lg p-8 text-center">
-          <CheckCircle class="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h3 class="text-xl font-semibold text-green-800 mb-2">¡Gracias por tu participación!</h3>
-          <p class="text-green-600 mb-4">Tus respuestas han sido enviadas correctamente.</p>
-          <Button @click="resetearEncuesta" variant="outline">
-            Responder otra vez
-          </Button>
-        </div>
-
-        <!-- Sección de Comunicados -->
-        <div v-if="comunicados.length > 0" class="mt-12">
-          <div class="mb-6">
-            <div class="flex items-center">
-              <Megaphone class="h-6 w-6 text-primary mr-3" />
-              <h2 class="text-2xl font-bold text-gray-900">Últimos Comunicados</h2>
-            </div>
-            <p class="mt-2 text-gray-600">
-              Mantente informado sobre las mejoras implementadas en base a tu feedback
-            </p>
-          </div>
-
-          <!-- Loading State para Comunicados -->
-          <div v-if="comunicadosLoading" class="bg-white rounded-lg shadow-sm p-8 text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent mx-auto mb-4"></div>
-            <p class="text-gray-600">Cargando comunicados...</p>
-          </div>
-
-          <!-- Lista de Comunicados -->
-          <div v-else class="space-y-6">
-            <ComunicadoCard 
-              v-for="comunicado in comunicados.slice(0, 3)" 
-              :key="comunicado.id"
-              :comunicado="comunicado"
-            />
-            <router-link 
-              to="/empleado/recompensas"
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
-            >
-              Recompensas
-            </router-link>
-            
-            <!-- Mostrar mensaje si hay más comunicados -->
-            <div v-if="comunicados.length > 3" class="text-center">
-              <p class="text-sm text-gray-500">
-                Y {{ comunicados.length - 3 }} comunicado{{ comunicados.length - 3 !== 1 ? 's' : '' }} más...
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-  </div>
 </template>
 
-<script setup>
-import { onMounted, ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
-import { storeToRefs } from 'pinia';
-import { useEncuestasStore } from '@/stores/encuestas.store';
-import { useComunicadosStore } from '@/stores/comunicados.store';
-import { useGamificacionStore } from '@/stores/gamificacion.store';
-import { useAuthStore } from '@/stores/auth.store';
-import ComunicadoCard from '@/components/empleado/ComunicadoCard.vue';
-import Button from '@/components/ui/Button.vue';
-import { Megaphone, Lock, CheckCircle, AlertCircle, RefreshCw, RotateCcw, Send } from 'lucide-vue-next';
-
-const router = useRouter();
-const toast = useToast();
-const authStore = useAuthStore();
-
-// --- Lógica del Store ---
-const encuestasStore = useEncuestasStore();
-const comunicadosStore = useComunicadosStore();
-const gamificacionStore = useGamificacionStore();
-// 'storeToRefs' asegura que 'activeSurvey', 'isLoading', etc., sean reactivos.
-const { activeSurvey, isLoading, error } = storeToRefs(encuestasStore);
-const { comunicados, loading: comunicadosLoading } = storeToRefs(comunicadosStore);
-const { puntosUsuario } = storeToRefs(gamificacionStore);
-const { fetchActiveSurvey, submitSurveyAnswers } = encuestasStore;
-const { cargarComunicados } = comunicadosStore;
-const { otorgarPuntosEncuesta, cargarPuntos } = gamificacionStore;
-
-// --- Estado local del componente ---
-const userAnswers = ref({});
-const surveySubmitted = ref(false);
-const loggingOut = ref(false);
-
-// --- Cargar datos al montar el componente ---
-onMounted(() => {
-  if (!activeSurvey.value) {
-    fetchActiveSurvey();
-  }
-  // Cargar comunicados
-  cargarComunicados();
-  // Cargar puntos del usuario
-  cargarPuntos(authStore.user?.id || 'user-empleado-01');
-});
-
-// --- Lógica de envío ---
-const handleSubmit = async () => {
-  if (!allQuestionsAnswered.value) return;
-
-  try {
-    await submitSurveyAnswers(activeSurvey.value.id, userAnswers.value);
-
-    // Otorgar puntos por completar la encuesta
-    try {
-      await otorgarPuntosEncuesta(authStore.user?.id || 'user-empleado-01');
-
-      toast.add({
-        severity: 'success',
-        summary: '¡Puntos ganados!',
-        detail: '+10 puntos por completar la encuesta',
-        life: 4000
-      });
-    } catch (puntosError) {
-      console.error('Error al otorgar puntos:', puntosError);
-      // No bloquear el flujo si falla la gamificación
-    }
-
-    surveySubmitted.value = true;
-  } catch (error) {
-    console.error('Error al enviar encuesta:', error);
-
-    // Check if this is a duplicate submission error
-    if (error.isDuplicate) {
-      toast.add({
-        severity: 'warn',
-        summary: 'Encuesta ya completada',
-        detail: 'Ya has respondido esta encuesta.',
-        life: 5000
-      });
-    } else {
-      toast.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: error.message || 'No se pudo enviar la encuesta',
-        life: 5000
-      });
-    }
-  }
-};
-
-// --- Propiedad computada para habilitar el botón de envío ---
-const allQuestionsAnswered = computed(() => {
-  if (!activeSurvey.value) return false;
-  const totalPreguntas = activeSurvey.value.preguntas.length;
-  const totalRespuestas = Object.keys(userAnswers.value).length;
-  return totalPreguntas === totalRespuestas;
-});
-
-// --- Funciones auxiliares (para los botones del template) ---
-const limpiarRespuestas = () => {
-  userAnswers.value = {};
-};
-
-const resetearEncuesta = () => {
-  limpiarRespuestas();
-  surveySubmitted.value = false;
-};
-
-// --- Función para obtener mensaje de privacidad ---
-const getPrivacyMessage = (privacidadNivel) => {
-  const messages = {
-    'anonimato_completo': 'Tus respuestas son totalmente anónimas.',
-    'anonimato_parcial': 'Se mostrarán promedios por equipo, no respuestas individuales.',
-    'identificado': 'Tus respuestas serán visibles solo para RRHH autorizado.'
-  };
-  return messages[privacidadNivel] || '';
-};
-
-// --- Función para manejar el logout ---
-const handleLogout = async () => {
-  loggingOut.value = true;
-  
-  try {
-    // Llamar a la acción logout del store
-    await authStore.logout();
-    
-    // Mostrar mensaje de confirmación
-    toast.add({
-      severity: 'info',
-      summary: 'Sesión cerrada',
-      detail: 'Has cerrado sesión correctamente',
-      life: 3000
-    });
-    
-    // Redirigir a la página de login
-    router.push('/login');
-  } catch (error) {
-    console.error('Error durante el logout:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'No se pudo cerrar la sesión',
-      life: 4000
-    });
-  } finally {
-    loggingOut.value = false;
-  }
-};
-</script>
-
 <style scoped>
-.text-primary-light {
-  color: rgba(255, 255, 255, 0.8);
+/* Animación suave para las transiciones */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

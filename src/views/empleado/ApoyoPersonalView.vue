@@ -3,20 +3,27 @@ import { ref, onMounted } from 'vue';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
 import { empleadosService } from '@/services/empleados.service.js';
+import { useAuthStore } from '@/stores/auth.store.js';
 
 // --- Estado Reactivo ---
 const especialistas = ref([]);
 const isLoading = ref(true);
+const authStore = useAuthStore();
 
 // --- Carga de Datos ---
 onMounted(async () => {
   isLoading.value = true;
   try {
-    // TODO: Filter empleados by role or specialty for mental health specialists
-    // For now, get all empleados - this should be filtered based on a specialist role
-    const allEmpleados = await empleadosService.getAll();
+    // Obtener empleados de la empresa del usuario actual
+    const empresaId = authStore.empresaId;
+    if (!empresaId) {
+      console.error('No se encontró empresaId');
+      return;
+    }
+
+    // Filter empleados by role or specialty for mental health specialists
+    const allEmpleados = await empleadosService.getAll(empresaId);
     // Filter for mental health specialists if there's a way to identify them
-    // This is a placeholder - adjust based on your data model
     especialistas.value = allEmpleados.filter(e =>
       e.puesto?.toLowerCase().includes('psicólogo') ||
       e.puesto?.toLowerCase().includes('terapeuta') ||

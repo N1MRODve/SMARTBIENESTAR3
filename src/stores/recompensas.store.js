@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { recompensasService } from '@/services/recompensas.service';
+import { useAuthStore } from '@/stores/auth.store';
 
 export const useRecompensasStore = defineStore('recompensas', () => {
   const recompensas = ref([]);
@@ -9,12 +10,25 @@ export const useRecompensasStore = defineStore('recompensas', () => {
   const loading = ref(false);
   const error = ref(null);
 
+  /**
+   * Obtiene el empresaId del auth store
+   */
+  const getEmpresaId = () => {
+    const authStore = useAuthStore();
+    return authStore.empresaId;
+  };
+
   const cargarRecompensas = async () => {
     loading.value = true;
     error.value = null;
 
     try {
-      const recompensasData = await recompensasService.getAll();
+      const empresaId = getEmpresaId();
+      if (!empresaId) {
+        throw new Error('No se encontró empresaId');
+      }
+
+      const recompensasData = await recompensasService.getAll(empresaId);
       recompensas.value = recompensasData;
     } catch (err) {
       error.value = err.message || 'Error al cargar las recompensas';
@@ -29,7 +43,12 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     error.value = null;
 
     try {
-      const recompensasData = await recompensasService.getByCategoria(categoria);
+      const empresaId = getEmpresaId();
+      if (!empresaId) {
+        throw new Error('No se encontró empresaId');
+      }
+
+      const recompensasData = await recompensasService.getByCategoria(empresaId, categoria);
       recompensas.value = recompensasData;
     } catch (err) {
       error.value = err.message || 'Error al cargar las recompensas';
@@ -44,7 +63,12 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     error.value = null;
 
     try {
-      const resultado = await recompensasService.canjear(usuarioId, recompensaId);
+      const empresaId = getEmpresaId();
+      if (!empresaId) {
+        throw new Error('No se encontró empresaId');
+      }
+
+      const resultado = await recompensasService.canjear(usuarioId, recompensaId, empresaId);
 
       if (historialCanjes.value) {
         historialCanjes.value.unshift(resultado);
@@ -60,12 +84,17 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     }
   };
 
-  const cargarHistorial = async (usuarioId) => {
+  const cargarHistorial = async (usuarioId = null) => {
     loading.value = true;
     error.value = null;
 
     try {
-      const historialData = await recompensasService.getHistorialCanjes(usuarioId);
+      const empresaId = getEmpresaId();
+      if (!empresaId) {
+        throw new Error('No se encontró empresaId');
+      }
+
+      const historialData = await recompensasService.getHistorialCanjes(empresaId, usuarioId);
       historialCanjes.value = historialData;
     } catch (err) {
       error.value = err.message || 'Error al cargar el historial';
@@ -75,13 +104,18 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     }
   };
 
-  const cargarEstadisticas = async (usuarioId) => {
+  const cargarEstadisticas = async () => {
     loading.value = true;
     error.value = null;
 
     try {
-      // TODO: Implementar servicio de estadísticas
-      estadisticas.value = {};
+      const empresaId = getEmpresaId();
+      if (!empresaId) {
+        throw new Error('No se encontró empresaId');
+      }
+
+      const stats = await recompensasService.getStats(empresaId);
+      estadisticas.value = stats;
     } catch (err) {
       error.value = err.message || 'Error al cargar las estadísticas';
       console.error('Error cargando estadísticas:', err);
@@ -95,7 +129,18 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     error.value = null;
 
     try {
-      const resultado = await recompensasService.create(nuevaRecompensa);
+      const empresaId = getEmpresaId();
+      if (!empresaId) {
+        throw new Error('No se encontró empresaId');
+      }
+
+      // Asegurar que la recompensa tenga empresa_id
+      const recompensaConEmpresa = {
+        ...nuevaRecompensa,
+        empresa_id: empresaId
+      };
+
+      const resultado = await recompensasService.create(recompensaConEmpresa);
       recompensas.value.push(resultado);
       return { success: true, recompensa: resultado };
     } catch (err) {
@@ -112,9 +157,15 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     error.value = null;
 
     try {
+      const empresaId = getEmpresaId();
+      if (!empresaId) {
+        throw new Error('No se encontró empresaId');
+      }
+
       const resultado = await recompensasService.update(
         recompensaActualizada.id,
-        recompensaActualizada
+        recompensaActualizada,
+        empresaId
       );
 
       const index = recompensas.value.findIndex(r => r.id === recompensaActualizada.id);
@@ -137,7 +188,12 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     error.value = null;
 
     try {
-      await recompensasService.delete(recompensaId);
+      const empresaId = getEmpresaId();
+      if (!empresaId) {
+        throw new Error('No se encontró empresaId');
+      }
+
+      await recompensasService.delete(recompensaId, empresaId);
 
       const index = recompensas.value.findIndex(r => r.id === recompensaId);
       if (index !== -1) {
@@ -148,6 +204,34 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     } catch (err) {
       error.value = err.message || 'Error al eliminar la recompensa';
       console.error('Error eliminando recompensa:', err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const updateEstadoCanje = async (canjeId, estado, notas = null) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const empresaId = getEmpresaId();
+      if (!empresaId) {
+        throw new Error('No se encontró empresaId');
+      }
+
+      const resultado = await recompensasService.updateEstadoCanje(canjeId, estado, empresaId, notas);
+
+      // Actualizar en el historial local
+      const index = historialCanjes.value.findIndex(c => c.id === canjeId);
+      if (index !== -1) {
+        historialCanjes.value[index] = { ...historialCanjes.value[index], ...resultado };
+      }
+
+      return { success: true, canje: resultado };
+    } catch (err) {
+      error.value = err.message || 'Error al actualizar el canje';
+      console.error('Error actualizando canje:', err);
       throw err;
     } finally {
       loading.value = false;
@@ -167,6 +251,7 @@ export const useRecompensasStore = defineStore('recompensas', () => {
     cargarEstadisticas,
     crearRecompensa,
     actualizarRecompensa,
-    eliminarRecompensa
+    eliminarRecompensa,
+    updateEstadoCanje
   };
 });

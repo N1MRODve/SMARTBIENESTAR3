@@ -1606,9 +1606,14 @@ const puedeSerLanzada = computed(() => {
 const cargarDatos = async () => {
   loadingDepartamentos.value = true;
   try {
+    const empresaId = authStore.empresaId;
+    if (!empresaId) {
+      throw new Error('No se encontró empresaId');
+    }
+
     const [deptData, empData] = await Promise.all([
-      departamentosService.getAll(),
-      empleadosService.getAll()
+      departamentosService.getAll(empresaId),
+      empleadosService.getAll(empresaId)
     ]);
     departamentos.value = deptData || [];
     empleados.value = empData || [];

@@ -5,7 +5,9 @@ import { useAuthStore } from '@/stores/auth.store.js';
 import empleadoRoutes from './routes/empleado.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 
-// Importar vistas del MVP
+// Importar vistas públicas
+import LandingPage from '../views/LandingPage.vue';
+import SolicitarDemoView from '../views/SolicitarDemoView.vue';
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import NotFoundView from '../views/NotFoundView.vue';
@@ -19,13 +21,22 @@ import CrearEncuestaView from '../views/admin/CrearEncuestaView.vue';
 import ResponderEncuestaView from '../views/empleado/ResponderEncuestaView.vue';
 
 const routes = [
-  // Ruta raíz - redirige según autenticación
-  { 
-    path: '/', 
-    name: 'home',
-    redirect: '/login'
+  // === RUTAS PÚBLICAS (LANDING) ===
+  {
+    path: '/',
+    name: 'landing',
+    component: LandingPage,
+    meta: { requiresAuth: false, isPublic: true }
   },
-  
+
+  // Solicitar demo - accesible sin autenticación
+  {
+    path: '/solicitar-demo',
+    name: 'solicitar-demo',
+    component: SolicitarDemoView,
+    meta: { requiresAuth: false, isPublic: true }
+  },
+
   // Login - accesible sin autenticación
   {
     path: '/login',
@@ -99,8 +110,14 @@ router.beforeEach(async (to, from) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const requiredRoles = to.meta.roles;
 
-  // Si la ruta es login o register y el usuario ya está autenticado, redirigir al dashboard correspondiente
+  // Si el usuario está autenticado y va a rutas de auth (login/register), redirigir al dashboard
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
+    const redirectPath = authStore.userRole === 'admin' ? '/admin/dashboard' : '/empleado/dashboard';
+    return redirectPath;
+  }
+
+  // Si el usuario está autenticado y va a la landing, redirigir al dashboard
+  if (to.name === 'landing' && authStore.isAuthenticated) {
     const redirectPath = authStore.userRole === 'admin' ? '/admin/dashboard' : '/empleado/dashboard';
     return redirectPath;
   }

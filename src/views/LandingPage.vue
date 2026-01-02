@@ -720,7 +720,7 @@ const goToDemo = () => {
             <a href="#" class="hover:text-white transition-colors">Contacto</a>
           </div>
           <div class="text-gray-500 text-sm">
-            © 2024 SMART Bienestar. Todos los derechos reservados.
+            © 2026 SMART Bienestar. Todos los derechos reservados.
           </div>
         </div>
       </div>

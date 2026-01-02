@@ -35,16 +35,15 @@ import {
 
 // Stores y servicios
 import { useAuthStore } from '@/stores/auth.store.js';
-import { comunicadosService } from '@/services/comunicados.service.js';
+import { useComunicadosStore } from '@/stores/comunicados.store.js';
 
 const router = useRouter();
 const authStore = useAuthStore();
-const { user, empleado } = storeToRefs(authStore);
+const comunicadosStore = useComunicadosStore();
 
-// Estado local
-const loading = ref(true);
-const error = ref(null);
-const comunicados = ref([]);
+const { user, empleado } = storeToRefs(authStore);
+// Usar el store como fuente única de verdad
+const { comunicados, loading, error } = storeToRefs(comunicadosStore);
 const comunicadoSeleccionado = ref(null);
 const vistaDetalle = ref(false);
 const filtroActivo = ref('todos');
@@ -136,17 +135,8 @@ const getTipoConfig = (tipo) => {
 // CARGAR DATOS
 // ==========================================
 const cargarComunicados = async () => {
-  loading.value = true;
-  error.value = null;
-
-  try {
-    comunicados.value = await comunicadosService.getMisComunicados();
-  } catch (err) {
-    console.error('Error cargando comunicados:', err);
-    error.value = err.message || 'Error al cargar los comunicados';
-  } finally {
-    loading.value = false;
-  }
+  // Usar el store que es la fuente única de verdad
+  await comunicadosStore.cargarComunicados();
 };
 
 onMounted(cargarComunicados);
@@ -174,13 +164,10 @@ const marcarComoLeido = async (comunicado) => {
 
   marcandoLeido.value = true;
   try {
-    await comunicadosService.marcarComoLeidoEmpleado(comunicado.id);
+    // Usar el store que actualiza BD + estado local + badge automáticamente
+    await comunicadosStore.marcarComoLeido(comunicado.id);
 
-    // Actualizar estado local
-    const index = comunicados.value.findIndex(c => c.id === comunicado.id);
-    if (index !== -1) {
-      comunicados.value[index].leido = true;
-    }
+    // Actualizar también el comunicado seleccionado si está abierto
     if (comunicadoSeleccionado.value?.id === comunicado.id) {
       comunicadoSeleccionado.value.leido = true;
     }
@@ -196,8 +183,8 @@ const marcarTodosLeidos = async () => {
 
   for (const comunicado of noLeidos) {
     try {
-      await comunicadosService.marcarComoLeidoEmpleado(comunicado.id);
-      comunicado.leido = true;
+      // Usar el store para cada comunicado
+      await comunicadosStore.marcarComoLeido(comunicado.id);
     } catch (err) {
       console.error('Error marcando como leído:', err);
     }

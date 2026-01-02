@@ -108,17 +108,77 @@
           </div>
         </div>
 
-        <!-- Estado vacío -->
-        <div v-if="serviciosFiltrados.length === 0" class="text-center py-12">
+        <!-- Estado vacío: Sin servicios en categoría filtrada -->
+        <div v-if="serviciosFiltrados.length === 0 && servicios.length > 0" class="text-center py-12">
           <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Search class="h-8 w-8 text-gray-400" />
           </div>
           <h3 class="text-lg font-semibold text-gray-900 mb-2">
-            No se encontraron servicios
+            No hay servicios en esta categoría
           </h3>
-          <p class="text-gray-600">
+          <p class="text-gray-600 mb-4">
             Intenta con otra categoría o explora todos los servicios disponibles.
           </p>
+          <button
+            @click="categoriaSeleccionada = 'Todos'"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <Briefcase class="h-4 w-4" />
+            Ver todos los servicios
+          </button>
+        </div>
+
+        <!-- Estado vacío: Sin servicios en el catálogo -->
+        <div v-else-if="servicios.length === 0" class="text-center py-16">
+          <div class="max-w-md mx-auto">
+            <!-- Ilustración -->
+            <div class="w-32 h-32 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <div class="relative">
+                <Briefcase class="h-16 w-16 text-indigo-400" />
+                <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                  <Sparkles class="h-4 w-4 text-amber-500" />
+                </div>
+              </div>
+            </div>
+
+            <h3 class="text-xl font-bold text-gray-900 mb-3">
+              Tu catálogo de bienestar te espera
+            </h3>
+            <p class="text-gray-600 mb-6 leading-relaxed">
+              Pronto tendrás acceso a programas de salud mental, actividad física, nutrición y prevención
+              diseñados para mejorar el bienestar de tu equipo.
+            </p>
+
+            <!-- Beneficios -->
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-5 mb-6 text-left">
+              <h4 class="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+                <Target class="h-4 w-4" />
+                ¿Qué encontrarás aquí?
+              </h4>
+              <ul class="space-y-2 text-sm text-indigo-800">
+                <li class="flex items-start gap-2">
+                  <CheckCircle class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Talleres de gestión del estrés y mindfulness</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <CheckCircle class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Programas de actividad física y pausas activas</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <CheckCircle class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Asesoría nutricional y hábitos saludables</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <CheckCircle class="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Campañas de prevención y bienestar integral</span>
+                </li>
+              </ul>
+            </div>
+
+            <p class="text-sm text-gray-500">
+              ¿Necesitas un servicio específico? Contacta a tu asesor SMART Bienestar.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -278,7 +338,8 @@ import {
   TrendingUp,
   Layers,
   Send,
-  Users
+  Users,
+  Sparkles
 } from 'lucide-vue-next';
 
 // TODO: Load services from Supabase servicios table

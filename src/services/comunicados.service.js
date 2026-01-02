@@ -104,23 +104,46 @@ export const comunicadosService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No autenticado');
 
-    // Obtener el empleado actual para conocer su ID
+    // Obtener el empleado actual con su empresa_id y departamento
     const { data: empleadoData } = await supabase
       .from('empleados')
-      .select('id')
+      .select('id, empresa_id, departamento_id, departamentos(nombre)')
       .eq('auth_user_id', user.id)
       .maybeSingle();
 
     const empleadoId = empleadoData?.id;
+    const empresaId = empleadoData?.empresa_id;
+    const departamentoNombre = empleadoData?.departamentos?.nombre;
 
-    // Obtener comunicados publicados o enviados
-    const { data: comunicados, error: comError } = await supabase
+    if (!empresaId) {
+      console.warn('[Comunicados] Empleado sin empresa asignada');
+      return [];
+    }
+
+    // Obtener comunicados enviados de la empresa del empleado
+    let query = supabase
       .from('comunicados')
       .select('*')
-      .in('estado', ['publicado', 'enviado'])
+      .eq('empresa_id', empresaId) // IMPORTANTE: filtrar por empresa
+      .or('estado.eq.enviado,estado.eq.Enviado,estado.eq.publicado')
       .order('fecha_publicacion', { ascending: false });
 
+    const { data: comunicados, error: comError } = await query;
+
     if (comError) throw comError;
+
+    // Filtrar por departamento si el comunicado tiene destinatarios específicos
+    const comunicadosFiltrados = (comunicados || []).filter(com => {
+      // Si no tiene destinatarios definidos o está vacío, es para todos
+      if (!com.destinatarios || com.destinatarios.length === 0) {
+        return true;
+      }
+      // Si el departamento del empleado está en la lista de destinatarios
+      if (departamentoNombre && com.destinatarios.includes(departamentoNombre)) {
+        return true;
+      }
+      return false;
+    });
 
     // Si tenemos empleadoId, obtener IDs de comunicados leídos
     let idsLeidos = new Set();
@@ -134,7 +157,7 @@ export const comunicadosService = {
     }
 
     // Agregar estado de lectura a cada comunicado
-    return (comunicados || []).map(com => ({
+    return comunicadosFiltrados.map(com => ({
       ...com,
       leido: idsLeidos.has(com.id)
     }));
@@ -145,20 +168,22 @@ export const comunicadosService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No autenticado');
 
-    // Obtener el empleado actual
+    // Obtener el empleado actual con empresa_id
     const { data: empleadoData } = await supabase
       .from('empleados')
-      .select('id')
+      .select('id, empresa_id')
       .eq('auth_user_id', user.id)
       .maybeSingle();
 
     const empleadoId = empleadoData?.id;
+    const empresaId = empleadoData?.empresa_id;
 
     const { data: comunicado, error: comError } = await supabase
       .from('comunicados')
       .select('*')
       .eq('id', id)
-      .in('estado', ['publicado', 'enviado'])
+      .eq('empresa_id', empresaId) // Filtrar por empresa
+      .or('estado.eq.enviado,estado.eq.Enviado,estado.eq.publicado')
       .single();
 
     if (comError) throw comError;
@@ -217,20 +242,24 @@ export const comunicadosService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No autenticado');
 
-    // Obtener el empleado actual
+    // Obtener el empleado actual con empresa_id
     const { data: empleadoData } = await supabase
       .from('empleados')
-      .select('id')
+      .select('id, empresa_id')
       .eq('auth_user_id', user.id)
       .maybeSingle();
 
     const empleadoId = empleadoData?.id;
+    const empresaId = empleadoData?.empresa_id;
 
-    // Total de comunicados publicados o enviados
+    if (!empresaId) return 0;
+
+    // Total de comunicados enviados de la empresa
     const { count: totalCom, error: countError } = await supabase
       .from('comunicados')
       .select('*', { count: 'exact', head: true })
-      .in('estado', ['publicado', 'enviado']);
+      .eq('empresa_id', empresaId) // Filtrar por empresa
+      .or('estado.eq.enviado,estado.eq.Enviado,estado.eq.publicado');
 
     if (countError) throw countError;
 

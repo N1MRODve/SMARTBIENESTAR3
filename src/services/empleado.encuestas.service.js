@@ -12,36 +12,110 @@ export const empleadoEncuestasService = {
   /**
    * Obtiene todos los datos de encuestas del empleado en una sola llamada.
    * Incluye: pendientes, historial, stats
+   * Usa fn_get_encuestas_pendientes_empleado como FUENTE ÚNICA DE VERDAD.
    * @returns {Promise<Object>} Datos completos de encuestas
    */
   async getDatosCompletos() {
     try {
-      // Intentar usar la función RPC optimizada
-      const { data, error } = await supabase.rpc('get_empleado_encuestas_data');
+      // PRIMERO: Usar la RPC unificada para encuestas pendientes
+      const { data: pendientesData, error: pendientesError } = await supabase.rpc('fn_get_encuestas_pendientes_empleado');
 
-      if (error) {
-        console.warn('RPC get_empleado_encuestas_data no disponible, usando fallback:', error.message);
+      if (pendientesError) {
+        console.warn('RPC fn_get_encuestas_pendientes_empleado no disponible, usando fallback:', pendientesError.message);
         return await this.getDatosCompletosFallback();
       }
 
-      if (!data?.success) {
-        throw new Error(data?.error || 'Error al obtener datos de encuestas');
+      if (!pendientesData?.success) {
+        console.warn('RPC retornó error:', pendientesData?.error);
+        return await this.getDatosCompletosFallback();
       }
+
+      // Obtener historial separadamente
+      const historial = await this.getHistorial();
+
+      // Calcular stats
+      const pendientes = pendientesData.encuestas || [];
+      const puntosDisponibles = pendientes.reduce((sum, e) => sum + (e.puntos_base || e.puntos_recompensa || 50), 0);
 
       return {
         success: true,
-        empleado: data.empleado,
-        pendientes: data.pendientes || [],
-        historial: data.historial || [],
-        stats: data.stats || {
-          total_pendientes: 0,
-          total_completadas: 0,
-          puntos_disponibles: 0
+        empleado: {
+          id: pendientesData.empleado_id,
+          empresa_id: pendientesData.empresa_id
+        },
+        pendientes,
+        historial,
+        stats: {
+          total_pendientes: pendientesData.total || 0,
+          total_completadas: historial.length,
+          puntos_disponibles: puntosDisponibles
         }
       };
     } catch (error) {
       console.error('Error en getDatosCompletos:', error);
       return await this.getDatosCompletosFallback();
+    }
+  },
+
+  /**
+   * Obtener historial de encuestas completadas por el empleado
+   */
+  async getHistorial() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      // Obtener empleado.id
+      const { data: empleado } = await supabase
+        .from('empleados')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!empleado) return [];
+
+      // Obtener respuestas con info de encuesta y puntos otorgados
+      const { data: respuestas } = await supabase
+        .from('respuestas_encuesta')
+        .select(`
+          encuesta_id,
+          fecha_respuesta,
+          puntos_otorgados,
+          bonus_aplicado,
+          encuesta:encuestas (
+            id,
+            titulo,
+            descripcion,
+            categoria,
+            privacidad_nivel,
+            puntos_base
+          )
+        `)
+        .eq('empleado_id', empleado.id)
+        .order('fecha_respuesta', { ascending: false });
+
+      // Agrupar por encuesta (puede haber múltiples respuestas)
+      const historialMap = new Map();
+      (respuestas || []).forEach(resp => {
+        if (resp.encuesta && !historialMap.has(resp.encuesta.id)) {
+          historialMap.set(resp.encuesta.id, {
+            id: resp.encuesta.id,
+            titulo: resp.encuesta.titulo,
+            descripcion: resp.encuesta.descripcion,
+            categoria: resp.encuesta.categoria,
+            privacidad_nivel: resp.encuesta.privacidad_nivel,
+            fecha_completado: resp.fecha_respuesta,
+            puntos_otorgados: resp.puntos_otorgados || resp.encuesta.puntos_base || 50,
+            puntos_base: resp.encuesta.puntos_base || 50,
+            bonus_aplicado: resp.bonus_aplicado || false
+          });
+        }
+      });
+
+      return Array.from(historialMap.values());
+    } catch (error) {
+      console.error('Error obteniendo historial:', error);
+      return [];
     }
   },
 
@@ -73,11 +147,13 @@ export const empleadoEncuestasService = {
         nombre: empleado.nombre
       });
 
-      // Obtener encuestas respondidas
+      // Obtener encuestas respondidas usando empleado.id (NO user.id)
+      // IMPORTANTE: Las respuestas se guardan con empleado.id (tabla empleados)
+      // por lo que debemos buscar con el mismo ID para consistencia
       const { data: respondidas } = await supabase
         .from('respuestas_encuesta')
         .select('encuesta_id, fecha_respuesta')
-        .eq('empleado_id', user.id);
+        .eq('empleado_id', empleado.id);
 
       console.log('[getDatosCompletosFallback] Encuestas ya respondidas:', respondidas?.length || 0, respondidas);
 
@@ -216,7 +292,7 @@ export const empleadoEncuestasService = {
       // Ordenar historial por fecha_completado desc
       historial.sort((a, b) => new Date(b.fecha_completado) - new Date(a.fecha_completado));
 
-      const puntosDisponibles = pendientes.reduce((sum, e) => sum + (e.puntos_recompensa || 50), 0);
+      const puntosDisponibles = pendientes.reduce((sum, e) => sum + (e.puntos_base || e.puntos_recompensa || 50), 0);
 
       console.log('[getDatosCompletosFallback] === RESUMEN ===');
       console.log(`  Total pendientes: ${pendientes.length}`);
@@ -337,21 +413,21 @@ export const empleadoEncuestasService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No autenticado');
 
-    // Obtener empresa del empleado
+    // Obtener empleado con id y empresa_id (necesitamos ambos)
     const { data: empleado } = await supabase
       .from('empleados')
-      .select('empresa_id')
+      .select('id, empresa_id')
       .eq('auth_user_id', user.id)
       .single();
 
     if (!empleado) throw new Error('Empleado no encontrado');
 
-    // Verificar si ya respondió
+    // Verificar si ya respondió usando empleado.id (consistente con la RPC de lectura)
     const { data: respExistente } = await supabase
       .from('respuestas_encuesta')
       .select('id')
       .eq('encuesta_id', encuestaId)
-      .eq('empleado_id', user.id)
+      .eq('empleado_id', empleado.id)
       .limit(1);
 
     if (respExistente && respExistente.length > 0) {
@@ -360,7 +436,7 @@ export const empleadoEncuestasService = {
       throw err;
     }
 
-    // Obtener encuesta (sin columnas tipo ni puntos_recompensa que no existen)
+    // Obtener encuesta con columnas de puntos
     const { data: encuesta, error } = await supabase
       .from('encuestas')
       .select(`
@@ -371,6 +447,11 @@ export const empleadoEncuestasService = {
         estado,
         privacidad_nivel,
         fecha_fin,
+        fecha_inicio,
+        fecha_creacion,
+        puntos_base,
+        puntos_bonus_rapido,
+        bonus_horas_limite,
         preguntas_encuesta (
           id,
           texto,
@@ -396,140 +477,182 @@ export const empleadoEncuestasService = {
       throw new Error('Esta encuesta ha expirado');
     }
 
-    // Formatear respuesta (puntos por defecto: 50)
+    // Obtener puntos de la BD (fuente única de verdad)
+    const puntosBase = encuesta.puntos_base || 50;
+    const puntosBonus = encuesta.puntos_bonus_rapido || 0;
+    const bonusHoras = encuesta.bonus_horas_limite || 24;
+
     return {
       id: encuesta.id,
       titulo: encuesta.titulo,
       descripcion: encuesta.descripcion,
       categoria: encuesta.categoria,
       privacidad_nivel: encuesta.privacidad_nivel,
-      puntos_recompensa: 50,
+      // Sistema de puntos unificado
+      puntos_base: puntosBase,
+      puntos_bonus_rapido: puntosBonus,
+      bonus_horas_limite: bonusHoras,
+      puntos_recompensa: puntosBase, // Compatibilidad con código existente
+      tiene_bonus: puntosBonus > 0,
+      puntos_maximos: puntosBase + puntosBonus,
       fecha_fin: encuesta.fecha_fin,
       preguntas: (encuesta.preguntas_encuesta || []).sort((a, b) => a.orden - b.orden)
     };
   },
 
   /**
-   * Envía las respuestas de una encuesta
+   * Envía las respuestas de una encuesta usando RPC atómica
    * @param {string} encuestaId - ID de la encuesta
    * @param {Array} respuestas - Array de respuestas {pregunta_id, respuesta}
-   * @returns {Promise<Object>} Resultado del envío
+   * @returns {Promise<Object>} Resultado del envío con puntos calculados
    */
   async enviarRespuestas(encuestaId, respuestas) {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No autenticado');
-
-      console.log('[enviarRespuestas] Usuario autenticado:', user.id);
+      console.log('[enviarRespuestas] Iniciando envío...');
       console.log('[enviarRespuestas] encuestaId:', encuestaId);
-      console.log('[enviarRespuestas] respuestas recibidas:', respuestas);
+      console.log('[enviarRespuestas] respuestas:', respuestas?.length);
 
-      // Obtener datos del empleado con nombre del departamento
-      const { data: empleado, error: empleadoError } = await supabase
-        .from('empleados')
-        .select('id, departamento_id, departamentos(nombre)')
-        .eq('auth_user_id', user.id)
-        .single();
-
-      if (empleadoError) {
-        console.error('[enviarRespuestas] Error obteniendo empleado:', empleadoError);
-      }
-      console.log('[enviarRespuestas] Empleado encontrado:', empleado);
-
-      // Extraer nombre del departamento
-      const nombreDepartamento = empleado?.departamentos?.nombre || null;
-
-      // Validar que hay respuestas
+      // Validar respuestas
       if (!respuestas || respuestas.length === 0) {
         throw new Error('No hay respuestas para enviar');
       }
 
-      // Formatear respuestas para inserción
-      const respuestasData = respuestas.map(r => ({
-        encuesta_id: encuestaId,
+      // Formatear respuestas para la RPC (pregunta_id, respuesta como string)
+      const respuestasJson = respuestas.map(r => ({
         pregunta_id: r.pregunta_id,
-        empleado_id: user.id,
-        departamento: nombreDepartamento,
         respuesta: typeof r.respuesta === 'object' ? JSON.stringify(r.respuesta) : String(r.respuesta)
       }));
 
-      console.log('[enviarRespuestas] Datos a insertar:', JSON.stringify(respuestasData, null, 2));
+      // Intentar usar la RPC atómica fn_submit_encuesta
+      console.log('[enviarRespuestas] Intentando RPC fn_submit_encuesta...');
+      const { data: rpcResult, error: rpcError } = await supabase.rpc('fn_submit_encuesta', {
+        p_encuesta_id: encuestaId,
+        p_respuestas: respuestasJson
+      });
 
-      // Insertar respuestas CON select para verificar que se insertaron
-      const { data: insertedData, error: insertError } = await supabase
-        .from('respuestas_encuesta')
-        .insert(respuestasData)
-        .select();
-
-      console.log('[enviarRespuestas] Resultado insert - data:', insertedData);
-      console.log('[enviarRespuestas] Resultado insert - error:', insertError);
-
-      if (insertError) {
-        console.error('[enviarRespuestas] Error de inserción:', insertError);
-        // Verificar si es error de duplicado
-        if (insertError.code === '23505' || insertError.message?.includes('duplicate')) {
-          const err = new Error('Ya has respondido esta encuesta');
-          err.isDuplicate = true;
-          throw err;
-        }
-        throw new Error(`Error al guardar respuestas: ${insertError.message || insertError.code}`);
+      if (!rpcError && rpcResult?.success) {
+        console.log('[enviarRespuestas] RPC exitosa:', rpcResult);
+        const data = rpcResult.data || {};
+        return {
+          success: true,
+          message: rpcResult.message || 'Respuestas enviadas correctamente',
+          puntos_ganados: data.puntos_total || data.puntos_base || 50,
+          puntos_base: data.puntos_base || 50,
+          puntos_bonus: data.puntos_bonus || 0,
+          bonus_aplicado: data.bonus_aplicado || false,
+          puntos_totales: data.nuevo_balance || 0
+        };
       }
 
-      // Verificar que realmente se insertaron datos
-      if (!insertedData || insertedData.length === 0) {
-        console.error('[enviarRespuestas] No se insertaron datos (posible problema de RLS)');
-        throw new Error('No se pudieron guardar las respuestas. Verifica los permisos.');
+      // Si RPC falló con error de duplicado
+      if (rpcResult?.is_duplicate || rpcResult?.code === 'DUPLICATE_SUBMISSION' || rpcResult?.code === 'ALREADY_SUBMITTED') {
+        const err = new Error(rpcResult?.error || 'Ya has respondido esta encuesta');
+        err.isDuplicate = true;
+        err.ya_respondida = true;
+        throw err;
       }
 
-      console.log('[enviarRespuestas] Respuestas guardadas exitosamente:', insertedData.length);
-
-      // Obtener título de la encuesta para el motivo
-      const { data: encuesta } = await supabase
-        .from('encuestas')
-        .select('titulo')
-        .eq('id', encuestaId)
-        .single();
-
-      // Puntos por defecto (la tabla encuestas no tiene columna puntos_recompensa)
-      const puntosGanados = 50;
-
-      // Otorgar puntos al empleado
-      if (empleado?.id) {
-        console.log('[enviarRespuestas] Intentando otorgar puntos al empleado:', empleado.id);
-
-        const { data: puntosData, error: puntosError } = await supabase
-          .from('transacciones_puntos')
-          .insert({
-            empleado_id: empleado.id,
-            cantidad: puntosGanados,
-            tipo: 'ganados',
-            motivo: `Encuesta completada: ${encuesta?.titulo || 'Encuesta'}`,
-            referencia_id: encuestaId,
-            referencia_tipo: 'encuesta'
-          })
-          .select();
-
-        console.log('[enviarRespuestas] Resultado inserción puntos - data:', puntosData);
-        console.log('[enviarRespuestas] Resultado inserción puntos - error:', puntosError);
-
-        if (puntosError) {
-          console.error('[enviarRespuestas] Error otorgando puntos:', puntosError);
-          // No lanzamos error aquí para que la encuesta se considere completada
-          // aunque los puntos no se hayan otorgado
-        }
-      } else {
-        console.warn('[enviarRespuestas] No se pudieron otorgar puntos: empleado.id no disponible');
+      // Si RPC no disponible o falló, usar fallback manual
+      if (rpcError || !rpcResult?.success) {
+        console.warn('[enviarRespuestas] RPC no disponible, usando fallback:', rpcError?.message || rpcResult?.error);
+        return await this.enviarRespuestasFallback(encuestaId, respuestas);
       }
 
-      return {
-        success: true,
-        message: 'Respuestas enviadas correctamente',
-        puntos_ganados: puntosGanados
-      };
+      throw new Error(rpcResult?.error || 'Error desconocido al enviar respuestas');
     } catch (error) {
-      console.error('Error al enviar respuestas:', error);
+      console.error('[enviarRespuestas] Error:', error);
       throw error;
     }
+  },
+
+  /**
+   * Fallback para enviar respuestas si la RPC no está disponible
+   */
+  async enviarRespuestasFallback(encuestaId, respuestas) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No autenticado');
+
+    // Obtener empleado
+    const { data: empleado } = await supabase
+      .from('empleados')
+      .select('id, departamento_id, departamentos(nombre)')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (!empleado?.id) {
+      throw new Error('No se pudo obtener el ID del empleado');
+    }
+
+    // Verificar si ya respondió
+    const { data: yaRespondio } = await supabase
+      .from('respuestas_encuesta')
+      .select('id')
+      .eq('encuesta_id', encuestaId)
+      .eq('empleado_id', empleado.id)
+      .limit(1);
+
+    if (yaRespondio && yaRespondio.length > 0) {
+      const err = new Error('Ya has respondido esta encuesta');
+      err.isDuplicate = true;
+      throw err;
+    }
+
+    // Obtener encuesta para puntos
+    const { data: encuesta } = await supabase
+      .from('encuestas')
+      .select('titulo, puntos_base, puntos_bonus_rapido, bonus_horas_limite, fecha_inicio, fecha_creacion')
+      .eq('id', encuestaId)
+      .single();
+
+    const puntosBase = encuesta?.puntos_base || 50;
+
+    // Insertar respuestas
+    const respuestasData = respuestas.map(r => ({
+      encuesta_id: encuestaId,
+      pregunta_id: r.pregunta_id,
+      empleado_id: empleado.id,
+      departamento: empleado.departamentos?.nombre || null,
+      respuesta: typeof r.respuesta === 'object' ? JSON.stringify(r.respuesta) : String(r.respuesta),
+      puntos_otorgados: puntosBase
+    }));
+
+    const { data: insertedData, error: insertError } = await supabase
+      .from('respuestas_encuesta')
+      .insert(respuestasData)
+      .select();
+
+    if (insertError) {
+      if (insertError.code === '23505' || insertError.message?.includes('duplicate')) {
+        const err = new Error('Ya has respondido esta encuesta');
+        err.isDuplicate = true;
+        throw err;
+      }
+      throw new Error(`Error al guardar respuestas: ${insertError.message}`);
+    }
+
+    // Otorgar puntos usando RPC existente o fallback
+    let puntosOtorgados = puntosBase;
+    try {
+      const { data: rpcResult } = await supabase.rpc('fn_otorgar_puntos_encuesta', {
+        p_encuesta_id: encuestaId,
+        p_puntos: puntosBase
+      });
+      if (rpcResult?.success) {
+        puntosOtorgados = rpcResult.puntos_otorgados || puntosBase;
+      }
+    } catch (e) {
+      console.warn('[enviarRespuestasFallback] Error otorgando puntos:', e);
+    }
+
+    return {
+      success: true,
+      message: 'Respuestas enviadas correctamente',
+      puntos_ganados: puntosOtorgados,
+      puntos_base: puntosBase,
+      puntos_bonus: 0,
+      bonus_aplicado: false,
+      puntos_totales: 0
+    };
   },
 
   /**
@@ -542,11 +665,20 @@ export const empleadoEncuestasService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;
 
+      // Obtener empleado.id (consistente con la escritura y la RPC)
+      const { data: empleado } = await supabase
+        .from('empleados')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!empleado) return false;
+
       const { data, error } = await supabase
         .from('respuestas_encuesta')
         .select('id')
         .eq('encuesta_id', encuestaId)
-        .eq('empleado_id', user.id)
+        .eq('empleado_id', empleado.id) // ← CORREGIDO: usar empleados.id
         .limit(1);
 
       if (error) throw error;

@@ -132,7 +132,8 @@ const nombreEmpresa = computed(() => {
 const tieneEncuestasPendientes = computed(() => encuestasPendientes.value.length > 0);
 
 const totalPuntosDisponibles = computed(() => {
-  return encuestasPendientes.value.reduce((total, enc) => total + (enc.puntos_recompensa || 100), 0);
+  // Usar puntos_base de la BD (fuente única de verdad), fallback a 50
+  return encuestasPendientes.value.reduce((total, enc) => total + (enc.puntos_base || enc.puntos_recompensa || 50), 0);
 });
 
 // Sistema de urgencia
@@ -471,7 +472,7 @@ const formatearFecha = (fecha) => {
                     </span>
                     <span class="flex items-center gap-1.5 font-semibold text-amber-600">
                       <Award class="w-4 h-4" />
-                      +{{ encuesta.puntos_recompensa || 100 }} puntos
+                      +{{ encuesta.puntos_base || encuesta.puntos_recompensa || 50 }} puntos
                     </span>
                     <span
                       v-if="encuesta.fecha_fin"
@@ -632,7 +633,7 @@ const formatearFecha = (fecha) => {
                   </div>
                   <div class="flex items-center gap-1 text-green-600 font-medium text-sm">
                     <CheckCircle class="w-4 h-4" />
-                    +100 pts
+                    +{{ encuesta.puntos_otorgados || encuesta.puntos_base || 50 }} pts
                   </div>
                 </div>
               </div>

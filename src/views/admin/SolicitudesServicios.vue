@@ -179,24 +179,55 @@
             </table>
           </div>
 
-          <!-- Estado vacío -->
-          <div v-if="solicitudes.length === 0" class="text-center py-12">
-            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText class="h-8 w-8 text-gray-400" />
+          <!-- Estado vacío mejorado -->
+          <div v-if="solicitudes.length === 0" class="text-center py-16">
+            <div class="max-w-lg mx-auto">
+              <!-- Ilustración -->
+              <div class="w-32 h-32 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner relative">
+                <FileText class="h-14 w-14 text-indigo-400" />
+                <div class="absolute -top-2 -right-2 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center border-4 border-white">
+                  <CheckCircle class="h-5 w-5 text-green-500" />
+                </div>
+              </div>
+
+              <h3 class="text-xl font-bold text-gray-900 mb-3">
+                Aún no hay solicitudes de servicios
+              </h3>
+              <p class="text-gray-600 mb-6 leading-relaxed">
+                Cuando explores el catálogo de servicios SMART Bienestar y solicites implementaciones,
+                aparecerán aquí para que puedas hacer seguimiento.
+              </p>
+
+              <!-- Flujo explicativo -->
+              <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 mb-6 text-left">
+                <h4 class="font-semibold text-indigo-900 mb-4 flex items-center gap-2">
+                  <ClipboardCheck class="h-5 w-5" />
+                  ¿Cómo funciona?
+                </h4>
+                <ol class="space-y-3 text-sm text-indigo-800">
+                  <li class="flex items-start gap-3">
+                    <span class="w-6 h-6 bg-indigo-200 text-indigo-800 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
+                    <span>Explora el <strong>catálogo de servicios</strong> disponibles</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="w-6 h-6 bg-indigo-200 text-indigo-800 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+                    <span>Selecciona un programa y completa la <strong>solicitud de implementación</strong></span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="w-6 h-6 bg-indigo-200 text-indigo-800 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+                    <span>Haz <strong>seguimiento</strong> del estado desde esta pantalla</span>
+                  </li>
+                </ol>
+              </div>
+
+              <button
+                @click="irACatalogo"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors font-semibold shadow-lg hover:shadow-xl"
+              >
+                <Briefcase class="h-5 w-5" />
+                Explorar catálogo de servicios
+              </button>
             </div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">
-              No hay solicitudes registradas
-            </h3>
-            <p class="text-gray-600 mb-4">
-              Las solicitudes de implementación aparecerán aquí
-            </p>
-            <button
-              @click="irACatalogo"
-              class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-            >
-              <Plus class="h-5 w-5" />
-              Explorar servicios
-            </button>
           </div>
         </div>
       </div>
@@ -352,8 +383,9 @@ import {
   Calendar,
   Eye,
   Trash2,
-  Plus,
-  AlertTriangle
+  AlertTriangle,
+  ClipboardCheck,
+  Briefcase
 } from 'lucide-vue-next';
 
 const router = useRouter();

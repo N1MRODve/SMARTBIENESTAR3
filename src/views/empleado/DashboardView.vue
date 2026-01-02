@@ -14,22 +14,20 @@ import {
   Shield,
   CheckCircle,
   Sparkles,
-  TrendingUp,
-  Bell,
   ChevronRight,
   Lock,
   Lightbulb,
   AlertCircle,
-  Users,
   Zap,
-  Target,
-  Award,
   Sun,
   Moon,
   CloudSun,
   RefreshCw,
-  ExternalLink,
-  Loader2
+  Loader2,
+  HelpCircle,
+  Info,
+  Play,
+  Trophy
 } from 'lucide-vue-next';
 
 // Stores
@@ -245,7 +243,25 @@ const resumenRapido = computed(() => {
 // ==========================================
 // NAVEGACIÓN Y ACCIONES
 // ==========================================
-const irAEncuesta = () => router.push('/empleado/encuestas');
+
+/**
+ * Navega directamente a la encuesta pendiente prioritaria.
+ * Si hay un ID de encuesta, va directo a responderla.
+ * Si no, va a la lista de encuestas.
+ */
+const irAEncuestaPendiente = () => {
+  if (encuestaPendiente.value?.id) {
+    // Ir directamente a responder la encuesta prioritaria
+    router.push(`/empleado/encuesta/${encuestaPendiente.value.id}`);
+  } else {
+    // Fallback: ir a la lista de encuestas
+    router.push('/empleado/encuestas');
+  }
+};
+
+// Alias para compatibilidad con resumenRapido
+const irAEncuesta = () => irAEncuestaPendiente();
+
 const irARecompensas = () => router.push('/empleado/recompensas');
 const irAComunicados = () => router.push('/empleado/comunicados');
 const irAActividades = () => router.push('/empleado/actividades');
@@ -339,38 +355,77 @@ const formatearHora = (fecha) => {
             <!-- Widget de puntos compacto -->
             <div class="bg-white/15 backdrop-blur-md rounded-2xl p-5 min-w-[200px] border border-white/20">
               <div class="flex items-center justify-between mb-3">
-                <span class="text-teal-100 text-sm font-medium">Tus puntos</span>
+                <span class="text-teal-100 text-sm font-medium flex items-center gap-1.5">
+                  Tus puntos
+                  <span class="group relative cursor-help">
+                    <HelpCircle class="w-3.5 h-3.5 opacity-70 hover:opacity-100" />
+                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg">
+                      Acumula puntos completando encuestas y actividades
+                    </span>
+                  </span>
+                </span>
                 <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Star class="w-5 h-5 text-amber-900" />
                 </div>
               </div>
 
-              <p class="text-4xl font-bold mb-1">{{ puntosUsuario }}</p>
+              <!-- Estado con puntos -->
+              <template v-if="puntosUsuario > 0">
+                <p class="text-4xl font-bold mb-1">{{ puntosUsuario }}</p>
 
-              <!-- Progreso hacia meta -->
-              <div v-if="siguienteRecompensa" class="mt-3">
-                <div class="flex items-center justify-between text-xs mb-1.5">
-                  <span class="text-teal-100 truncate">Próxima: {{ siguienteRecompensa.nombre }}</span>
-                  <span class="font-semibold">{{ progresoRecompensa }}%</span>
+                <!-- Progreso hacia meta -->
+                <div v-if="siguienteRecompensa" class="mt-3">
+                  <div class="flex items-center justify-between text-xs mb-1.5">
+                    <span class="text-teal-100 truncate">Próxima: {{ siguienteRecompensa.nombre }}</span>
+                    <span class="font-semibold">{{ progresoRecompensa }}%</span>
+                  </div>
+                  <div class="h-2 bg-white/20 rounded-full overflow-hidden">
+                    <div
+                      class="h-full bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full transition-all duration-1000"
+                      :style="{ width: `${progresoRecompensa}%` }"
+                    ></div>
+                  </div>
+                  <p class="text-xs text-teal-100 mt-1.5">
+                    Te faltan <strong class="text-white">{{ puntosParaMeta }}</strong> puntos
+                  </p>
                 </div>
-                <div class="h-2 bg-white/20 rounded-full overflow-hidden">
-                  <div
-                    class="h-full bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full transition-all duration-1000"
-                    :style="{ width: `${progresoRecompensa}%` }"
-                  ></div>
-                </div>
-                <p class="text-xs text-teal-100 mt-1.5">
-                  Te faltan <strong class="text-white">{{ puntosParaMeta }}</strong> puntos
-                </p>
-              </div>
 
-              <button
-                @click="irARecompensas"
-                class="w-full mt-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <Gift class="w-4 h-4" />
-                Ver recompensas
-              </button>
+                <button
+                  @click="irARecompensas"
+                  class="w-full mt-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Gift class="w-4 h-4" />
+                  Ver recompensas
+                </button>
+              </template>
+
+              <!-- Estado vacío: sin puntos aún -->
+              <template v-else>
+                <div class="text-center py-2">
+                  <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Trophy class="w-6 h-6 text-amber-300" />
+                  </div>
+                  <p class="text-2xl font-bold text-white/90 mb-1">0</p>
+                  <p class="text-xs text-teal-100 mb-3">¡Comienza a ganar puntos!</p>
+                </div>
+
+                <button
+                  v-if="tieneEncuestaPendiente"
+                  @click="irAEncuesta"
+                  class="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-amber-900 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  <Play class="w-4 h-4" />
+                  Responder encuesta (+{{ encuestaPendiente?.puntos_base || 50 }} pts)
+                </button>
+                <button
+                  v-else
+                  @click="irAActividades"
+                  class="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Calendar class="w-4 h-4" />
+                  Explorar actividades
+                </button>
+              </template>
             </div>
           </div>
         </div>
@@ -438,7 +493,7 @@ const formatearHora = (fecha) => {
                   'bg-indigo-200 text-indigo-800': urgenciaEncuesta === 'normal'
                 }"
               >
-                +{{ encuestaPendiente?.puntos_estimados || 100 }} puntos
+                +{{ encuestaPendiente?.puntos_base || encuestaPendiente?.puntos_recompensa || 50 }} puntos
               </span>
               <span
                 v-if="tiempoRestanteEncuesta"
@@ -487,7 +542,7 @@ const formatearHora = (fecha) => {
               'text-indigo-600': urgenciaEncuesta === 'normal'
             }"
           >
-            <span class="hidden sm:inline">Responder</span>
+            <span class="hidden sm:inline">Responder ahora</span>
             <ArrowRight class="w-5 h-5" />
           </div>
         </div>
@@ -675,7 +730,15 @@ const formatearHora = (fecha) => {
           <!-- Tarjeta de puntos detallada -->
           <div class="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="font-semibold text-amber-900">Mi progreso</h3>
+              <h3 class="font-semibold text-amber-900 flex items-center gap-1.5">
+                Mi progreso
+                <span class="group relative cursor-help">
+                  <Info class="w-4 h-4 text-amber-500 opacity-70 hover:opacity-100" />
+                  <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg">
+                    Acumula puntos y canjéalos por recompensas
+                  </span>
+                </span>
+              </h3>
               <div class="flex items-center gap-1">
                 <Star class="w-5 h-5 text-amber-500 fill-amber-500" />
                 <Star class="w-4 h-4 text-amber-400 fill-amber-400" />
@@ -683,45 +746,78 @@ const formatearHora = (fecha) => {
               </div>
             </div>
 
-            <!-- Puntos grandes -->
-            <div class="text-center py-3">
-              <p class="text-5xl font-bold text-amber-700">{{ puntosUsuario }}</p>
-              <p class="text-sm text-amber-600 mt-1">puntos acumulados</p>
-            </div>
-
-            <!-- Barra de progreso hacia meta -->
-            <div v-if="siguienteRecompensa" class="mt-4 bg-white/60 rounded-xl p-4">
-              <div class="flex items-center justify-between text-sm mb-2">
-                <span class="text-amber-700">
-                  Próximo: <span class="font-semibold">{{ siguienteRecompensa.nombre }}</span>
-                </span>
-                <span class="font-bold text-amber-800">{{ siguienteRecompensa.costo_puntos }} pts</span>
+            <!-- Estado con puntos -->
+            <template v-if="puntosUsuario > 0">
+              <!-- Puntos grandes -->
+              <div class="text-center py-3">
+                <p class="text-5xl font-bold text-amber-700">{{ puntosUsuario }}</p>
+                <p class="text-sm text-amber-600 mt-1">puntos acumulados</p>
               </div>
-              <div class="h-3 bg-amber-100 rounded-full overflow-hidden">
-                <div
-                  class="h-full bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full transition-all duration-1000 relative"
-                  :style="{ width: `${progresoRecompensa}%` }"
-                >
-                  <div class="absolute right-0 top-0 h-full w-2 bg-white/50 rounded-full"></div>
+
+              <!-- Barra de progreso hacia meta -->
+              <div v-if="siguienteRecompensa" class="mt-4 bg-white/60 rounded-xl p-4">
+                <div class="flex items-center justify-between text-sm mb-2">
+                  <span class="text-amber-700">
+                    Próximo: <span class="font-semibold">{{ siguienteRecompensa.nombre }}</span>
+                  </span>
+                  <span class="font-bold text-amber-800">{{ siguienteRecompensa.costo_puntos }} pts</span>
                 </div>
+                <div class="h-3 bg-amber-100 rounded-full overflow-hidden">
+                  <div
+                    class="h-full bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full transition-all duration-1000 relative"
+                    :style="{ width: `${progresoRecompensa}%` }"
+                  >
+                    <div class="absolute right-0 top-0 h-full w-2 bg-white/50 rounded-full"></div>
+                  </div>
+                </div>
+                <p class="text-xs text-amber-600 mt-2 text-center">
+                  <template v-if="puntosParaMeta > 0">
+                    Te faltan <strong class="text-amber-800">{{ puntosParaMeta }}</strong> puntos
+                  </template>
+                  <template v-else>
+                    <span class="text-green-600 font-semibold">¡Puedes canjear esta recompensa!</span>
+                  </template>
+                </p>
               </div>
-              <p class="text-xs text-amber-600 mt-2 text-center">
-                <template v-if="puntosParaMeta > 0">
-                  Te faltan <strong class="text-amber-800">{{ puntosParaMeta }}</strong> puntos
-                </template>
-                <template v-else>
-                  <span class="text-green-600 font-semibold">🎉 ¡Puedes canjear esta recompensa!</span>
-                </template>
-              </p>
-            </div>
 
-            <button
-              @click="irARecompensas"
-              class="w-full mt-4 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-amber-200 flex items-center justify-center gap-2"
-            >
-              <Gift class="w-5 h-5" />
-              Ver catálogo de recompensas
-            </button>
+              <button
+                @click="irARecompensas"
+                class="w-full mt-4 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-amber-200 flex items-center justify-center gap-2"
+              >
+                <Gift class="w-5 h-5" />
+                Ver catálogo de recompensas
+              </button>
+            </template>
+
+            <!-- Estado vacío: sin puntos aún -->
+            <template v-else>
+              <div class="text-center py-6">
+                <div class="w-20 h-20 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+                  <Trophy class="w-10 h-10 text-amber-400" />
+                </div>
+                <p class="text-4xl font-bold text-amber-300 mb-2">0</p>
+                <p class="text-amber-700 font-medium mb-1">¡Empieza a acumular puntos!</p>
+                <p class="text-sm text-amber-600">Completa encuestas y actividades para ganar recompensas</p>
+              </div>
+
+              <!-- CTA principal según estado -->
+              <button
+                v-if="tieneEncuestaPendiente"
+                @click="irAEncuesta"
+                class="w-full mt-4 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+              >
+                <FileText class="w-5 h-5" />
+                Responder encuesta (+{{ encuestaPendiente?.puntos_base || 50 }} pts)
+              </button>
+              <button
+                v-else
+                @click="irAActividades"
+                class="w-full mt-4 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-teal-200 flex items-center justify-center gap-2"
+              >
+                <Calendar class="w-5 h-5" />
+                Explorar actividades
+              </button>
+            </template>
 
             <!-- Cómo ganar puntos -->
             <div class="mt-4 pt-4 border-t border-amber-200">
@@ -729,19 +825,27 @@ const formatearHora = (fecha) => {
                 <Zap class="w-3 h-3" /> Gana más puntos:
               </p>
               <div class="space-y-2 text-xs">
-                <div class="flex items-center justify-between p-2 bg-white/50 rounded-lg">
-                  <span class="text-amber-700 flex items-center gap-2">
+                <div
+                  class="flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors"
+                  :class="tieneEncuestaPendiente ? 'bg-indigo-50 hover:bg-indigo-100 border border-indigo-200' : 'bg-white/50'"
+                  @click="tieneEncuestaPendiente && irAEncuesta()"
+                >
+                  <span class="flex items-center gap-2" :class="tieneEncuestaPendiente ? 'text-indigo-700' : 'text-amber-700'">
                     <FileText class="w-3 h-3" /> Completar encuesta
+                    <span v-if="tieneEncuestaPendiente" class="px-1.5 py-0.5 bg-indigo-200 text-indigo-800 rounded text-[10px] font-bold">DISPONIBLE</span>
                   </span>
-                  <span class="font-bold text-amber-800">+100</span>
+                  <span class="font-bold" :class="tieneEncuestaPendiente ? 'text-indigo-800' : 'text-amber-800'">+{{ encuestaPendiente?.puntos_base || 50 }}</span>
                 </div>
-                <div class="flex items-center justify-between p-2 bg-white/50 rounded-lg">
+                <div v-if="encuestaPendiente?.puntos_bonus_rapido > 0" class="flex items-center justify-between p-2 bg-white/50 rounded-lg">
                   <span class="text-amber-700 flex items-center gap-2">
-                    <Clock class="w-3 h-3" /> Responder rápido (24h)
+                    <Clock class="w-3 h-3" /> Responder rápido ({{ encuestaPendiente?.bonus_horas_limite || 24 }}h)
                   </span>
-                  <span class="font-bold text-amber-800">+50</span>
+                  <span class="font-bold text-amber-800">+{{ encuestaPendiente?.puntos_bonus_rapido }}</span>
                 </div>
-                <div class="flex items-center justify-between p-2 bg-white/50 rounded-lg">
+                <div
+                  class="flex items-center justify-between p-2 bg-white/50 rounded-lg cursor-pointer hover:bg-white/70 transition-colors"
+                  @click="irAActividades"
+                >
                   <span class="text-amber-700 flex items-center gap-2">
                     <Calendar class="w-3 h-3" /> Asistir a actividad
                   </span>

@@ -36,22 +36,60 @@ export const empleadoDashboardService = {
   },
 
   /**
-   * Obtener encuestas pendientes del empleado (filtradas por empresa via RLS)
+   * Obtener encuestas pendientes del empleado usando la RPC unificada.
+   * FUENTE ÚNICA DE VERDAD para consistencia entre badge, dashboard y vista.
    */
   async getEncuestasPendientes() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No autenticado');
 
-    // Obtener IDs de encuestas ya respondidas
+    // Usar la RPC unificada
+    const { data, error } = await supabase.rpc('fn_get_encuestas_pendientes_empleado');
+
+    if (error) {
+      console.warn('[Dashboard] RPC fn_get_encuestas_pendientes_empleado no disponible, usando fallback');
+      return await this.getEncuestasPendientesFallback();
+    }
+
+    if (!data?.success) {
+      console.warn('[Dashboard] RPC retornó error:', data?.error);
+      return await this.getEncuestasPendientesFallback();
+    }
+
+    // Mapear al formato esperado por el dashboard
+    return (data.encuestas || []).map(enc => ({
+      ...enc,
+      puntos_estimados: enc.puntos_recompensa || 50
+    }));
+  },
+
+  /**
+   * Fallback para getEncuestasPendientes si la RPC no está disponible
+   */
+  async getEncuestasPendientesFallback() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No autenticado');
+
+    // Obtener empleado
+    const { data: empleado } = await supabase
+      .from('empleados')
+      .select('id, empresa_id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (!empleado) return [];
+
+    // Obtener IDs de encuestas ya respondidas (usando empleado.id correcto)
     const { data: respondidas } = await supabase
       .from('respuestas_encuesta')
       .select('encuesta_id')
-      .eq('empleado_id', user.id);
+      .eq('empleado_id', empleado.id);
 
-    const idsRespondidas = respondidas?.map(r => r.encuesta_id) || [];
+    const idsRespondidas = new Set((respondidas || []).map(r => r.encuesta_id));
 
-    // Obtener encuestas activas (RLS filtra por empresa automáticamente)
-    let query = supabase
+    // Obtener encuestas activas de la empresa del empleado
+    const ahora = new Date();
+    const { data: encuestasData } = await supabase
       .from('encuestas')
       .select(`
         id,
@@ -63,38 +101,48 @@ export const empleadoDashboardService = {
         categoria,
         preguntas:preguntas_encuesta(count)
       `)
+      .eq('empresa_id', empleado.empresa_id)
       .eq('estado', 'activa')
-      .gte('fecha_fin', new Date().toISOString())
       .order('fecha_fin', { ascending: true });
 
-    if (idsRespondidas.length > 0) {
-      query = query.not('id', 'in', `(${idsRespondidas.join(',')})`);
-    }
+    // Filtrar: no respondidas, fechas válidas
+    return (encuestasData || [])
+      .filter(enc => {
+        if (idsRespondidas.has(enc.id)) return false;
+        const fechaInicio = enc.fecha_inicio ? new Date(enc.fecha_inicio) : null;
+        const fechaFin = enc.fecha_fin ? new Date(enc.fecha_fin) : null;
+        if (fechaInicio && fechaInicio > ahora) return false;
+        if (fechaFin && fechaFin <= ahora) return false;
+        return true;
+      })
+      .map(enc => {
+        const fechaFin = enc.fecha_fin ? new Date(enc.fecha_fin) : null;
+        const horasRestantes = fechaFin
+          ? Math.max(0, (fechaFin - ahora) / (1000 * 60 * 60))
+          : null;
 
-    const { data, error } = await query;
-    if (error) throw error;
+        let urgencia = 'normal';
+        let puntos = 50;
 
-    // Calcular puntos por encuesta y urgencia
-    return (data || []).map(encuesta => {
-      const horasRestantes = (new Date(encuesta.fecha_fin) - new Date()) / (1000 * 60 * 60);
-      let urgencia = 'normal';
-      let puntos = 100; // Base
+        if (horasRestantes !== null) {
+          if (horasRestantes <= 24) {
+            urgencia = 'urgente';
+            puntos = 75;
+          } else if (horasRestantes <= 72) {
+            urgencia = 'pronto';
+            puntos = 60;
+          }
+        }
 
-      if (horasRestantes <= 24) {
-        urgencia = 'urgente';
-        puntos = 150; // Bonus por última hora
-      } else if (horasRestantes <= 72) {
-        urgencia = 'pronto';
-        puntos = 125; // Bonus por respuesta rápida
-      }
-
-      return {
-        ...encuesta,
-        urgencia,
-        puntos_estimados: puntos,
-        horas_restantes: Math.max(0, Math.floor(horasRestantes))
-      };
-    });
+        return {
+          ...enc,
+          urgencia,
+          puntos_estimados: puntos,
+          puntos_recompensa: puntos,
+          horas_restantes: horasRestantes ? Math.floor(horasRestantes) : null,
+          num_preguntas: enc.preguntas?.[0]?.count || 0
+        };
+      });
   },
 
   /**
@@ -103,6 +151,15 @@ export const empleadoDashboardService = {
   async getHistorialEncuestas() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No autenticado');
+
+    // Obtener empleado.id (las respuestas se guardan con empleado.id, no user.id)
+    const { data: empleado } = await supabase
+      .from('empleados')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (!empleado) return [];
 
     const { data, error } = await supabase
       .from('respuestas_encuesta')
@@ -116,7 +173,7 @@ export const empleadoDashboardService = {
           categoria
         )
       `)
-      .eq('empleado_id', user.id)
+      .eq('empleado_id', empleado.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;

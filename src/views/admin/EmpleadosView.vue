@@ -880,34 +880,48 @@ const verActividad = (empleado) => {
                 </td>
                 <!-- Acciones -->
                 <td class="px-6 py-4 whitespace-nowrap text-right">
-                  <div class="flex items-center justify-end gap-2">
+                  <div class="flex items-center justify-end gap-1">
                     <!-- Ver actividad -->
-                    <button
-                      @click="verActividad(empleado)"
-                      title="Ver historial de actividad"
-                      class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    >
-                      <Activity class="h-4 w-4" />
-                    </button>
+                    <div class="relative group">
+                      <button
+                        @click="verActividad(empleado)"
+                        class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <Activity class="h-4 w-4" />
+                      </button>
+                      <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        Ver historial
+                        <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
+                      </span>
+                    </div>
 
                     <!-- Reenviar invitación -->
-                    <button
-                      v-if="empleado.estado === 'Invitado'"
-                      @click="reenviarInvitacion(empleado)"
-                      title="Reenviar invitación"
-                      class="p-2 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
-                    >
-                      <Send class="h-4 w-4" />
-                    </button>
+                    <div v-if="empleado.estado === 'Invitado'" class="relative group">
+                      <button
+                        @click="reenviarInvitacion(empleado)"
+                        class="p-2 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                      >
+                        <Send class="h-4 w-4" />
+                      </button>
+                      <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        Reenviar invitación
+                        <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
+                      </span>
+                    </div>
 
                     <!-- Editar -->
-                    <button
-                      @click="abrirModalEditar(empleado)"
-                      title="Editar empleado"
-                      class="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                    >
-                      <Edit3 class="h-4 w-4" />
-                    </button>
+                    <div class="relative group">
+                      <button
+                        @click="abrirModalEditar(empleado)"
+                        class="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      >
+                        <Edit3 class="h-4 w-4" />
+                      </button>
+                      <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        Editar empleado
+                        <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
+                      </span>
+                    </div>
                   </div>
                 </td>
               </tr>

@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useGamificacionStore } from '@/stores/gamificacion.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useEncuestasStore } from '@/stores/encuestas.store';
 import { useToast } from '@/composables/useToast';
 // Servicio multiempresa
 import { empleadoEncuestasService } from '@/services/empleado.encuestas.service';
@@ -23,7 +24,10 @@ import {
   EyeOff,
   Award,
   Clock,
-  Sparkles
+  Sparkles,
+  ArrowRight,
+  Gift,
+  Home
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -33,10 +37,12 @@ const authStore = useAuthStore();
 
 // --- Stores ---
 const gamificacionStore = useGamificacionStore();
+const encuestasStore = useEncuestasStore();
 
 const { puntosUsuario } = storeToRefs(gamificacionStore);
 const { empleado, user } = storeToRefs(authStore);
 const { cargarPuntos } = gamificacionStore;
+const { fetchEncuestasPendientesEmpleado } = encuestasStore;
 
 // --- Estado local para encuesta ---
 const activeSurvey = ref(null);
@@ -189,6 +195,11 @@ const handleSubmit = async () => {
 
     surveySubmitted.value = true;
 
+    // IMPORTANTE: Forzar refresh del estado global de encuestas
+    // Esto actualiza el badge del menú y el dashboard
+    console.log('[handleSubmit] Refrescando estado global de encuestas...');
+    await fetchEncuestasPendientesEmpleado();
+
     // Recargar puntos usando auth_user_id (consistente con el layout)
     if (user.value?.id) {
       await cargarPuntos(user.value.id, true);
@@ -316,26 +327,54 @@ onMounted(async () => {
 
     <!-- Encuesta completada -->
     <div v-else-if="surveySubmitted" class="max-w-lg mx-auto">
-      <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-8 text-center shadow-sm">
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-8 text-center shadow-lg overflow-hidden relative">
+        <!-- Confetti decorativo -->
+        <div class="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+          <div class="absolute top-4 left-8 w-3 h-3 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+          <div class="absolute top-8 right-12 w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
+          <div class="absolute top-16 left-16 w-2 h-2 bg-teal-400 rounded-full animate-bounce" style="animation-delay: 0.5s"></div>
+          <div class="absolute top-6 right-24 w-3 h-3 bg-pink-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+        </div>
+
         <!-- Animación de éxito -->
         <div class="relative mb-6">
-          <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
-            <CheckCircle class="w-12 h-12 text-white" />
+          <div class="w-28 h-28 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-xl animate-pulse-slow">
+            <CheckCircle class="w-14 h-14 text-white" />
           </div>
-          <div v-if="puntosGanados > 0" class="absolute -top-2 -right-2 w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-            <span class="text-white font-bold text-sm">+{{ puntosGanados }}</span>
+          <!-- Badge de puntos ganados prominente -->
+          <div v-if="puntosGanados > 0" class="absolute -top-3 -right-3 transform">
+            <div class="bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl px-4 py-2 shadow-lg animate-bounce">
+              <div class="flex items-center gap-1">
+                <Star class="w-5 h-5 text-amber-900 fill-amber-900" />
+                <span class="text-amber-900 font-bold text-lg">+{{ puntosGanados }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <h2 class="text-2xl font-bold text-green-800 mb-2">¡Gracias por participar!</h2>
+        <h2 class="text-3xl font-bold text-green-800 mb-3">¡Encuesta completada!</h2>
+
+        <!-- Mensaje de puntos ganados -->
+        <div v-if="puntosGanados > 0" class="bg-gradient-to-r from-amber-100 to-yellow-100 border border-amber-300 rounded-xl p-4 mb-6">
+          <p class="text-amber-800 font-semibold text-lg">
+            Has ganado <span class="text-2xl font-bold text-amber-900">{{ puntosGanados }} puntos</span>
+          </p>
+          <p class="text-amber-700 text-sm mt-1">Ya se han sumado a tu cuenta</p>
+        </div>
+
         <p class="text-green-700 mb-6">
           Tu opinión nos ayuda a mejorar el bienestar de todos en la empresa.
         </p>
 
-        <!-- Badge de puntos -->
-        <div class="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm mb-6">
-          <Star class="w-5 h-5 text-amber-500 fill-amber-500" />
-          <span class="font-semibold text-gray-900">{{ puntosUsuario || 0 }} puntos totales</span>
+        <!-- Balance total de puntos -->
+        <div class="inline-flex items-center gap-3 bg-white px-5 py-3 rounded-2xl shadow-md mb-6 border border-gray-100">
+          <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-xl flex items-center justify-center">
+            <Star class="w-5 h-5 text-amber-900 fill-amber-900" />
+          </div>
+          <div class="text-left">
+            <p class="text-xs text-gray-500">Tu balance actual</p>
+            <p class="text-xl font-bold text-gray-900">{{ puntosUsuario || 0 }} puntos</p>
+          </div>
         </div>
 
         <!-- Mensaje de privacidad -->
@@ -352,12 +391,23 @@ onMounted(async () => {
           </div>
         </div>
 
-        <button
-          @click="volverAlDashboard"
-          class="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-medium rounded-xl hover:from-teal-700 hover:to-emerald-700 transition-all shadow-lg shadow-teal-200"
-        >
-          Volver al inicio
-        </button>
+        <!-- Botones de acción -->
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button
+            @click="volverAlDashboard"
+            class="flex-1 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-xl hover:from-teal-700 hover:to-emerald-700 transition-all shadow-lg shadow-teal-200 flex items-center justify-center gap-2"
+          >
+            <Home class="w-5 h-5" />
+            Volver al inicio
+          </button>
+          <button
+            @click="router.push('/empleado/recompensas')"
+            class="flex-1 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-amber-900 font-semibold rounded-xl hover:from-amber-600 hover:to-yellow-600 transition-all shadow-lg shadow-amber-200 flex items-center justify-center gap-2"
+          >
+            <Gift class="w-5 h-5" />
+            Ver recompensas
+          </button>
+        </div>
       </div>
     </div>
 
@@ -365,6 +415,19 @@ onMounted(async () => {
     <div v-else-if="activeSurvey" class="max-w-2xl mx-auto">
       <!-- Pantalla de introducción -->
       <div v-if="currentStep === 0" class="space-y-6">
+        <!-- Badge de recompensa prominente -->
+        <div class="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 rounded-2xl p-4 shadow-lg">
+          <div class="flex items-center justify-center gap-3">
+            <div class="w-12 h-12 bg-white/30 backdrop-blur-sm rounded-xl flex items-center justify-center">
+              <Star class="w-7 h-7 text-amber-900 fill-amber-900" />
+            </div>
+            <div class="text-center">
+              <p class="text-amber-900/80 text-sm font-medium">Completa esta encuesta y gana</p>
+              <p class="text-3xl font-bold text-amber-900">+{{ activeSurvey.puntos_base || activeSurvey.puntos_recompensa || 50 }} puntos</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Header de la encuesta -->
         <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
           <div class="flex items-start gap-4">
@@ -386,9 +449,9 @@ onMounted(async () => {
               <Clock class="w-5 h-5 text-white/60" />
               <span>~{{ Math.ceil(totalPreguntas * 0.5) }} min</span>
             </div>
-            <div class="flex items-center gap-2">
-              <Award class="w-5 h-5 text-white/60" />
-              <span>+100 puntos</span>
+            <div class="flex items-center gap-2 bg-white/20 rounded-full px-3 py-1">
+              <Award class="w-5 h-5 text-amber-300" />
+              <span class="font-semibold">+{{ activeSurvey.puntos_base || activeSurvey.puntos_recompensa || 50 }} pts</span>
             </div>
           </div>
         </div>
@@ -463,10 +526,11 @@ onMounted(async () => {
         <!-- Botón comenzar -->
         <button
           @click="comenzarEncuesta"
-          class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+          class="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-3 group"
         >
-          <Sparkles class="w-5 h-5" />
-          Comenzar encuesta
+          <Sparkles class="w-5 h-5 group-hover:animate-pulse" />
+          <span>Comenzar y ganar {{ activeSurvey.puntos_base || activeSurvey.puntos_recompensa || 50 }} puntos</span>
+          <ArrowRight class="w-5 h-5 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
 
@@ -634,7 +698,7 @@ onMounted(async () => {
             </template>
             <template v-else-if="esUltimaPregunta && allQuestionsAnswered">
               <Send class="w-5 h-5" />
-              Enviar respuestas
+              Enviar y ganar {{ activeSurvey?.puntos_base || activeSurvey?.puntos_recompensa || 50 }} puntos
             </template>
             <template v-else>
               Siguiente
@@ -665,5 +729,19 @@ onMounted(async () => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Animación de pulso lento para el check */
+@keyframes pulse-slow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s infinite;
 }
 </style>

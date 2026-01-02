@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { AlertTriangle, CheckCircle, FileText, ClipboardList, Users, ArrowRight } from 'lucide-vue-next';
+import { AlertTriangle, CheckCircle, FileText, ClipboardList, Users, ArrowRight, Clock, Activity, Calendar } from 'lucide-vue-next';
 
 const router = useRouter();
 
@@ -25,6 +25,14 @@ const props = defineProps({
   participacionBaja: {
     type: Array,
     default: () => []
+  },
+  totalEmpleados: {
+    type: Number,
+    default: 0
+  },
+  comunicadosHoy: {
+    type: Number,
+    default: 0
   }
 });
 
@@ -123,74 +131,83 @@ const getPriorityColor = (priority) => {
 </script>
 
 <template>
-  <!-- Estado del Sistema -->
+  <!-- Estado del Sistema - Versión Condensada -->
   <div :class="[
-    'border rounded-xl p-6 mb-6 transition-all duration-200',
+    'border rounded-xl transition-all duration-200',
     systemStatus.borderColor,
     systemStatus.bgColor
   ]">
-    <div class="flex items-start justify-between mb-4">
-      <div class="flex items-center">
+    <!-- Header compacto con resumen -->
+    <div class="px-5 py-4 flex items-center justify-between">
+      <!-- Estado principal -->
+      <div class="flex items-center gap-3">
         <div :class="[
-          'w-12 h-12 rounded-full flex items-center justify-center mr-4',
-          systemStatus.color === 'green' ? 'bg-green-100/80' :
-          systemStatus.color === 'yellow' ? 'bg-amber-100/80' :
-          'bg-orange-100/80'
+          'w-10 h-10 rounded-xl flex items-center justify-center',
+          systemStatus.color === 'green' ? 'bg-green-100' :
+          systemStatus.color === 'yellow' ? 'bg-amber-100' :
+          'bg-orange-100'
         ]">
           <component :is="systemStatus.icon" :class="[
-            'h-6 w-6',
-            systemStatus.color === 'green' ? 'text-green-700' :
-            systemStatus.color === 'yellow' ? 'text-amber-700' :
-            'text-orange-700'
+            'h-5 w-5',
+            systemStatus.color === 'green' ? 'text-green-600' :
+            systemStatus.color === 'yellow' ? 'text-amber-600' :
+            'text-orange-600'
           ]" />
         </div>
         <div>
-          <h2 class="text-xl font-bold text-gray-900">Estado del Sistema</h2>
-          <p class="text-sm text-gray-600 mt-0.5">
-            <span v-if="pendingActionsCount === 0">No hay acciones pendientes</span>
-            <span v-else>{{ pendingActionsCount }} acción{{ pendingActionsCount !== 1 ? 'es' : '' }} {{ pendingActionsCount !== 1 ? 'requieren' : 'requiere' }} tu atención</span>
-          </p>
+          <div class="flex items-center gap-2">
+            <span :class="[
+              'text-sm font-semibold',
+              systemStatus.color === 'green' ? 'text-green-800' :
+              systemStatus.color === 'yellow' ? 'text-amber-800' :
+              'text-orange-800'
+            ]">{{ systemStatus.label }}</span>
+            <span class="text-xs text-gray-500">
+              Última actualización: {{ new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) }}
+            </span>
+          </div>
         </div>
       </div>
-      <div :class="[
-        'px-3 py-1.5 rounded-lg text-xs font-medium',
-        systemStatus.color === 'green' ? 'bg-green-100/80 text-green-800' :
-        systemStatus.color === 'yellow' ? 'bg-amber-100/80 text-amber-800' :
-        'bg-orange-100/80 text-orange-800'
-      ]">
-        {{ systemStatus.label }}
+
+      <!-- Indicadores rápidos -->
+      <div class="hidden sm:flex items-center gap-4 text-sm">
+        <div class="flex items-center gap-1.5 text-gray-600">
+          <Users class="w-4 h-4" />
+          <span><strong class="text-gray-900">{{ totalEmpleados || '-' }}</strong> activos</span>
+        </div>
+        <div class="flex items-center gap-1.5 text-gray-600">
+          <FileText class="w-4 h-4" />
+          <span><strong class="text-gray-900">{{ encuestasActivas }}</strong> encuesta{{ encuestasActivas !== 1 ? 's' : '' }}</span>
+        </div>
+        <div v-if="encuestasCerrandoPronto.length > 0" class="flex items-center gap-1.5 text-amber-600">
+          <Clock class="w-4 h-4" />
+          <span class="font-medium">{{ encuestasCerrandoPronto.length }} por cerrar</span>
+        </div>
       </div>
     </div>
 
-    <!-- Lista de acciones pendientes -->
-    <div v-if="pendingActionsCount > 0" class="space-y-3">
-      <div
-        v-for="action in pendingActions"
-        :key="action.id"
-        :class="['flex items-start p-4 bg-white rounded-lg border-l-4 border-gray-200 hover:shadow-md transition-all', getPriorityColor(action.priority)]"
-      >
-        <component :is="action.icon" class="h-5 w-5 text-gray-600 mr-3 mt-0.5 flex-shrink-0" />
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-semibold text-gray-900">{{ action.title }}</p>
-          <p class="text-xs text-gray-600 mt-1">{{ action.description }}</p>
-        </div>
+    <!-- Acciones pendientes (solo si hay) -->
+    <div v-if="pendingActionsCount > 0" class="border-t border-gray-200/50">
+      <div class="px-5 py-3 flex flex-wrap gap-2">
         <button
+          v-for="action in pendingActions.slice(0, 3)"
+          :key="action.id"
           @click="action.onAction"
-          class="ml-4 px-4 py-2 bg-white border-2 border-gray-900 text-gray-900 text-xs font-medium rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap inline-flex items-center"
+          :class="[
+            'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:shadow-sm',
+            action.priority === 'high' ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200' :
+            action.priority === 'medium' ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200' :
+            'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+          ]"
         >
-          {{ action.actionLabel }}
-          <ArrowRight class="h-3 w-3 ml-1" />
+          <component :is="action.icon" class="w-3.5 h-3.5" />
+          <span class="max-w-[200px] truncate">{{ action.title }}</span>
+          <ArrowRight class="w-3 h-3 opacity-60" />
         </button>
+        <span v-if="pendingActionsCount > 3" class="text-xs text-gray-500 self-center ml-1">
+          +{{ pendingActionsCount - 3 }} más
+        </span>
       </div>
-    </div>
-
-    <!-- Estado positivo -->
-    <div v-else class="p-6 bg-white border border-green-200 rounded-lg text-center">
-      <CheckCircle class="h-12 w-12 text-green-500 mx-auto mb-3" />
-      <p class="text-sm font-medium text-gray-900 mb-1">Sistema funcionando correctamente</p>
-      <p class="text-xs text-gray-600">
-        Todas las encuestas tienen buena participación y no hay solicitudes pendientes
-      </p>
     </div>
   </div>
 </template>

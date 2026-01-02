@@ -1,5 +1,30 @@
 <template>
   <div class="space-y-6">
+    <!-- Estado de carga -->
+    <div v-if="loading" class="flex flex-col items-center justify-center py-12">
+      <Loader2 class="h-8 w-8 text-indigo-600 animate-spin mb-3" />
+      <p class="text-gray-600">Cargando analítica...</p>
+    </div>
+
+    <!-- Estado de error -->
+    <div v-else-if="error" class="bg-white rounded-xl shadow-sm p-8">
+      <div class="flex flex-col items-center justify-center text-center">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+          <AlertCircle class="h-8 w-8 text-red-600" />
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Error al cargar</h3>
+        <p class="text-gray-600 mb-4">{{ error }}</p>
+        <button
+          @click="cargarAnalitica"
+          class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+        >
+          Reintentar
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <template v-else>
     <!-- KPI Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="bg-white rounded-lg shadow-sm p-6 text-center border-l-4 border-indigo-500">
@@ -149,11 +174,14 @@
         </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/stores/auth.store';
 import {
   Send,
   Clock,
@@ -162,15 +190,127 @@ import {
   BarChart3,
   Info,
   CheckCircle,
-  Target
+  Target,
+  Loader2,
+  AlertCircle
 } from 'lucide-vue-next';
 
-const estadisticas = computed(() => ({
-  totalEnviados: 0,
-  totalProgramados: 0,
-  promedioLectura: 0,
-  totalBorradores: 0,
-  departamentosActivos: 0,
-  datosGrafico: []
-}));
+const authStore = useAuthStore();
+
+// Estado
+const loading = ref(true);
+const error = ref(null);
+const comunicadosData = ref([]);
+const departamentosData = ref([]);
+
+// ==========================================
+// CARGAR DATOS DE ANALÍTICA
+// ==========================================
+const cargarAnalitica = async () => {
+  loading.value = true;
+  error.value = null;
+
+  try {
+    const empresaId = authStore.empresaId;
+    if (!empresaId) {
+      throw new Error('No se encontró el ID de la empresa');
+    }
+
+    // Obtener comunicados de la empresa
+    const { data: comunicados, error: comError } = await supabase
+      .from('comunicados')
+      .select('*')
+      .eq('empresa_id', empresaId)
+      .order('created_at', { ascending: false });
+
+    if (comError) throw comError;
+
+    // Para cada comunicado enviado, obtener métricas de lectura
+    const comunicadosConMetricas = await Promise.all(
+      (comunicados || []).map(async (com) => {
+        const alcanceEstimado = com.alcance_estimado || 0;
+
+        // Contar lecturas
+        const { count: lecturas } = await supabase
+          .from('comunicados_lecturas')
+          .select('*', { count: 'exact', head: true })
+          .eq('comunicado_id', com.id);
+
+        const totalLecturas = lecturas || 0;
+        const interacciones = alcanceEstimado > 0
+          ? Math.round((totalLecturas / alcanceEstimado) * 100)
+          : 0;
+
+        return {
+          ...com,
+          totalLecturas,
+          interacciones: Math.min(interacciones, 100)
+        };
+      })
+    );
+
+    comunicadosData.value = comunicadosConMetricas;
+
+    // Obtener departamentos activos
+    const { data: deptos } = await supabase
+      .from('departamentos')
+      .select('nombre')
+      .eq('empresa_id', empresaId);
+
+    departamentosData.value = deptos || [];
+
+    console.log('[Analítica] Datos cargados:', comunicadosConMetricas.length, 'comunicados');
+  } catch (err) {
+    console.error('[Analítica] Error:', err);
+    error.value = err.message || 'Error al cargar analítica';
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(cargarAnalitica);
+
+// ==========================================
+// COMPUTED: Estadísticas calculadas
+// ==========================================
+const estadisticas = computed(() => {
+  const comunicados = comunicadosData.value;
+
+  // Contar por estado (normalizando a minúsculas)
+  const enviados = comunicados.filter(c =>
+    c.estado?.toLowerCase() === 'enviado' || c.estado?.toLowerCase() === 'publicado'
+  );
+  const programados = comunicados.filter(c =>
+    c.estado?.toLowerCase() === 'programado'
+  );
+  const borradores = comunicados.filter(c =>
+    c.estado?.toLowerCase() === 'borrador'
+  );
+
+  // Calcular promedio de lectura solo de comunicados enviados
+  const tasasLectura = enviados.map(c => c.interacciones || 0);
+  const promedioLectura = tasasLectura.length > 0
+    ? Math.round(tasasLectura.reduce((a, b) => a + b, 0) / tasasLectura.length)
+    : 0;
+
+  // Datos para el gráfico (últimos 10 comunicados enviados)
+  const datosGrafico = enviados
+    .slice(0, 10)
+    .map(c => ({
+      titulo: c.titulo?.substring(0, 30) + (c.titulo?.length > 30 ? '...' : '') || 'Sin título',
+      interacciones: c.interacciones || 0
+    }));
+
+  // Departamentos con comunicados destinados
+  const departamentosActivos = departamentosData.value.length;
+
+  return {
+    totalEnviados: enviados.length,
+    totalProgramados: programados.length,
+    totalBorradores: borradores.length,
+    promedioLectura,
+    departamentosActivos,
+    datosGrafico
+  };
+});
 </script>

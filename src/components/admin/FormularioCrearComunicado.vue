@@ -341,19 +341,41 @@
         </div>
       </div>
 
-      <!-- Indicador de Alcance -->
-      <div class="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+      <!-- Indicador de Alcance: verde si hay destinatarios, ámbar si no -->
+      <div
+        class="p-4 rounded-xl border"
+        :class="alcanceEstimado > 0
+          ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'
+          : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200'"
+      >
         <div class="flex items-center gap-4">
-          <div class="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <Users class="h-7 w-7 text-green-600" />
+          <div
+            class="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
+            :class="alcanceEstimado > 0 ? 'bg-green-100' : 'bg-amber-100'"
+          >
+            <Users v-if="alcanceEstimado > 0" class="h-7 w-7 text-green-600" />
+            <AlertCircle v-else class="h-7 w-7 text-amber-600" />
           </div>
           <div>
-            <p class="text-2xl font-bold text-green-800">{{ alcanceEstimado }} personas</p>
-            <p class="text-sm text-green-700">recibirán este comunicado</p>
+            <p
+              class="text-2xl font-bold"
+              :class="alcanceEstimado > 0 ? 'text-green-800' : 'text-amber-800'"
+            >
+              {{ alcanceEstimado }} personas
+            </p>
+            <p
+              class="text-sm"
+              :class="alcanceEstimado > 0 ? 'text-green-700' : 'text-amber-700'"
+            >
+              {{ alcanceEstimado > 0 ? 'recibirán este comunicado' : 'No hay empleados en los departamentos seleccionados' }}
+            </p>
           </div>
           <div v-if="alcanceEstimado > 0" class="ml-auto text-right">
             <p class="text-xs text-green-600 font-medium">Alcance estimado</p>
             <p class="text-xs text-green-600">{{ porcentajeAlcance }}% de la empresa</p>
+          </div>
+          <div v-else class="ml-auto">
+            <p class="text-xs text-amber-600 font-medium">Asigna empleados a departamentos</p>
           </div>
         </div>
       </div>
@@ -623,19 +645,32 @@
           >
             Guardar borrador
           </button>
-          <button
-            @click="enviarComunicado"
-            :disabled="!formularioValido"
-            class="flex items-center gap-2 px-8 py-3 rounded-lg text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            :class="tipoEnvio === 'borrador'
-              ? 'bg-gray-600 hover:bg-gray-700'
-              : 'bg-green-600 hover:bg-green-700 hover:shadow-lg'"
-          >
-            <Send v-if="tipoEnvio === 'inmediato'" class="h-5 w-5" />
-            <Calendar v-else-if="tipoEnvio === 'programado'" class="h-5 w-5" />
-            <Save v-else class="h-5 w-5" />
-            {{ getBotonTexto() }}
-          </button>
+          <div class="relative group">
+            <button
+              @click="enviarComunicado"
+              :disabled="!formularioValido || enviando"
+              class="flex items-center gap-2 px-8 py-3 rounded-lg text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              :class="tipoEnvio === 'borrador'
+                ? 'bg-gray-600 hover:bg-gray-700'
+                : 'bg-green-600 hover:bg-green-700 hover:shadow-lg'"
+            >
+              <!-- Icono: spinner si está enviando, sino icono normal -->
+              <Loader2 v-if="enviando" class="h-5 w-5 animate-spin" />
+              <Send v-else-if="tipoEnvio === 'inmediato'" class="h-5 w-5" />
+              <Calendar v-else-if="tipoEnvio === 'programado'" class="h-5 w-5" />
+              <Save v-else class="h-5 w-5" />
+              {{ enviando ? 'Enviando...' : getBotonTexto() }}
+            </button>
+            <!-- Tooltip con mensaje de error si está deshabilitado -->
+            <div
+              v-if="!formularioValido && mensajeBotonDeshabilitado && !enviando"
+              class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10"
+            >
+              <AlertCircle class="inline h-3 w-3 mr-1" />
+              {{ mensajeBotonDeshabilitado }}
+              <div class="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -724,7 +759,8 @@ import { useToast } from 'vue-toastification';
 import Dialog from 'primevue/dialog';
 import {
   Eye, Send, ArrowRight, ArrowLeft, CheckCircle, Clock, Plus,
-  Users, Calendar, FileText, Lightbulb, Save, ExternalLink, ClipboardCheck
+  Users, Calendar, FileText, Lightbulb, Save, ExternalLink, ClipboardCheck,
+  Loader2, AlertCircle
 } from 'lucide-vue-next';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/stores/auth.store';
@@ -810,6 +846,7 @@ const tipoEnvio = ref('inmediato');
 const modalPreviaAbierto = ref(false);
 const enviarATodos = ref(false);
 const mostrarSugerencias = ref(false);
+const enviando = ref(false); // Estado de carga para el botón
 
 const formData = ref({
   titulo: '',
@@ -868,13 +905,26 @@ const formularioValido = computed(() => {
     formData.value.tipo !== '' &&
     formData.value.contenido.trim() !== '' &&
     formData.value.destinatarios.length > 0 &&
-    formData.value.roles.length > 0;
+    formData.value.roles.length > 0 &&
+    alcanceEstimado.value > 0; // IMPORTANTE: verificar que hay destinatarios reales
 
   if (tipoEnvio.value === 'programado') {
     return baseValid && formData.value.fecha_envio;
   }
 
   return baseValid;
+});
+
+// Mensaje de error para el botón deshabilitado
+const mensajeBotonDeshabilitado = computed(() => {
+  if (!formData.value.titulo.trim()) return 'Falta el asunto del comunicado';
+  if (!formData.value.tipo) return 'Selecciona un tipo de comunicado';
+  if (!formData.value.contenido.trim()) return 'Escribe el contenido del mensaje';
+  if (formData.value.destinatarios.length === 0) return 'Selecciona al menos un departamento';
+  if (formData.value.roles.length === 0) return 'Selecciona al menos un rol';
+  if (alcanceEstimado.value === 0) return 'No hay empleados en los departamentos seleccionados';
+  if (tipoEnvio.value === 'programado' && !formData.value.fecha_envio) return 'Selecciona una fecha de envío';
+  return '';
 });
 
 const canProceedStep1 = computed(() => {
@@ -1004,17 +1054,35 @@ const guardarBorrador = () => {
 };
 
 const enviarComunicado = async () => {
-  if (!formularioValido.value) return;
+  // Validación previa
+  if (!formularioValido.value) {
+    if (mensajeBotonDeshabilitado.value) {
+      toast.warning(mensajeBotonDeshabilitado.value);
+    }
+    return;
+  }
 
-  let estado = 'Enviado';
+  // Prevenir doble envío
+  if (enviando.value) return;
+
+  enviando.value = true;
+
+  // Estados en minúscula para consistencia con RLS y servicio
+  let estado = 'enviado';
   let fechaEnvio = new Date().toISOString().split('T')[0];
+  let fechaPublicacion = new Date().toISOString(); // Fecha completa con hora
 
   if (tipoEnvio.value === 'borrador') {
-    estado = 'Borrador';
+    estado = 'borrador';
     fechaEnvio = null;
+    fechaPublicacion = null;
   } else if (tipoEnvio.value === 'programado') {
-    estado = 'Programado';
+    estado = 'programado';
     fechaEnvio = formData.value.fecha_envio;
+    // Para programados, la fecha de publicación es la fecha de envío
+    fechaPublicacion = formData.value.fecha_envio
+      ? new Date(formData.value.fecha_envio + 'T' + (formData.value.hora_envio || '09:00') + ':00').toISOString()
+      : null;
   }
 
   const comunicado = {
@@ -1026,23 +1094,29 @@ const enviarComunicado = async () => {
     roles: formData.value.roles,
     estado,
     fecha_envio: fechaEnvio,
+    fecha_publicacion: fechaPublicacion, // IMPORTANTE: necesario para ordenar y mostrar
     hora_envio: formData.value.hora_envio,
-    interacciones: 0
+    interacciones: 0,
+    alcance_estimado: alcanceEstimado.value // Guardar el conteo para auditoría
   };
 
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('comunicados')
-      .insert([comunicado]);
+      .insert([comunicado])
+      .select()
+      .single();
 
     if (error) throw error;
 
+    console.log('[Comunicados] Comunicado creado:', data);
+
     if (estado === 'Enviado') {
-      toast.success(`✅ Comunicado enviado a ${alcanceEstimado.value} personas`, {
+      toast.success(`📨 Comunicado enviado a ${alcanceEstimado.value} personas`, {
         timeout: 5000
       });
     } else if (estado === 'Programado') {
-      toast.info(`📅 Comunicado programado para ${formatearFechaCompleta(fechaEnvio)}`, {
+      toast.success(`📅 Comunicado programado para ${formatearFechaCompleta(fechaEnvio)}`, {
         timeout: 5000
       });
     } else {
@@ -1055,7 +1129,20 @@ const enviarComunicado = async () => {
     emit('comunicado-creado');
   } catch (error) {
     console.error('Error guardando comunicado:', error);
-    toast.error('Error al guardar el comunicado. Por favor, inténtalo de nuevo.');
+
+    // Mensaje de error más específico
+    let mensajeError = 'Error al guardar el comunicado.';
+    if (error.message?.includes('permission') || error.code === '42501') {
+      mensajeError = 'No tienes permisos para crear comunicados.';
+    } else if (error.message?.includes('network') || error.code === 'NETWORK_ERROR') {
+      mensajeError = 'Error de conexión. Verifica tu internet e inténtalo de nuevo.';
+    } else if (error.message) {
+      mensajeError = `Error: ${error.message}`;
+    }
+
+    toast.error(`❌ ${mensajeError}`, { timeout: 6000 });
+  } finally {
+    enviando.value = false;
   }
 };
 
@@ -1078,6 +1165,7 @@ const resetFormulario = () => {
 
 const cargarDepartamentos = async () => {
   try {
+    // Cargar departamentos de la empresa
     const { data, error } = await supabase
       .from('departamentos')
       .select('id, nombre')
@@ -1086,22 +1174,35 @@ const cargarDepartamentos = async () => {
     if (error) throw error;
 
     if (data && data.length > 0) {
-      // Cargar conteo de empleados por departamento
-      const { data: empleadosData } = await supabase
+      // Cargar conteo de empleados por departamento_id (columna real de la tabla)
+      const { data: empleadosData, error: empError } = await supabase
         .from('empleados')
-        .select('departamento')
+        .select('departamento_id')
         .eq('empresa_id', authStore.empresaId)
         .eq('estado', 'Activo');
 
+      if (empError) {
+        console.error('Error cargando empleados:', empError);
+      }
+
+      // Contar empleados por departamento_id
       const conteo = {};
       (empleadosData || []).forEach(e => {
-        conteo[e.departamento] = (conteo[e.departamento] || 0) + 1;
+        if (e.departamento_id) {
+          conteo[e.departamento_id] = (conteo[e.departamento_id] || 0) + 1;
+        }
       });
 
+      // Mapear departamentos con su conteo de empleados
       departamentos.value = data.map(d => ({
         ...d,
-        empleados: conteo[d.nombre] || 0
+        empleados: conteo[d.id] || 0
       }));
+
+      console.log('[Comunicados] Departamentos cargados:', departamentos.value);
+    } else {
+      console.warn('[Comunicados] No se encontraron departamentos para la empresa');
+      departamentos.value = [];
     }
   } catch (error) {
     console.error('Error cargando departamentos:', error);

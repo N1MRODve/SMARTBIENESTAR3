@@ -24,6 +24,7 @@ import { useComunicadosStore } from '@/stores/comunicados.store.js';
 import { useGamificacionStore } from '@/stores/gamificacion.store.js';
 import { useRouter, useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import Breadcrumbs from '@/components/common/Breadcrumbs.vue';
 
 const authStore = useAuthStore();
 const encuestasStore = useEncuestasStore();
@@ -33,8 +34,8 @@ const router = useRouter();
 const route = useRoute();
 
 const { user, empleado, empresaId } = storeToRefs(authStore);
-const { activeSurvey } = storeToRefs(encuestasStore);
-const { comunicados } = storeToRefs(comunicadosStore);
+const { activeSurvey, totalPendientes } = storeToRefs(encuestasStore);
+const { comunicados, conteoNoLeidos } = storeToRefs(comunicadosStore);
 const { puntosUsuario } = storeToRefs(gamificacionStore);
 
 const mobileMenuOpen = ref(false);
@@ -68,10 +69,12 @@ const nombreEmpleado = computed(() => {
 });
 
 // Badges para navegación
-const encuestasPendientes = computed(() => activeSurvey.value ? 1 : 0);
+// Usa totalPendientes del store (fuente única de verdad)
+const encuestasPendientes = computed(() => totalPendientes.value || 0);
+// FUENTE ÚNICA DE VERDAD: usa el computed del store que se actualiza automáticamente
 const comunicadosNuevos = computed(() => {
-  const count = comunicados.value?.filter(c => !c.leido).length || 0;
-  return Math.min(count, 9);
+  const count = conteoNoLeidos.value || 0;
+  return Math.min(count, 9); // Máximo 9 para el badge
 });
 
 // Items de navegación
@@ -191,6 +194,11 @@ const closeUserMenu = () => {
 watch(() => route.path, () => {
   mobileMenuOpen.value = false;
   userMenuOpen.value = false;
+});
+
+// Mostrar breadcrumbs solo en vistas secundarias (no en dashboard)
+const showBreadcrumbs = computed(() => {
+  return route.path !== '/empleado/dashboard' && route.path !== '/empleado';
 });
 </script>
 
@@ -437,6 +445,8 @@ watch(() => route.path, () => {
 
     <!-- Contenido principal -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Breadcrumbs para vistas secundarias -->
+      <Breadcrumbs v-if="showBreadcrumbs" layout="empleado" />
       <router-view />
     </main>
 

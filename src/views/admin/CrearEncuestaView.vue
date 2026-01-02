@@ -103,14 +103,19 @@
               <!-- Descripción -->
               <div class="space-y-2">
                 <label class="block text-sm font-semibold text-gray-700">
-                  Descripción breve
+                  Descripción breve <span class="text-red-500">*</span>
                 </label>
                 <input
                   v-model="encuesta.descripcion"
                   type="text"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  :class="encuesta.descripcion?.trim() ? 'border-gray-300' : 'border-amber-300 bg-amber-50'"
                   placeholder="Queremos conocer tu opinión sobre..."
+                  maxlength="200"
                 />
+                <p class="text-xs text-gray-500">
+                  {{ encuesta.descripcion?.length || 0 }}/200 - Ayuda a los empleados a entender el propósito de la encuesta
+                </p>
               </div>
             </div>
 
@@ -248,7 +253,7 @@
                           <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">{{ getTipoLabel(pregunta.tipo) }}</span>
                           <span v-if="pregunta.esValidada" class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded flex items-center gap-1">
                             <BadgeCheck class="h-3 w-3" />
-                            Validada científicamente
+                            Altamente recomendada
                           </span>
                         </div>
                       </div>
@@ -1397,7 +1402,7 @@ const preguntasPorCategoria = {
   ],
   'clima-laboral': [
     // Preguntas clave (indicadores principales)
-    { id: 'cl-1', texto: 'En una escala del 1 al 5, ¿qué tan probable es que recomiendes esta empresa como lugar para trabajar?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'cl-1', texto: '¿Cómo calificarías el clima laboral general en tu departamento?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
     { id: 'cl-2', texto: '¿Cómo calificarías el ambiente de trabajo en tu equipo?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
     { id: 'cl-3', texto: '¿Te sientes parte de un equipo que se apoya mutuamente?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
     // Preguntas complementarias
@@ -1416,8 +1421,7 @@ const preguntasPorCategoria = {
     // Preguntas complementarias
     { id: 'ca-4', texto: '¿Logras desconectar del trabajo fuera del horario laboral?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
     { id: 'ca-5', texto: '¿Tienes claridad sobre las prioridades de tu trabajo?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
-    { id: 'ca-6', texto: '¿Con qué frecuencia trabajas fuera de tu horario establecido?', tipo: 'opcion_multiple', opciones: ['Nunca', 'Raramente (1-2 veces/mes)', 'Ocasionalmente (1 vez/semana)', 'Frecuentemente (varias veces/semana)', 'Casi siempre'], esValidada: true, esClave: false, categoria: 'complementaria' },
-    { id: 'ca-7', texto: '¿Tienes los recursos necesarios para realizar tu trabajo eficientemente?', tipo: 'si_no', opciones: [], esValidada: false, esClave: false, categoria: 'complementaria' },
+    { id: 'ca-6', texto: '¿Tienes los recursos necesarios para realizar tu trabajo eficientemente?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
     // Preguntas abiertas
     { id: 'ca-8', texto: '¿Qué cambios concretos mejorarían tu balance entre trabajo y vida personal?', tipo: 'texto_abierto', opciones: [], esValidada: false, esClave: false, categoria: 'abierta' }
   ],
@@ -1451,7 +1455,7 @@ const preguntasPorCategoria = {
     // Preguntas clave
     { id: 'ge-1', texto: '¿Cómo calificarías tu bienestar general en el trabajo actualmente?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
     { id: 'ge-2', texto: '¿Te sientes motivado en tu trabajo día a día?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
-    { id: 'ge-3', texto: '¿Recomendarías esta empresa como un buen lugar para trabajar?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'ge-3', texto: '¿Recomendarías esta empresa como lugar de trabajo?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
     // Preguntas complementarias
     { id: 'ge-4', texto: '¿Sientes orgullo de pertenecer a esta organización?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
     { id: 'ge-5', texto: '¿Te ves trabajando aquí dentro de un año?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
@@ -1580,7 +1584,7 @@ const preguntasCompletas = computed(() => {
 
 const puedeAvanzar = computed(() => {
   switch (currentStep.value) {
-    case 0: return encuesta.value.titulo.trim() && encuesta.value.categoria;
+    case 0: return encuesta.value.titulo.trim() && encuesta.value.descripcion?.trim() && encuesta.value.categoria;
     case 1: return encuesta.value.preguntas.length > 0 && preguntasCompletas.value;
     case 2: return audienciaEstimada.value > 0;
     case 3: return encuesta.value.privacidadNivel;
@@ -1590,6 +1594,7 @@ const puedeAvanzar = computed(() => {
 
 const puedeSerLanzada = computed(() => {
   return encuesta.value.titulo.trim() &&
+         encuesta.value.descripcion?.trim() &&
          encuesta.value.categoria &&
          encuesta.value.preguntas.length > 0 &&
          preguntasCompletas.value &&
@@ -1777,6 +1782,10 @@ const volverAlDashboard = () => {
 const guardarBorrador = async () => {
   if (!encuesta.value.titulo.trim()) {
     toast.warning('Añade un título para guardar el borrador');
+    return;
+  }
+  if (!encuesta.value.descripcion?.trim()) {
+    toast.warning('Añade una descripción para que los empleados entiendan el propósito');
     return;
   }
 

@@ -61,7 +61,19 @@ const cargarEncuestas = async () => {
   }
 };
 
+// Determina si se puede ver resultados según el estado
+const puedeVerResultados = (estado) => {
+  if (!estado) return false;
+  const estadoLower = estado.toLowerCase();
+  return ['activa', 'completada', 'finalizada'].includes(estadoLower);
+};
+
 const verResultados = (encuestaId) => {
+  console.log('[EncuestasView] verResultados llamado con ID:', encuestaId);
+  if (!encuestaId) {
+    console.error('[EncuestasView] ID de encuesta no válido');
+    return;
+  }
   router.push({ name: 'admin-encuesta-resultados', params: { encuestaId } });
 };
 
@@ -202,7 +214,7 @@ const formatearFecha = (fecha) => {
                   <h4 class="font-semibold text-gray-900">Asigna recompensas</h4>
                 </div>
                 <p class="text-sm text-gray-600 ml-11">
-                  Define cuántos puntos ganarán los empleados al completarla (recomendado: 100-150).
+                  Define cuántos puntos ganarán los empleados al completarla (base: 50, bonus opcional).
                 </p>
               </div>
 
@@ -412,16 +424,16 @@ const formatearFecha = (fecha) => {
             <p class="text-sm text-amber-800 mb-3">Los empleados ganan puntos automáticamente al completar encuestas. Configura cuántos puntos otorga cada encuesta al crearla o editarla.</p>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div class="bg-white rounded-lg p-3 border border-amber-200">
-                <p class="text-xl font-bold text-amber-600">+100 pts</p>
-                <p class="text-xs text-amber-800">Encuesta estándar</p>
+                <p class="text-xl font-bold text-amber-600">+50 pts</p>
+                <p class="text-xs text-amber-800">Puntos base (estándar)</p>
               </div>
               <div class="bg-white rounded-lg p-3 border border-amber-200">
-                <p class="text-xl font-bold text-amber-600">+150 pts</p>
-                <p class="text-xs text-amber-800">Respuesta rápida</p>
+                <p class="text-xl font-bold text-amber-600">+Bonus</p>
+                <p class="text-xs text-amber-800">Por respuesta rápida</p>
               </div>
               <div class="bg-white rounded-lg p-3 border border-amber-200">
-                <p class="text-xl font-bold text-amber-600">Variable</p>
-                <p class="text-xs text-amber-800">Según tu configuración</p>
+                <p class="text-xl font-bold text-amber-600">Configurable</p>
+                <p class="text-xs text-amber-800">Al crear encuesta</p>
               </div>
             </div>
             <p class="text-xs text-amber-700 mt-3">💡 Los puntos se acreditan automáticamente al completar la encuesta. Los empleados pueden canjearlos en el catálogo de recompensas.</p>
@@ -470,7 +482,7 @@ const formatearFecha = (fecha) => {
                 <svg class="w-3.5 h-3.5 text-amber-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                 </svg>
-                <span class="text-xs font-bold text-amber-700">{{ encuesta.puntos_otorgados || 100 }} pts</span>
+                <span class="text-xs font-bold text-amber-700">{{ encuesta.puntos_base || 50 }} pts</span>
               </div>
             </div>
 
@@ -494,7 +506,7 @@ const formatearFecha = (fecha) => {
                     <svg class="w-3 h-3 text-amber-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                     </svg>
-                    <span class="font-bold text-amber-600 text-xs">{{ encuesta.puntos_otorgados || 100 }}</span>
+                    <span class="font-bold text-amber-600 text-xs">{{ encuesta.puntos_base || 50 }}</span>
                   </div>
                 </div>
               </div>
@@ -502,8 +514,8 @@ const formatearFecha = (fecha) => {
               <!-- Actions -->
               <div class="flex gap-2">
                 <button
-                  v-if="encuesta.estado === 'Activa' || encuesta.estado === 'activa' || encuesta.estado === 'Completada' || encuesta.estado === 'completada'"
-                  @click="verResultados(encuesta.id)"
+                  v-if="puedeVerResultados(encuesta.estado)"
+                  @click.stop="verResultados(encuesta.id)"
                   class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors inline-flex items-center justify-center text-xs"
                 >
                   <BarChart3 class="h-3.5 w-3.5 mr-1.5" />

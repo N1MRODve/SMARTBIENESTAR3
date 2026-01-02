@@ -22,8 +22,8 @@
           </Button>
         </div>
 
-        <!-- Results Content -->
-        <div v-else-if="encuesta" class="space-y-8">
+        <!-- Empty State: Encuesta sin respuestas -->
+        <div v-else-if="encuesta && sinRespuestas" class="space-y-6">
           <!-- Breadcrumb -->
           <nav class="flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-4">
@@ -35,7 +35,145 @@
               <li>
                 <div class="flex items-center">
                   <ChevronRight class="h-5 w-5 text-gray-400 mr-4" />
-                  <span class="text-sm font-medium text-gray-500">Encuestas</span>
+                  <button @click="volverAtras" class="text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors">
+                    Encuestas
+                  </button>
+                </div>
+              </li>
+              <li>
+                <div class="flex items-center">
+                  <ChevronRight class="h-5 w-5 text-gray-400 mr-4" />
+                  <span class="text-sm font-medium text-gray-900">{{ encuesta.titulo }}</span>
+                </div>
+              </li>
+            </ol>
+          </nav>
+
+          <!-- Info Header de la encuesta -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-3 mb-2">
+                  <h1 class="text-2xl font-bold text-gray-900">{{ encuesta.titulo }}</h1>
+                  <!-- Badge de privacidad -->
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                        :class="encuesta.privacidad_nivel === 'anonimo' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'">
+                    <component :is="encuesta.privacidad_nivel === 'anonimo' ? EyeOff : Eye" class="h-3.5 w-3.5" />
+                    {{ encuesta.privacidad_nivel === 'anonimo' ? 'Anónima' : 'Identificada' }}
+                  </span>
+                  <!-- Badge estado -->
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                        :class="{
+                          'bg-green-100 text-green-700': encuesta.estado === 'activa',
+                          'bg-gray-100 text-gray-700': encuesta.estado === 'completada' || encuesta.estado === 'borrador',
+                          'bg-blue-100 text-blue-700': encuesta.estado === 'programada'
+                        }">
+                    {{ encuesta.estado }}
+                  </span>
+                </div>
+                <p class="text-gray-600 mb-3">{{ encuesta.descripcion || 'Sin descripción' }}</p>
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                  <span class="flex items-center gap-1.5">
+                    <FileText class="h-4 w-4" />
+                    {{ encuesta.preguntas?.length || 0 }} preguntas
+                  </span>
+                  <span class="flex items-center gap-1.5">
+                    <Tag class="h-4 w-4" />
+                    {{ encuesta.categoria || 'Sin categoría' }}
+                  </span>
+                  <span class="flex items-center gap-1.5">
+                    <Calendar class="h-4 w-4" />
+                    Creada {{ formatearFecha(encuesta.fecha_creacion) }}
+                  </span>
+                  <span v-if="encuesta.fecha_fin" class="flex items-center gap-1.5">
+                    <Clock class="h-4 w-4" />
+                    Cierra {{ formatearFecha(encuesta.fecha_fin) }}
+                  </span>
+                </div>
+              </div>
+              <!-- Puntos -->
+              <div class="flex-shrink-0 bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                <div class="flex items-center gap-2 justify-center mb-1">
+                  <Star class="h-5 w-5 text-amber-500" />
+                  <span class="text-2xl font-bold text-amber-700">{{ encuesta.puntos_base || 50 }}</span>
+                  <span class="text-sm text-amber-600">pts</span>
+                </div>
+                <p class="text-xs text-amber-600">Puntos base</p>
+                <div v-if="encuesta.puntos_bonus_rapido > 0" class="mt-2 pt-2 border-t border-amber-200">
+                  <span class="text-sm font-medium text-amber-700">+{{ encuesta.puntos_bonus_rapido }} bonus</span>
+                  <p class="text-xs text-amber-500">si responde en &lt;{{ encuesta.bonus_horas_limite || 24 }}h</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State Card -->
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+            <div class="max-w-md mx-auto">
+              <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ClipboardList class="h-10 w-10 text-gray-400" />
+              </div>
+              <h2 class="text-xl font-semibold text-gray-900 mb-3">Aún no hay respuestas</h2>
+              <p class="text-gray-600 mb-6">
+                Esta encuesta todavía no ha recibido respuestas de los empleados.
+                Los resultados aparecerán aquí una vez que comiencen a participar.
+              </p>
+              <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button @click="volverAtras" variant="outline">
+                  <ArrowLeft class="h-4 w-4 mr-2" />
+                  Volver a encuestas
+                </Button>
+                <Button @click="cargarResultados" variant="primary">
+                  <RefreshCw class="h-4 w-4 mr-2" />
+                  Actualizar
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips para aumentar participación -->
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Lightbulb class="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 class="font-semibold text-blue-900 mb-2">Tips para aumentar la participación</h3>
+                <ul class="text-sm text-blue-800 space-y-1.5">
+                  <li class="flex items-start gap-2">
+                    <CheckCircle class="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    Envía un recordatorio por email o chat interno a los empleados
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <CheckCircle class="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    Menciona los puntos de recompensa que ganarán al completarla
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <CheckCircle class="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                    Recuerda que las respuestas son {{ encuesta.privacidad_nivel === 'anonimo' ? 'completamente anónimas' : 'confidenciales' }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results Content (con respuestas) -->
+        <div v-else-if="encuesta && !sinRespuestas" class="space-y-8">
+          <!-- Breadcrumb -->
+          <nav class="flex" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-4">
+              <li>
+                <button @click="volverAtras" class="text-gray-500 hover:text-gray-700 transition-colors duration-200" title="Volver">
+                  <ArrowLeft class="h-5 w-5" />
+                </button>
+              </li>
+              <li>
+                <div class="flex items-center">
+                  <ChevronRight class="h-5 w-5 text-gray-400 mr-4" />
+                  <button @click="volverAtras" class="text-sm font-medium text-gray-500 hover:text-indigo-600 transition-colors">
+                    Encuestas
+                  </button>
                 </div>
               </li>
               <li>
@@ -112,42 +250,85 @@
 
           <!-- Header de Resultados -->
           <div class="bg-white rounded-lg shadow-sm p-6">
-            <div class="flex justify-between items-start">
+            <div class="flex flex-col lg:flex-row justify-between items-start gap-4">
               <div class="flex-1">
-                <div class="flex items-center gap-3 mb-2">
+                <div class="flex flex-wrap items-center gap-3 mb-3">
                   <h1 class="text-3xl font-bold text-gray-900">{{ encuesta.titulo }}</h1>
+                  <!-- Badge de privacidad -->
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                        :class="encuesta.privacidad_nivel === 'anonimo' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'">
+                    <component :is="encuesta.privacidad_nivel === 'anonimo' ? EyeOff : Eye" class="h-3.5 w-3.5" />
+                    {{ encuesta.privacidad_nivel === 'anonimo' ? 'Anónima' : 'Identificada' }}
+                  </span>
+                  <!-- Badge estado -->
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize"
+                        :class="{
+                          'bg-green-100 text-green-700': encuesta.estado === 'activa',
+                          'bg-gray-100 text-gray-700': encuesta.estado === 'completada' || encuesta.estado === 'borrador',
+                          'bg-blue-100 text-blue-700': encuesta.estado === 'programada'
+                        }">
+                    {{ encuesta.estado }}
+                  </span>
                   <!-- Badge de Alertas Activas -->
                   <div v-if="alertasActivas.length > 0"
                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold"
                        :class="alertasPorTipo.criticas > 0 ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'">
                     <Bell class="h-4 w-4" />
-                    <span>{{ alertasActivas.length }} {{ alertasActivas.length === 1 ? 'alerta activa' : 'alertas activas' }}</span>
+                    <span>{{ alertasActivas.length }} {{ alertasActivas.length === 1 ? 'alerta' : 'alertas' }}</span>
                   </div>
                 </div>
-                <div class="flex items-center space-x-6 text-sm text-gray-500">
-                  <div class="flex items-center">
-                    <Users class="h-4 w-4 mr-1" />
+                <p v-if="encuesta.descripcion" class="text-gray-600 mb-3">{{ encuesta.descripcion }}</p>
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                  <div class="flex items-center gap-1.5">
+                    <Users class="h-4 w-4" />
                     <span>{{ encuesta.totalParticipantes }} participante{{ encuesta.totalParticipantes !== 1 ? 's' : '' }}</span>
                   </div>
-                  <div class="flex items-center">
-                    <TrendingUp class="h-4 w-4 mr-1" />
-                    <span>{{ tasaParticipacion }}% tasa de participación</span>
+                  <div class="flex items-center gap-1.5">
+                    <TrendingUp class="h-4 w-4" />
+                    <span>{{ tasaParticipacion }}% participación</span>
                   </div>
-                  <div class="flex items-center">
-                    <Calendar class="h-4 w-4 mr-1" />
-                    <span>{{ encuesta.estado }}</span>
+                  <div class="flex items-center gap-1.5">
+                    <FileText class="h-4 w-4" />
+                    <span>{{ encuesta.preguntas?.length || 0 }} preguntas</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <Tag class="h-4 w-4" />
+                    <span>{{ encuesta.categoria || 'Sin categoría' }}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <Calendar class="h-4 w-4" />
+                    <span>Creada {{ formatearFecha(encuesta.fecha_creacion) }}</span>
+                  </div>
+                  <div v-if="encuesta.fecha_fin" class="flex items-center gap-1.5">
+                    <Clock class="h-4 w-4" />
+                    <span>Cierra {{ formatearFecha(encuesta.fecha_fin) }}</span>
                   </div>
                 </div>
               </div>
-              <div class="flex space-x-3">
-                <Button @click="exportarResultados" variant="outline">
-                  <Download class="h-4 w-4 mr-2" />
-                  Exportar
-                </Button>
-                <Button @click="crearComunicado" variant="primary">
-                  <Megaphone class="h-4 w-4 mr-2" />
-                  Crear Comunicado
-                </Button>
+              <div class="flex flex-col sm:flex-row items-stretch gap-3">
+                <!-- Card de Puntos -->
+                <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center min-w-[120px]">
+                  <div class="flex items-center gap-1.5 justify-center mb-0.5">
+                    <Star class="h-4 w-4 text-amber-500" />
+                    <span class="text-xl font-bold text-amber-700">{{ encuesta.puntos_base || 50 }}</span>
+                    <span class="text-xs text-amber-600">pts</span>
+                  </div>
+                  <p class="text-xs text-amber-600">Puntos base</p>
+                  <div v-if="encuesta.puntos_bonus_rapido > 0" class="mt-1.5 pt-1.5 border-t border-amber-200 text-xs">
+                    <span class="font-medium text-amber-700">+{{ encuesta.puntos_bonus_rapido }} bonus</span>
+                  </div>
+                </div>
+                <!-- Botones de acción -->
+                <div class="flex flex-col gap-2">
+                  <Button @click="exportarResultados" variant="outline" size="sm">
+                    <Download class="h-4 w-4 mr-2" />
+                    Exportar CSV
+                  </Button>
+                  <Button @click="crearComunicado" variant="primary" size="sm">
+                    <Megaphone class="h-4 w-4 mr-2" />
+                    Comunicado
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -582,7 +763,14 @@ import {
   ShieldAlert,
   Activity,
   TrendingDown,
-  Minus
+  Minus,
+  Eye,
+  EyeOff,
+  FileText,
+  Tag,
+  Clock,
+  Star,
+  ClipboardList
 } from 'lucide-vue-next';
 import { Chart, registerables } from 'chart.js';
 
@@ -607,6 +795,22 @@ const tasaParticipacion = computed(() => {
   if (!encuesta.value || totalEmpleadosEmpresa.value === 0) return 0;
   return Math.round((encuesta.value.totalParticipantes / totalEmpleadosEmpresa.value) * 100);
 });
+
+// Computed para detectar si la encuesta no tiene respuestas
+const sinRespuestas = computed(() => {
+  return encuesta.value && encuesta.value.totalParticipantes === 0;
+});
+
+// Función para formatear fechas
+const formatearFecha = (fecha) => {
+  if (!fecha) return 'N/A';
+  const date = new Date(fecha);
+  return date.toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+};
 
 const modalRecomendacionesAbierto = ref(false);
 const alertaSeleccionada = ref(null);

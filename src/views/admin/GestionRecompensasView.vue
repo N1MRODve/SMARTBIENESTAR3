@@ -28,11 +28,10 @@ const recompensaSeleccionada = ref(null);
 const guardando = ref(false);
 const vistaActual = ref('recompensas');
 
-// Configuración de puntos (guardada en localStorage o BD)
+// Configuración de puntos (valores default - los reales vienen de BD por encuesta)
 const configuracionPuntos = ref({
-  encuesta_estandar: 100,
-  encuesta_rapida: 150,
-  encuesta_extensa: 200,
+  encuesta_estandar: 50,  // Puntos base por defecto
+  encuesta_bonus_rapido: 25, // Bonus por respuesta rápida
   asistencia_evento: 75,
   sugerencia_implementada: 300,
   referir_empleado: 50,

@@ -1,56 +1,96 @@
 <script setup>
 import { computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { ChevronRight, Home } from 'lucide-vue-next';
+import { ChevronRight, Home, LayoutDashboard } from 'lucide-vue-next';
+
+const props = defineProps({
+  // Tipo de layout: 'admin' o 'empleado'
+  layout: {
+    type: String,
+    default: 'admin'
+  },
+  // Override manual de breadcrumbs
+  customCrumbs: {
+    type: Array,
+    default: null
+  }
+});
 
 const router = useRouter();
 const route = useRoute();
 
+// Mapeo de rutas a nombres legibles - compartido
+const routeNames = {
+  // Admin
+  'admin': 'Administración',
+  'empleados': 'Empleados',
+  'encuestas': 'Encuestas',
+  'crear': 'Crear',
+  'editar': 'Editar',
+  'resultados': 'Resultados',
+  'participacion': 'Participación',
+  'servicios': 'Servicios',
+  'solicitudes': 'Solicitudes',
+  'recompensas': 'Recompensas',
+  'comunicacion': 'Comunicación',
+  'comunicados': 'Comunicados',
+  'configuracion': 'Configuración',
+  'analitica': 'Analítica',
+  'presentacion': 'Modo Presentación',
+  // Empleado
+  'empleado': 'Empleado',
+  'dashboard': 'Inicio',
+  'encuesta': 'Encuestas',
+  'responder': 'Responder',
+  'actividades': 'Actividades',
+  'apoyo-personal': 'Apoyo Personal',
+  'historial-canjes': 'Historial de Canjes'
+};
+
 const breadcrumbs = computed(() => {
+  // Si hay breadcrumbs personalizados, usarlos
+  if (props.customCrumbs) {
+    return props.customCrumbs;
+  }
+
   const pathArray = route.path.split('/').filter(p => p);
   const crumbs = [];
+  const isEmpleado = props.layout === 'empleado' || pathArray[0] === 'empleado';
+  const basePrefix = isEmpleado ? 'empleado' : 'admin';
+  const homePath = isEmpleado ? '/empleado/dashboard' : '/admin/dashboard';
 
   // Siempre agregar Home
   crumbs.push({
-    name: 'Dashboard',
-    path: '/admin/dashboard',
-    icon: Home
+    name: 'Inicio',
+    path: homePath,
+    icon: isEmpleado ? Home : LayoutDashboard
   });
-
-  // Mapeo de rutas a nombres legibles
-  const routeNames = {
-    'admin': 'Administración',
-    'empleados': 'Empleados',
-    'encuestas': 'Encuestas',
-    'crear': 'Crear',
-    'editar': 'Editar',
-    'resultados': 'Resultados',
-    'participacion': 'Participación',
-    'servicios': 'Servicios',
-    'solicitudes': 'Solicitudes',
-    'recompensas': 'Recompensas',
-    'comunicacion': 'Comunicación',
-    'comunicados': 'Comunicados',
-    'configuracion': 'Configuración',
-    'analitica': 'Analítica',
-    'presentacion': 'Modo Presentación'
-  };
 
   let currentPath = '';
   pathArray.forEach((segment, index) => {
-    // Skip 'admin' en la raíz
-    if (segment === 'admin' && index === 0) return;
+    // Skip el prefijo base (admin/empleado)
+    if ((segment === 'admin' || segment === 'empleado') && index === 0) return;
+    // Skip 'dashboard' ya que es Home
+    if (segment === 'dashboard') return;
 
     currentPath += `/${segment}`;
 
-    // Si es un ID numérico o UUID, skip
+    // Si es un ID numérico o UUID, skip o mostrar contexto
     if (/^[0-9a-f-]{36}$/i.test(segment) || /^\d+$/.test(segment)) {
+      // Si hay un nombre en la ruta meta, usarlo
+      if (route.meta?.breadcrumbName) {
+        crumbs.push({
+          name: route.meta.breadcrumbName,
+          path: `/${basePrefix}${currentPath}`,
+          active: index === pathArray.length - 1
+        });
+      }
       return;
     }
 
     crumbs.push({
-      name: routeNames[segment] || segment.charAt(0).toUpperCase() + segment.slice(1),
-      path: `/admin${currentPath}`,
+      name: routeNames[segment] || segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' '),
+      path: `/${basePrefix}${currentPath}`,
       active: index === pathArray.length - 1
     });
   });

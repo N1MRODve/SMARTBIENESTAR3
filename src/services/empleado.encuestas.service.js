@@ -501,16 +501,55 @@ export const empleadoEncuestasService = {
   },
 
   /**
+   * Genera un hash simple del navegador para control de duplicados en encuestas anónimas
+   * @returns {Promise<string>} Hash del fingerprint del navegador
+   */
+  async generateBrowserHash() {
+    try {
+      // Recolectar información del navegador (no es IP real, pero sirve como identificador)
+      const fingerprint = [
+        navigator.userAgent,
+        navigator.language,
+        new Date().getTimezoneOffset(),
+        screen.colorDepth,
+        screen.width + 'x' + screen.height
+      ].join('|');
+
+      // Crear hash simple usando SubtleCrypto si está disponible
+      if (window.crypto && window.crypto.subtle) {
+        const msgBuffer = new TextEncoder().encode(fingerprint);
+        const hashBuffer = await window.crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      // Fallback: hash simple
+      let hash = 0;
+      for (let i = 0; i < fingerprint.length; i++) {
+        const char = fingerprint.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return Math.abs(hash).toString(36);
+    } catch (error) {
+      console.warn('Error generando hash del navegador:', error);
+      return null;
+    }
+  },
+
+  /**
    * Envía las respuestas de una encuesta usando RPC atómica
    * @param {string} encuestaId - ID de la encuesta
    * @param {Array} respuestas - Array de respuestas {pregunta_id, respuesta}
+   * @param {Object} encuestaInfo - Información de la encuesta (incluyendo privacidad_nivel)
    * @returns {Promise<Object>} Resultado del envío con puntos calculados
    */
-  async enviarRespuestas(encuestaId, respuestas) {
+  async enviarRespuestas(encuestaId, respuestas, encuestaInfo = null) {
     try {
       console.log('[enviarRespuestas] Iniciando envío...');
       console.log('[enviarRespuestas] encuestaId:', encuestaId);
       console.log('[enviarRespuestas] respuestas:', respuestas?.length);
+      console.log('[enviarRespuestas] privacidad:', encuestaInfo?.privacidad_nivel);
 
       // Validar respuestas
       if (!respuestas || respuestas.length === 0) {
@@ -523,11 +562,22 @@ export const empleadoEncuestasService = {
         respuesta: typeof r.respuesta === 'object' ? JSON.stringify(r.respuesta) : String(r.respuesta)
       }));
 
+      // RGPD: Generar hash del navegador para encuestas anónimas
+      let hashNavegador = null;
+      const esAnonima = encuestaInfo?.privacidad_nivel === 'anonimato_completo' ||
+                        encuestaInfo?.privacidad_nivel === 'anonimato_parcial';
+
+      if (esAnonima) {
+        hashNavegador = await this.generateBrowserHash();
+        console.log('[enviarRespuestas] Encuesta anónima, hash generado');
+      }
+
       // Intentar usar la RPC atómica fn_submit_encuesta
       console.log('[enviarRespuestas] Intentando RPC fn_submit_encuesta...');
       const { data: rpcResult, error: rpcError } = await supabase.rpc('fn_submit_encuesta', {
         p_encuesta_id: encuestaId,
-        p_respuestas: respuestasJson
+        p_respuestas: respuestasJson,
+        p_hash_ip: hashNavegador
       });
 
       if (!rpcError && rpcResult?.success) {
@@ -540,7 +590,8 @@ export const empleadoEncuestasService = {
           puntos_base: data.puntos_base || 50,
           puntos_bonus: data.puntos_bonus || 0,
           bonus_aplicado: data.bonus_aplicado || false,
-          puntos_totales: data.nuevo_balance || 0
+          puntos_totales: data.nuevo_balance || 0,
+          es_anonima: data.anonima || false
         };
       }
 
@@ -555,7 +606,7 @@ export const empleadoEncuestasService = {
       // Si RPC no disponible o falló, usar fallback manual
       if (rpcError || !rpcResult?.success) {
         console.warn('[enviarRespuestas] RPC no disponible, usando fallback:', rpcError?.message || rpcResult?.error);
-        return await this.enviarRespuestasFallback(encuestaId, respuestas);
+        return await this.enviarRespuestasFallback(encuestaId, respuestas, encuestaInfo);
       }
 
       throw new Error(rpcResult?.error || 'Error desconocido al enviar respuestas');
@@ -567,12 +618,13 @@ export const empleadoEncuestasService = {
 
   /**
    * Fallback para enviar respuestas si la RPC no está disponible
+   * IMPORTANTE: Respeta RGPD - NO envía empleado_id en encuestas anónimas
    */
-  async enviarRespuestasFallback(encuestaId, respuestas) {
+  async enviarRespuestasFallback(encuestaId, respuestas, encuestaInfo = null) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No autenticado');
 
-    // Obtener empleado
+    // Obtener empleado con departamento
     const { data: empleado } = await supabase
       .from('empleados')
       .select('id, departamento_id, departamentos(nombre)')
@@ -583,37 +635,63 @@ export const empleadoEncuestasService = {
       throw new Error('No se pudo obtener el ID del empleado');
     }
 
-    // Verificar si ya respondió
-    const { data: yaRespondio } = await supabase
-      .from('respuestas_encuesta')
-      .select('id')
-      .eq('encuesta_id', encuestaId)
-      .eq('empleado_id', empleado.id)
-      .limit(1);
+    // Obtener información de la encuesta si no se proporcionó
+    let privacidadNivel = encuestaInfo?.privacidad_nivel;
+    let puntosBase = encuestaInfo?.puntos_base || 50;
 
-    if (yaRespondio && yaRespondio.length > 0) {
-      const err = new Error('Ya has respondido esta encuesta');
-      err.isDuplicate = true;
-      throw err;
+    if (!encuestaInfo) {
+      const { data: encuesta } = await supabase
+        .from('encuestas')
+        .select('titulo, privacidad_nivel, puntos_base, puntos_bonus_rapido, bonus_horas_limite, fecha_inicio, fecha_creacion')
+        .eq('id', encuestaId)
+        .single();
+
+      privacidadNivel = encuesta?.privacidad_nivel || 'identificado';
+      puntosBase = encuesta?.puntos_base || 50;
     }
 
-    // Obtener encuesta para puntos
-    const { data: encuesta } = await supabase
-      .from('encuestas')
-      .select('titulo, puntos_base, puntos_bonus_rapido, bonus_horas_limite, fecha_inicio, fecha_creacion')
-      .eq('id', encuestaId)
-      .single();
+    // RGPD: Determinar qué datos guardar según nivel de privacidad
+    const esAnonimato = privacidadNivel === 'anonimato_completo' || privacidadNivel === 'anonimato_parcial';
+    const guardarEmpleadoId = privacidadNivel === 'identificado' ? empleado.id : null;
+    const guardarDepartamento = privacidadNivel !== 'anonimato_completo' ? (empleado.departamentos?.nombre || null) : null;
 
-    const puntosBase = encuesta?.puntos_base || 50;
+    console.log('[enviarRespuestasFallback] RGPD:', {
+      privacidadNivel,
+      guardarEmpleadoId: guardarEmpleadoId ? 'SÍ' : 'NO (anónimo)',
+      guardarDepartamento: guardarDepartamento ? 'SÍ' : 'NO'
+    });
 
-    // Insertar respuestas
+    // Verificar si ya respondió (solo para identificadas)
+    if (privacidadNivel === 'identificado') {
+      const { data: yaRespondio } = await supabase
+        .from('respuestas_encuesta')
+        .select('id')
+        .eq('encuesta_id', encuestaId)
+        .eq('empleado_id', empleado.id)
+        .limit(1);
+
+      if (yaRespondio && yaRespondio.length > 0) {
+        const err = new Error('Ya has respondido esta encuesta');
+        err.isDuplicate = true;
+        throw err;
+      }
+    }
+
+    // Generar hash para anónimas
+    let hashNavegador = null;
+    if (esAnonimato) {
+      hashNavegador = await this.generateBrowserHash();
+    }
+
+    // Insertar respuestas (SIN empleado_id en anónimas)
     const respuestasData = respuestas.map(r => ({
       encuesta_id: encuestaId,
       pregunta_id: r.pregunta_id,
-      empleado_id: empleado.id,
-      departamento: empleado.departamentos?.nombre || null,
+      empleado_id: guardarEmpleadoId, // NULL para anónimas
+      departamento: guardarDepartamento,
+      hash_ip: hashNavegador,
       respuesta: typeof r.respuesta === 'object' ? JSON.stringify(r.respuesta) : String(r.respuesta),
-      puntos_otorgados: puntosBase
+      puntos_otorgados: privacidadNivel === 'identificado' ? puntosBase : null
     }));
 
     const { data: insertedData, error: insertError } = await supabase
@@ -631,6 +709,7 @@ export const empleadoEncuestasService = {
     }
 
     // Otorgar puntos usando RPC existente o fallback
+    // IMPORTANTE: Los puntos SÍ se otorgan incluso en anónimas (tracking separado)
     let puntosOtorgados = puntosBase;
     try {
       const { data: rpcResult } = await supabase.rpc('fn_otorgar_puntos_encuesta', {
@@ -651,7 +730,8 @@ export const empleadoEncuestasService = {
       puntos_base: puntosBase,
       puntos_bonus: 0,
       bonus_aplicado: false,
-      puntos_totales: 0
+      puntos_totales: 0,
+      es_anonima: esAnonimato
     };
   },
 

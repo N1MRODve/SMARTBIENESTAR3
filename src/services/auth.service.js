@@ -1,6 +1,18 @@
 import { supabase } from '@/lib/supabase';
 
 export const authService = {
+  async checkPlatformUser(userId) {
+    const { data, error } = await supabase
+      .from('usuarios_plataforma')
+      .select('*')
+      .eq('auth_user_id', userId)
+      .eq('activo', true)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  },
+
   async signIn(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -9,7 +21,18 @@ export const authService = {
 
     if (error) throw error;
 
-    // Obtener información del empleado
+    const platformUser = await this.checkPlatformUser(data.user.id);
+
+    if (platformUser) {
+      return {
+        user: data.user,
+        empleado: null,
+        platformUser,
+        session: data.session,
+        userType: 'platform',
+      };
+    }
+
     const { data: empleado, error: empleadoError } = await supabase
       .from('empleados')
       .select('*, departamentos(nombre)')
@@ -21,7 +44,9 @@ export const authService = {
     return {
       user: data.user,
       empleado,
+      platformUser: null,
       session: data.session,
+      userType: 'empresa',
     };
   },
 
@@ -69,7 +94,17 @@ export const authService = {
 
     if (!user) return null;
 
-    // Obtener información del empleado
+    const platformUser = await this.checkPlatformUser(user.id);
+
+    if (platformUser) {
+      return {
+        user,
+        empleado: null,
+        platformUser,
+        userType: 'platform',
+      };
+    }
+
     const { data: empleado, error: empleadoError } = await supabase
       .from('empleados')
       .select('*, departamentos(nombre)')
@@ -81,6 +116,8 @@ export const authService = {
     return {
       user,
       empleado,
+      platformUser: null,
+      userType: 'empresa',
     };
   },
 

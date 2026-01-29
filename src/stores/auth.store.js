@@ -5,15 +5,23 @@ import { authService } from '@/services/auth.service';
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null);
   const empleado = ref(null);
+  const platformUser = ref(null);
   const session = ref(null);
   const loading = ref(true);
   const initializationDone = ref(false);
   const authListenerSetup = ref(false);
+  const userType = ref(null);
 
   const isAuthenticated = computed(() => !!user.value && !!session.value);
   const empresaId = computed(() => empleado.value?.empresa_id || null);
   const isAdmin = computed(() => empleado.value?.es_admin || false);
+  const isSuperAdmin = computed(() => platformUser.value?.rol === 'superadmin');
+  const isPlatformUser = computed(() => userType.value === 'platform');
+
   const userRole = computed(() => {
+    if (platformUser.value) {
+      return platformUser.value.rol;
+    }
     if (!empleado.value) return null;
     return empleado.value.es_admin ? 'admin' : 'empleado';
   });
@@ -30,6 +38,8 @@ export const useAuthStore = defineStore('auth', () => {
           if (currentUser) {
             user.value = currentUser.user;
             empleado.value = currentUser.empleado;
+            platformUser.value = currentUser.platformUser;
+            userType.value = currentUser.userType;
             session.value = newSession;
           }
         } catch (error) {
@@ -38,6 +48,8 @@ export const useAuthStore = defineStore('auth', () => {
       } else if (event === 'SIGNED_OUT') {
         user.value = null;
         empleado.value = null;
+        platformUser.value = null;
+        userType.value = null;
         session.value = null;
       }
     });
@@ -57,6 +69,8 @@ export const useAuthStore = defineStore('auth', () => {
         if (currentUser) {
           user.value = currentUser.user;
           empleado.value = currentUser.empleado;
+          platformUser.value = currentUser.platformUser;
+          userType.value = currentUser.userType;
           session.value = currentSession;
         }
       }
@@ -66,6 +80,8 @@ export const useAuthStore = defineStore('auth', () => {
       console.error('Error initializing auth:', e);
       user.value = null;
       empleado.value = null;
+      platformUser.value = null;
+      userType.value = null;
       session.value = null;
     } finally {
       loading.value = false;
@@ -81,6 +97,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       user.value = response.user;
       empleado.value = response.empleado;
+      platformUser.value = response.platformUser;
+      userType.value = response.userType;
       session.value = response.session;
 
       loading.value = false;
@@ -96,6 +114,8 @@ export const useAuthStore = defineStore('auth', () => {
       await authService.signOut();
       user.value = null;
       empleado.value = null;
+      platformUser.value = null;
+      userType.value = null;
       session.value = null;
       loading.value = false;
     } catch (error) {
@@ -112,13 +132,17 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     user,
     empleado,
+    platformUser,
     session,
     loading,
     initializationDone,
     isAuthenticated,
     empresaId,
     isAdmin,
+    isSuperAdmin,
+    isPlatformUser,
     userRole,
+    userType,
     initialize,
     login,
     logout,

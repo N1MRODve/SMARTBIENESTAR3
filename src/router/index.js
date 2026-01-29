@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth.store.js';
 import empleadoRoutes from './routes/empleado.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import platformRoutes from './routes/platform.routes.js';
 
 // Importar vistas públicas
 import LandingPage from '../views/LandingPage.vue';
@@ -68,6 +69,8 @@ const routes = [
   ...adminRoutes,
   // === RUTAS EMPLEADO (ANIDADAS) ===
   ...empleadoRoutes,
+  // === RUTAS PLATFORM (SUPER ADMIN) ===
+  ...platformRoutes,
 
   // === RUTA EMPLEADO LEGACY (MANTENER TEMPORALMENTE) ===
   {
@@ -110,16 +113,23 @@ router.beforeEach(async (to, from) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const requiredRoles = to.meta.roles;
 
-  // Si el usuario está autenticado y va a rutas de auth (login/register), redirigir al dashboard
+  const getRedirectPath = () => {
+    const role = authStore.userRole;
+    if (['superadmin', 'soporte', 'comercial'].includes(role)) {
+      return '/platform/dashboard';
+    }
+    if (role === 'admin') {
+      return '/admin/dashboard';
+    }
+    return '/empleado/dashboard';
+  };
+
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
-    const redirectPath = authStore.userRole === 'admin' ? '/admin/dashboard' : '/empleado/dashboard';
-    return redirectPath;
+    return getRedirectPath();
   }
 
-  // Si el usuario está autenticado y va a la landing, redirigir al dashboard
   if (to.name === 'landing' && authStore.isAuthenticated) {
-    const redirectPath = authStore.userRole === 'admin' ? '/admin/dashboard' : '/empleado/dashboard';
-    return redirectPath;
+    return getRedirectPath();
   }
 
   // Si la ruta requiere autenticación y el usuario no está autenticado

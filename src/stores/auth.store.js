@@ -72,12 +72,25 @@ export const useAuthStore = defineStore('auth', () => {
           platformUser.value = currentUser.platformUser;
           userType.value = currentUser.userType;
           session.value = currentSession;
+        } else {
+          // Usuario sin registro válido, limpiar sesión
+          user.value = null;
+          empleado.value = null;
+          platformUser.value = null;
+          userType.value = null;
+          session.value = null;
         }
       }
 
       setupAuthListener();
     } catch (e) {
       console.error('Error initializing auth:', e);
+      // En caso de error, intentar cerrar sesión para limpiar
+      try {
+        await authService.signOut();
+      } catch (signOutError) {
+        console.error('Error signing out after failed initialization:', signOutError);
+      }
       user.value = null;
       empleado.value = null;
       platformUser.value = null;

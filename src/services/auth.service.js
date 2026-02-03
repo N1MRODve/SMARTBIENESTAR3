@@ -41,6 +41,12 @@ export const authService = {
 
     if (empleadoError) throw empleadoError;
 
+    // Si el usuario no tiene ni registro de plataforma ni de empleado
+    if (!empleado && !platformUser) {
+      await this.signOut();
+      throw new Error('Usuario sin registro válido en el sistema');
+    }
+
     return {
       user: data.user,
       empleado,
@@ -112,6 +118,13 @@ export const authService = {
       .maybeSingle();
 
     if (empleadoError) throw empleadoError;
+
+    // Si el usuario no tiene ni registro de plataforma ni de empleado, cerrar sesión
+    if (!empleado && !platformUser) {
+      console.warn('Usuario sin registro válido, cerrando sesión');
+      await this.signOut();
+      return null;
+    }
 
     return {
       user,

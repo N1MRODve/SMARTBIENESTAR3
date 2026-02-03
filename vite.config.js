@@ -24,8 +24,12 @@ export default defineConfig({
       }
     },
     chunkSizeWarningLimit: 1000,
-    sourcemap: false
+    sourcemap: false,
+    outDir: 'dist',
+    assetsDir: 'assets',
+    emptyOutDir: true
   },
+  base: '/',
   server: {
     port: 5173,
     strictPort: false

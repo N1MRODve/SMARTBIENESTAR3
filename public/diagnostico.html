@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnóstico - SMART Bienestar</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .test-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      background: #f8f9fa;
+    }
+
+    .test-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: white;
+      border-radius: 6px;
+      border-left: 4px solid #ddd;
+    }
+
+    .test-item.pass {
+      border-left-color: #10b981;
+    }
+
+    .test-item.fail {
+      border-left-color: #ef4444;
+    }
+
+    .test-item.warning {
+      border-left-color: #f59e0b;
+    }
+
+    .icon {
+      margin-right: 10px;
+      font-size: 20px;
+    }
+
+    .test-label {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .test-value {
+      font-family: monospace;
+      font-size: 12px;
+      color: #666;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    button:hover {
+      background: #5568d3;
+    }
+
+    .actions {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #e5e7eb;
+    }
+
+    .code-block {
+      background: #1f2937;
+      color: #f3f4f6;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+
+    .summary {
+      padding: 20px;
+      background: #f0f9ff;
+      border-radius: 8px;
+      border-left: 4px solid #3b82f6;
+      margin-bottom: 30px;
+    }
+
+    .summary h2 {
+      color: #1e40af;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Diagnóstico SMART Bienestar</h1>
+    <p class="subtitle">Verifica que tu aplicación esté correctamente configurada</p>
+
+    <div id="summary" class="summary" style="display: none;">
+      <h2>Resumen</h2>
+      <p id="summary-text"></p>
+    </div>
+
+    <div class="test-section">
+      <h3>Variables de Entorno</h3>
+      <div id="env-tests"></div>
+    </div>
+
+    <div class="test-section">
+      <h3>Conectividad</h3>
+      <div id="connectivity-tests"></div>
+    </div>
+
+    <div class="test-section">
+      <h3>Información del Sistema</h3>
+      <div id="system-tests"></div>
+    </div>
+
+    <div class="actions">
+      <button onclick="runTests()">Ejecutar Diagnóstico</button>
+      <button onclick="copyReport()">Copiar Reporte</button>
+      <button onclick="window.location.href='/'">Ir a la Aplicación</button>
+    </div>
+
+    <div id="report" style="display: none;">
+      <h3 style="margin-top: 30px;">Reporte Técnico</h3>
+      <div class="code-block" id="report-content"></div>
+    </div>
+  </div>
+
+  <script>
+    let reportData = {};
+
+    function createTestItem(label, status, value = '') {
+      const icons = {
+        pass: '✓',
+        fail: '✗',
+        warning: '⚠',
+        info: 'ℹ'
+      };
+
+      return `
+        <div class="test-item ${status}">
+          <span class="icon">${icons[status]}</span>
+          <span class="test-label">${label}</span>
+          <span class="test-value">${value}</span>
+        </div>
+      `;
+    }
+
+    async function runTests() {
+      reportData = {
+        timestamp: new Date().toISOString(),
+        tests: {}
+      };
+
+      // Test 1: Variables de Entorno
+      const envTests = document.getElementById('env-tests');
+      envTests.innerHTML = '';
+
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      if (supabaseUrl && supabaseUrl !== 'undefined') {
+        envTests.innerHTML += createTestItem('VITE_SUPABASE_URL', 'pass', supabaseUrl);
+        reportData.tests.supabaseUrl = { status: 'pass', value: supabaseUrl };
+      } else {
+        envTests.innerHTML += createTestItem('VITE_SUPABASE_URL', 'fail', 'No definida');
+        reportData.tests.supabaseUrl = { status: 'fail', value: 'undefined' };
+      }
+
+      if (supabaseKey && supabaseKey !== 'undefined') {
+        const maskedKey = supabaseKey.substring(0, 20) + '...' + supabaseKey.substring(supabaseKey.length - 10);
+        envTests.innerHTML += createTestItem('VITE_SUPABASE_ANON_KEY', 'pass', maskedKey);
+        reportData.tests.supabaseKey = { status: 'pass', value: 'defined' };
+      } else {
+        envTests.innerHTML += createTestItem('VITE_SUPABASE_ANON_KEY', 'fail', 'No definida');
+        reportData.tests.supabaseKey = { status: 'fail', value: 'undefined' };
+      }
+
+      // Test 2: Conectividad
+      const connectivityTests = document.getElementById('connectivity-tests');
+      connectivityTests.innerHTML = createTestItem('Probando conexión...', 'info');
+
+      if (supabaseUrl) {
+        try {
+          const response = await fetch(supabaseUrl + '/rest/v1/', {
+            method: 'HEAD',
+            headers: {
+              'apikey': supabaseKey
+            }
+          });
+
+          if (response.ok || response.status === 404) {
+            connectivityTests.innerHTML = createTestItem('Conexión a Supabase', 'pass', 'Conectado');
+            reportData.tests.supabaseConnection = { status: 'pass' };
+          } else {
+            connectivityTests.innerHTML = createTestItem('Conexión a Supabase', 'warning', `Status: ${response.status}`);
+            reportData.tests.supabaseConnection = { status: 'warning', statusCode: response.status };
+          }
+        } catch (error) {
+          connectivityTests.innerHTML = createTestItem('Conexión a Supabase', 'fail', error.message);
+          reportData.tests.supabaseConnection = { status: 'fail', error: error.message };
+        }
+      } else {
+        connectivityTests.innerHTML = createTestItem('Conexión a Supabase', 'fail', 'URL no configurada');
+        reportData.tests.supabaseConnection = { status: 'fail', error: 'URL not configured' };
+      }
+
+      // Test 3: Información del Sistema
+      const systemTests = document.getElementById('system-tests');
+      systemTests.innerHTML = '';
+
+      systemTests.innerHTML += createTestItem('URL Actual', 'info', window.location.href);
+      systemTests.innerHTML += createTestItem('User Agent', 'info', navigator.userAgent.substring(0, 50) + '...');
+      systemTests.innerHTML += createTestItem('Protocolo', 'info', window.location.protocol);
+
+      reportData.system = {
+        url: window.location.href,
+        protocol: window.location.protocol,
+        userAgent: navigator.userAgent
+      };
+
+      // Resumen
+      const failedTests = Object.values(reportData.tests).filter(t => t.status === 'fail').length;
+      const summary = document.getElementById('summary');
+      const summaryText = document.getElementById('summary-text');
+
+      if (failedTests === 0) {
+        summaryText.textContent = '¡Todo está configurado correctamente! Puedes ir a la aplicación.';
+        summary.style.background = '#f0fdf4';
+        summary.style.borderLeftColor = '#10b981';
+      } else {
+        summaryText.textContent = `Se encontraron ${failedTests} problema(s). Revisa las secciones marcadas con ✗ y sigue las instrucciones en SOLUCION_RENDERIZADO.md`;
+        summary.style.background = '#fef2f2';
+        summary.style.borderLeftColor = '#ef4444';
+      }
+      summary.style.display = 'block';
+
+      // Mostrar reporte
+      document.getElementById('report').style.display = 'block';
+      document.getElementById('report-content').textContent = JSON.stringify(reportData, null, 2);
+    }
+
+    function copyReport() {
+      const report = JSON.stringify(reportData, null, 2);
+      navigator.clipboard.writeText(report).then(() => {
+        alert('Reporte copiado al portapapeles');
+      });
+    }
+
+    // Ejecutar tests automáticamente al cargar
+    window.addEventListener('load', runTests);
+  </script>
+</body>
+</html>

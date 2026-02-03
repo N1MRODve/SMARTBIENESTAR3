@@ -9,6 +9,7 @@
     "clean": "rm -rf dist node_modules/.vite",
     "preview": "vite preview",
     "verify": "node verify-build.js",
+    "verify:supabase": "node verificar-supabase.cjs",
     "analytics:check": "node scripts/analytics-check.js"
   },
   "dependencies": {

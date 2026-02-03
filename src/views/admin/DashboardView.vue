@@ -93,7 +93,7 @@ const loadDashboardData = async () => {
       supabase
         .from('empleados')
         .select('nombre')
-        .eq('user_id', authStore.userId)
+        .eq('auth_user_id', authStore.user?.id)
         .maybeSingle()
     ]);
 

@@ -38,17 +38,24 @@ const estadisticas = computed(() => {
   const encuestasCerradas = encuestas.value.filter(e => e.estado === 'finalizada' || e.estado === 'Finalizada').length;
 
   const totalEmpleados = empleados.value.length;
-  const totalRespuestas = respuestas.value.length;
 
+  let totalEmpleadosRespondieron = 0;
+  encuestas.value.forEach(encuesta => {
+    const respuestasEncuesta = respuestas.value.filter(r => r.encuesta_id === encuesta.id);
+    const empleadosUnicos = new Set(respuestasEncuesta.map(r => r.empleado_id)).size;
+    totalEmpleadosRespondieron += empleadosUnicos;
+  });
+
+  const totalPosible = totalEmpleados * encuestas.value.length;
   let tasaPromedio = 0;
-  if (totalEmpleados > 0 && encuestas.value.length > 0) {
-    tasaPromedio = Math.round((totalRespuestas / (totalEmpleados * encuestas.value.length)) * 100);
+  if (totalPosible > 0) {
+    tasaPromedio = Math.min(100, Math.round((totalEmpleadosRespondieron / totalPosible) * 100));
   }
 
   return {
     tasaPromedio,
-    totalRespondidos: totalRespuestas,
-    totalEnviados: totalEmpleados * encuestas.value.length,
+    totalRespondidos: totalEmpleadosRespondieron,
+    totalEnviados: totalPosible,
     encuestasActivas,
     totalEncuestas: encuestas.value.length,
     encuestasCerradas
@@ -58,15 +65,16 @@ const estadisticas = computed(() => {
 const evolucion = computed(() => {
   return encuestas.value.map(encuesta => {
     const respuestasEncuesta = respuestas.value.filter(r => r.encuesta_id === encuesta.id);
+    const empleadosQueRespondieron = new Set(respuestasEncuesta.map(r => r.empleado_id)).size;
     const tasa = empleados.value.length > 0
-      ? Math.round((respuestasEncuesta.length / empleados.value.length) * 100)
+      ? Math.min(100, Math.round((empleadosQueRespondieron / empleados.value.length) * 100))
       : 0;
 
     return {
       fecha: encuesta.fecha_creacion,
       encuesta: encuesta.titulo,
       tasa,
-      respondidos: respuestasEncuesta.length,
+      respondidos: empleadosQueRespondieron,
       enviados: empleados.value.length
     };
   }).slice(0, 10);
@@ -75,18 +83,21 @@ const evolucion = computed(() => {
 const encuestasConParticipacion = computed(() => {
   return encuestas.value.map(encuesta => {
     const respuestasEncuesta = respuestas.value.filter(r => r.encuesta_id === encuesta.id);
+    const empleadosQueRespondieron = new Set(respuestasEncuesta.map(r => r.empleado_id)).size;
 
     const departamentosData = departamentos.value.map(dept => {
       const empleadosDept = empleados.value.filter(e => e.departamento_id === dept.id);
-      const respuestasDept = respuestasEncuesta.filter(r => {
-        const empleado = empleados.value.find(e => e.id === r.empleado_id);
-        return empleado && empleado.departamento_id === dept.id;
-      });
+      const empleadosDeptIds = new Set(empleadosDept.map(e => e.id));
+      const empleadosDeptQueRespondieron = new Set(
+        respuestasEncuesta
+          .filter(r => empleadosDeptIds.has(r.empleado_id))
+          .map(r => r.empleado_id)
+      ).size;
 
       return {
         nombre: dept.nombre,
         enviados: empleadosDept.length,
-        respondidos: respuestasDept.length
+        respondidos: empleadosDeptQueRespondieron
       };
     });
 
@@ -97,7 +108,7 @@ const encuestasConParticipacion = computed(() => {
       fecha_envio: encuesta.fecha_inicio || encuesta.fecha_creacion,
       fecha_cierre: encuesta.fecha_fin,
       enviados: empleados.value.length,
-      respondidos: respuestasEncuesta.length,
+      respondidos: empleadosQueRespondieron,
       departamentos: departamentosData
     };
   });

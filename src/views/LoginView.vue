@@ -32,7 +32,10 @@ const handleLogin = async () => {
     }
 
     // Redirección basada en el rol
-    if (authStore.userRole === 'admin') {
+    const role = authStore.userRole;
+    if (['superadmin', 'soporte', 'comercial'].includes(role)) {
+      router.push('/platform/dashboard');
+    } else if (role === 'admin') {
       router.push('/admin/dashboard');
     } else {
       router.push('/empleado/dashboard');

@@ -150,7 +150,7 @@ const analiticaService = {
 
       if (error) {
         console.error('[Analítica] Error en RPC timeseries:', error);
-        return [];
+        return this._getEvolutionFallback(empresaId, meses);
       }
 
       if (!data || !Array.isArray(data)) {
@@ -167,8 +167,8 @@ const analiticaService = {
       return evolucion;
 
     } catch (error) {
-      console.error('[Analítica] Error en getEvolution:', error);
-      return [];
+      console.error('[Analítica] Error en getEvolution, usando fallback:', error);
+      return this._getEvolutionFallback(empresaId, meses);
     }
   },
 
@@ -188,11 +188,11 @@ const analiticaService = {
 
       if (error) {
         console.error('[Analítica] Error en RPC categories:', error);
-        return [];
+        return this._getCategoriasFallback(empresaId);
       }
 
       if (!data || !Array.isArray(data) || data.length === 0) {
-        return [];
+        return this._getCategoriasFallback(empresaId);
       }
 
       // Transformar al formato esperado
@@ -205,8 +205,8 @@ const analiticaService = {
       return categorias;
 
     } catch (error) {
-      console.error('[Analítica] Error en getCategorias:', error);
-      return [];
+      console.error('[Analítica] Error en getCategorias, usando fallback:', error);
+      return this._getCategoriasFallback(empresaId);
     }
   },
 
@@ -351,6 +351,126 @@ const analiticaService = {
     } catch (error) {
       console.error('[Analítica] Error en fallback:', error);
       return this._getEmptyAnalytics('Error al cargar datos');
+    }
+  },
+
+  /**
+   * Fallback: Evolución temporal con queries directas
+   */
+  async _getEvolutionFallback(empresaId, meses = 6) {
+    try {
+      // Obtener encuestas de la empresa
+      const { data: encuestas } = await supabase
+        .from('encuestas')
+        .select('id')
+        .eq('empresa_id', empresaId);
+
+      if (!encuestas || encuestas.length === 0) return [];
+
+      const dateFrom = new Date();
+      dateFrom.setMonth(dateFrom.getMonth() - meses);
+
+      // Obtener respuestas en el rango
+      const { data: respuestas } = await supabase
+        .from('respuestas_encuesta')
+        .select('respuesta, empleado_id, created_at')
+        .in('encuesta_id', encuestas.map(e => e.id))
+        .gte('created_at', dateFrom.toISOString());
+
+      if (!respuestas || respuestas.length === 0) return [];
+
+      // Agrupar por mes
+      const porMes = {};
+      respuestas.forEach(r => {
+        const valor = parseInt(r.respuesta);
+        if (isNaN(valor) || valor < 1 || valor > 5) return;
+
+        const fecha = new Date(r.created_at);
+        const clave = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+        const mesNombre = fecha.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+
+        if (!porMes[clave]) {
+          porMes[clave] = { mes: mesNombre, suma: 0, count: 0, empleados: new Set() };
+        }
+        porMes[clave].suma += valor;
+        porMes[clave].count++;
+        porMes[clave].empleados.add(r.empleado_id);
+      });
+
+      // Convertir a array ordenado
+      return Object.keys(porMes)
+        .sort()
+        .map(clave => ({
+          mes: porMes[clave].mes,
+          valor: porMes[clave].count > 0 ? porMes[clave].suma / porMes[clave].count : 0,
+          participacion: porMes[clave].empleados.size
+        }));
+
+    } catch (error) {
+      console.error('[Analítica] Error en fallback evolución:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Fallback: Categorías con queries directas
+   */
+  async _getCategoriasFallback(empresaId) {
+    try {
+      // Obtener encuestas de la empresa
+      const { data: encuestas } = await supabase
+        .from('encuestas')
+        .select('id')
+        .eq('empresa_id', empresaId);
+
+      if (!encuestas || encuestas.length === 0) return [];
+
+      // Obtener preguntas con su categoría
+      const { data: preguntas } = await supabase
+        .from('preguntas_encuesta')
+        .select('id, categoria')
+        .in('encuesta_id', encuestas.map(e => e.id));
+
+      if (!preguntas || preguntas.length === 0) return [];
+
+      // Obtener respuestas
+      const { data: respuestas } = await supabase
+        .from('respuestas_encuesta')
+        .select('pregunta_id, respuesta')
+        .in('encuesta_id', encuestas.map(e => e.id));
+
+      if (!respuestas || respuestas.length === 0) return [];
+
+      // Crear mapa pregunta -> categoría
+      const preguntaCat = {};
+      preguntas.forEach(p => {
+        preguntaCat[p.id] = p.categoria || 'General';
+      });
+
+      // Agrupar respuestas por categoría
+      const porCategoria = {};
+      respuestas.forEach(r => {
+        const valor = parseInt(r.respuesta);
+        if (isNaN(valor) || valor < 1 || valor > 5) return;
+
+        const categoria = preguntaCat[r.pregunta_id] || 'General';
+        if (!porCategoria[categoria]) {
+          porCategoria[categoria] = { suma: 0, count: 0 };
+        }
+        porCategoria[categoria].suma += valor;
+        porCategoria[categoria].count++;
+      });
+
+      // Convertir a array
+      return Object.entries(porCategoria).map(([categoria, datos]) => ({
+        categoria,
+        valor: datos.count > 0 ? datos.suma / datos.count : 0,
+        variacion: 0 // Sin variación en fallback
+      }));
+
+    } catch (error) {
+      console.error('[Analítica] Error en fallback categorías:', error);
+      return [];
     }
   },
 

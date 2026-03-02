@@ -224,9 +224,6 @@ export const recomendacionesService = {
    */
   async generarRecomendacionesAutomaticas(encuestaId, resultados) {
     try {
-      console.log('[recomendaciones.service] Generando recomendaciones para encuesta:', encuestaId);
-      console.log('[recomendaciones.service] Resultados recibidos:', resultados);
-
       // Preparar datos para RPC
       const categorias = (resultados.categoriasInterpretadas || []).map(cat => ({
         nombre: cat.nombre,
@@ -243,8 +240,6 @@ export const recomendacionesService = {
         }
       };
 
-      console.log('[recomendaciones.service] Llamando RPC con params:', rpcParams);
-
       // Intentar RPC primero
       const { data, error } = await supabase.rpc('fn_generar_recomendaciones_smart', rpcParams);
 
@@ -253,7 +248,6 @@ export const recomendacionesService = {
         return await this.generarRecomendacionesFallback(encuestaId, resultados);
       }
 
-      console.log('[recomendaciones.service] RPC resultado:', data);
       return data;
 
     } catch (error) {
@@ -266,8 +260,6 @@ export const recomendacionesService = {
    * Fallback: Genera recomendaciones en frontend si RPC no está disponible
    */
   async generarRecomendacionesFallback(encuestaId, resultados) {
-    console.log('[recomendaciones.service] Ejecutando fallback de generación');
-
     const recomendaciones = [];
     const categoriasInterpretadas = resultados.categoriasInterpretadas || [];
 
@@ -305,8 +297,6 @@ export const recomendacionesService = {
         servicio_smart_id: this.obtenerServicioSmart(dimensionId)
       };
 
-      console.log('[recomendaciones.service] Insertando recomendación:', recomendacion.titulo);
-
       const { data, error } = await supabase
         .from('recomendaciones_smart')
         .insert(recomendacion)
@@ -336,8 +326,6 @@ export const recomendacionesService = {
    */
   async getRecomendaciones(encuestaId) {
     try {
-      console.log('[recomendaciones.service] Cargando recomendaciones para encuesta:', encuestaId);
-
       const { data, error } = await supabase
         .from('recomendaciones_smart')
         .select('*')
@@ -349,7 +337,6 @@ export const recomendacionesService = {
         throw error;
       }
 
-      console.log('[recomendaciones.service] Recomendaciones cargadas:', data?.length || 0);
       return data || [];
 
     } catch (error) {
@@ -408,7 +395,6 @@ export const recomendacionesService = {
 
       if (error) throw error;
 
-      console.log('[recomendaciones.service] Estado actualizado:', recomendacionId, '->', nuevoEstado);
       return data;
 
     } catch (error) {

@@ -18,6 +18,7 @@ import {
   RefreshCw,
   XCircle,
   Eye,
+  EyeOff,
   Users,
   Target,
   TrendingDown,
@@ -84,8 +85,10 @@ const encuestasConParticipacion = computed(() => {
   return encuestas.value.map(encuesta => {
     const respuestasEncuesta = respuestas.value.filter(r => r.encuesta_id === encuesta.id);
     const empleadosQueRespondieron = new Set(respuestasEncuesta.map(r => r.empleado_id)).size;
+    const esAnonima = encuesta.privacidad_nivel === 'anonimato_completo';
 
-    const departamentosData = departamentos.value.map(dept => {
+    // Para encuestas anónimas: no mostrar desglose por departamento
+    const departamentosData = esAnonima ? [] : departamentos.value.map(dept => {
       const empleadosDept = empleados.value.filter(e => e.departamento_id === dept.id);
       const empleadosDeptIds = new Set(empleadosDept.map(e => e.id));
       const empleadosDeptQueRespondieron = new Set(
@@ -105,6 +108,7 @@ const encuestasConParticipacion = computed(() => {
       id: encuesta.id,
       titulo: encuesta.titulo,
       estado: encuesta.estado,
+      privacidad_nivel: encuesta.privacidad_nivel || 'anonimato_completo',
       fecha_envio: encuesta.fecha_inicio || encuesta.fecha_creacion,
       fecha_cierre: encuesta.fecha_fin,
       enviados: empleados.value.length,
@@ -638,8 +642,14 @@ const verEncuesta = (encuestaId) => {
                     </div>
                   </div>
 
-                  <!-- Departamentos -->
-                  <div v-if="encuesta.departamentos.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <!-- Aviso de anonimato -->
+                  <div v-if="encuesta.privacidad_nivel === 'anonimato_completo'" class="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                    <EyeOff class="h-4 w-4 flex-shrink-0" />
+                    <span>Encuesta anónima: el desglose por departamento no está disponible para proteger la privacidad de los participantes.</span>
+                  </div>
+
+                  <!-- Departamentos (solo si no es anónima completa) -->
+                  <div v-else-if="encuesta.departamentos.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div
                       v-for="dept in encuesta.departamentos"
                       :key="dept.nombre"

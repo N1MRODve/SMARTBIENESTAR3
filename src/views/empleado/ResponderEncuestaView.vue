@@ -665,10 +665,15 @@ onMounted(async () => {
               placeholder="Comparte tus pensamientos, sugerencias o comentarios..."
             ></textarea>
 
-            <!-- Mensaje de anonimato para texto abierto -->
-            <div class="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
+            <!-- Mensaje de privacidad para texto abierto -->
+            <div
+              class="flex items-center gap-2 text-sm p-3 rounded-lg"
+              :class="privacidadConfig?.color === 'green' ? 'text-green-600 bg-green-50' : privacidadConfig?.color === 'blue' ? 'text-blue-600 bg-blue-50' : 'text-amber-600 bg-amber-50'"
+            >
               <Shield class="w-4 h-4 flex-shrink-0" />
-              <span>Tu respuesta de texto es <strong>100% anónima</strong>. Escribe con total libertad.</span>
+              <span v-if="(activeSurvey?.privacidad_nivel || activeSurvey?.privacidadNivel || 'anonimato_completo') === 'anonimato_completo'">Tu respuesta de texto es <strong>100% anónima</strong>. Escribe con total libertad.</span>
+              <span v-else-if="(activeSurvey?.privacidad_nivel || activeSurvey?.privacidadNivel) === 'anonimato_parcial'">Tu respuesta se agrupa <strong>por departamento</strong>. Tu nombre no será visible.</span>
+              <span v-else>Tu respuesta es <strong>confidencial</strong>. Solo RRHH autorizado tendrá acceso.</span>
             </div>
           </div>
         </div>

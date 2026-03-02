@@ -546,11 +546,6 @@ export const empleadoEncuestasService = {
    */
   async enviarRespuestas(encuestaId, respuestas, encuestaInfo = null) {
     try {
-      console.log('[enviarRespuestas] Iniciando envío...');
-      console.log('[enviarRespuestas] encuestaId:', encuestaId);
-      console.log('[enviarRespuestas] respuestas:', respuestas?.length);
-      console.log('[enviarRespuestas] privacidad:', encuestaInfo?.privacidad_nivel);
-
       // Validar respuestas
       if (!respuestas || respuestas.length === 0) {
         throw new Error('No hay respuestas para enviar');
@@ -569,11 +564,9 @@ export const empleadoEncuestasService = {
 
       if (esAnonima) {
         hashNavegador = await this.generateBrowserHash();
-        console.log('[enviarRespuestas] Encuesta anónima, hash generado');
       }
 
       // Intentar usar la RPC atómica fn_submit_encuesta
-      console.log('[enviarRespuestas] Intentando RPC fn_submit_encuesta...');
       const { data: rpcResult, error: rpcError } = await supabase.rpc('fn_submit_encuesta', {
         p_encuesta_id: encuestaId,
         p_respuestas: respuestasJson,
@@ -581,7 +574,6 @@ export const empleadoEncuestasService = {
       });
 
       if (!rpcError && rpcResult?.success) {
-        console.log('[enviarRespuestas] RPC exitosa:', rpcResult);
         const data = rpcResult.data || {};
         return {
           success: true,

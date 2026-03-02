@@ -37,10 +37,10 @@
 
         <!-- Progress Bar -->
         <div class="relative">
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div 
+          <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div
               :class="['h-2 rounded-full transition-all duration-1000 ease-out', getProgressColorClass(dimension.score)]"
-              :style="{ width: `${(dimension.score / 10) * 100}%` }"
+              :style="{ width: `${Math.min((dimension.score / 10) * 100, 100)}%` }"
             ></div>
           </div>
           

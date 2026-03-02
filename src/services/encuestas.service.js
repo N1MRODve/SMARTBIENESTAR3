@@ -117,11 +117,20 @@ export const encuestasService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No autenticado');
 
-    // Obtener IDs de encuestas ya respondidas por este usuario
+    // Obtener el empleado_id real (no el auth user.id)
+    const { data: empleado } = await supabase
+      .from('empleados')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (!empleado) throw new Error('Empleado no encontrado');
+
+    // Obtener IDs de encuestas ya respondidas por este empleado
     const { data: respondidas, error: respError } = await supabase
       .from('respuestas_encuesta')
       .select('encuesta_id')
-      .eq('empleado_id', user.id);
+      .eq('empleado_id', empleado.id);
 
     if (respError) throw respError;
 
@@ -152,6 +161,15 @@ export const encuestasService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('No autenticado');
 
+    // Obtener el empleado_id real (no el auth user.id)
+    const { data: empleado } = await supabase
+      .from('empleados')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (!empleado) return [];
+
     const { data, error } = await supabase
       .from('respuestas_encuesta')
       .select(`
@@ -164,7 +182,7 @@ export const encuestasService = {
           tipo
         )
       `)
-      .eq('empleado_id', user.id)
+      .eq('empleado_id', empleado.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;

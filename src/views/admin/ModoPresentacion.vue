@@ -58,10 +58,10 @@
             </p>
             <p class="text-5xl font-bold text-gray-900 mb-1">{{ analitica.participacion_global }}%</p>
             <p class="text-sm text-gray-500">de empleados</p>
-            <div class="mt-4 w-full bg-gray-200 rounded-full h-2">
+            <div class="mt-4 w-full bg-gray-200 rounded-full h-2 overflow-hidden">
               <div
                 class="bg-blue-500 h-2 rounded-full transition-all duration-1000"
-                :style="{ width: `${analitica.participacion_global}%` }"
+                :style="{ width: `${Math.min(analitica.participacion_global, 100)}%` }"
               ></div>
             </div>
           </div>
@@ -270,8 +270,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth.store';
+import { analiticaService } from '@/services/analitica.service';
 import {
   Building2,
   Heart,
@@ -286,11 +288,11 @@ import {
   X
 } from 'lucide-vue-next';
 
-// TODO: Load data from Supabase resultados_globales and departamentos tables
-
 const router = useRouter();
+const authStore = useAuthStore();
 
 // Estado
+const loading = ref(true);
 const analitica = ref({
   bienestar_global: 0,
   variacion_trimestral: 0,
@@ -307,7 +309,40 @@ const evolucion = ref([]);
 
 const config = ref({
   empresa: {
-    nombre: 'Mi Empresa'
+    nombre: authStore.empresa?.nombre || 'Mi Empresa'
+  }
+});
+
+// Cargar datos reales al montar
+onMounted(async () => {
+  try {
+    const [analiticaData, evolucionData] = await Promise.all([
+      analiticaService.getAnalytics(authStore.empresaId),
+      analiticaService.getEvolution(authStore.empresaId)
+    ]);
+
+    analitica.value = {
+      bienestar_global: analiticaData.bienestar_global || 0,
+      variacion_trimestral: analiticaData.variacion_trimestral || 0,
+      participacion_global: analiticaData.participacion_global || 0,
+      alertas_activas: analiticaData.alertas_activas || 0,
+      encuestas_activas: analiticaData.encuestas_activas || 0,
+      encuestas_completadas: analiticaData.encuestas_completadas || 0,
+      empleados_totales: analiticaData.empleados_totales || 0,
+      departamentos_fuertes: analiticaData.departamentos_fuertes || [],
+      departamentos_criticos: analiticaData.departamentos_criticos || []
+    };
+
+    evolucion.value = evolucionData || [];
+
+    // Actualizar nombre empresa si disponible
+    if (authStore.empresa?.nombre) {
+      config.value.empresa.nombre = authStore.empresa.nombre;
+    }
+  } catch (err) {
+    console.error('Error cargando datos de presentación:', err);
+  } finally {
+    loading.value = false;
   }
 });
 

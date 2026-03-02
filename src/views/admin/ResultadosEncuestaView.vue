@@ -57,9 +57,9 @@
                   <h1 class="text-2xl font-bold text-gray-900">{{ encuesta.titulo }}</h1>
                   <!-- Badge de privacidad -->
                   <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                        :class="encuesta.privacidad_nivel === 'anonimo' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'">
-                    <component :is="encuesta.privacidad_nivel === 'anonimo' ? EyeOff : Eye" class="h-3.5 w-3.5" />
-                    {{ encuesta.privacidad_nivel === 'anonimo' ? 'Anónima' : 'Identificada' }}
+                        :class="encuesta.privacidad_nivel !== 'identificado' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'">
+                    <component :is="encuesta.privacidad_nivel !== 'identificado' ? EyeOff : Eye" class="h-3.5 w-3.5" />
+                    {{ encuesta.privacidad_nivel === 'anonimato_completo' ? 'Anónima' : encuesta.privacidad_nivel === 'anonimato_parcial' ? 'Semi-anónima' : 'Identificada' }}
                   </span>
                   <!-- Badge estado -->
                   <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
@@ -150,7 +150,7 @@
                   </li>
                   <li class="flex items-start gap-2">
                     <CheckCircle class="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                    Recuerda que las respuestas son {{ encuesta.privacidad_nivel === 'anonimo' ? 'completamente anónimas' : 'confidenciales' }}
+                    Recuerda que las respuestas son {{ encuesta.privacidad_nivel === 'anonimato_completo' ? 'completamente anónimas' : encuesta.privacidad_nivel === 'anonimato_parcial' ? 'anónimas por departamento' : 'confidenciales' }}
                   </li>
                 </ul>
               </div>
@@ -256,9 +256,9 @@
                   <h1 class="text-3xl font-bold text-gray-900">{{ encuesta.titulo }}</h1>
                   <!-- Badge de privacidad -->
                   <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                        :class="encuesta.privacidad_nivel === 'anonimo' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'">
-                    <component :is="encuesta.privacidad_nivel === 'anonimo' ? EyeOff : Eye" class="h-3.5 w-3.5" />
-                    {{ encuesta.privacidad_nivel === 'anonimo' ? 'Anónima' : 'Identificada' }}
+                        :class="encuesta.privacidad_nivel !== 'identificado' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'">
+                    <component :is="encuesta.privacidad_nivel !== 'identificado' ? EyeOff : Eye" class="h-3.5 w-3.5" />
+                    {{ encuesta.privacidad_nivel === 'anonimato_completo' ? 'Anónima' : encuesta.privacidad_nivel === 'anonimato_parcial' ? 'Semi-anónima' : 'Identificada' }}
                   </span>
                   <!-- Badge estado -->
                   <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium capitalize"
@@ -824,9 +824,6 @@ const cargarResultados = async () => {
   try {
     const encuestaId = route.params.encuestaId;
 
-    console.log('[ResultadosEncuesta] Cargando encuesta:', encuestaId);
-    console.log('[ResultadosEncuesta] empresa_id del usuario:', authStore.empresaId);
-
     // Load survey data from Supabase
     const { data: encuestaData, error: encuestaError } = await supabase
       .from('encuestas')
@@ -838,10 +835,12 @@ const cargarResultados = async () => {
       .eq('empresa_id', authStore.empresaId)
       .single();
 
-    console.log('[ResultadosEncuesta] Encuesta cargada:', encuestaData);
-    console.log('[ResultadosEncuesta] Error encuesta:', encuestaError);
-
     if (encuestaError) throw encuestaError;
+
+    // Determinar nivel de privacidad para filtrar datos sensibles
+    const nivelPrivacidad = encuestaData.privacidad_nivel || 'anonimato_completo';
+    const esIdentificada = nivelPrivacidad === 'identificado';
+    const esParcial = nivelPrivacidad === 'anonimato_parcial';
 
     // Get total employees in the company for participation rate
     const { count: empleadosCount, error: empleadosError } = await supabase
@@ -852,48 +851,52 @@ const cargarResultados = async () => {
     if (!empleadosError && empleadosCount !== null) {
       totalEmpleadosEmpresa.value = empleadosCount;
     }
-    console.log('[ResultadosEncuesta] Total empleados empresa:', totalEmpleadosEmpresa.value);
 
-    // Load responses
+    // Load responses - seleccionar solo campos necesarios según privacidad
+    // Para encuestas anónimas: NO traer empleado_id al frontend
+    const selectFields = esIdentificada
+      ? 'id, encuesta_id, pregunta_id, empleado_id, departamento, respuesta, fecha_respuesta'
+      : esParcial
+        ? 'id, encuesta_id, pregunta_id, departamento, respuesta, fecha_respuesta'
+        : 'id, encuesta_id, pregunta_id, respuesta, fecha_respuesta';
+
     const { data: respuestasData, error: respuestasError } = await supabase
       .from('respuestas_encuesta')
-      .select('*')
+      .select(selectFields)
       .eq('encuesta_id', encuestaId);
-
-    console.log('[ResultadosEncuesta] Respuestas cargadas:', respuestasData?.length || 0, respuestasData);
-    console.log('[ResultadosEncuesta] Error respuestas:', respuestasError);
 
     if (respuestasError) throw respuestasError;
 
-    // Calculate total unique participants (by empleado_id)
-    // Filtrar valores null/undefined para contar solo participantes reales
-    const empleadoIds = respuestasData
-      .map(r => r.empleado_id)
-      .filter(id => id !== null && id !== undefined);
+    // Calculate total unique participants
+    // Para encuestas anónimas: contar por IDs únicos de respuesta agrupados por pregunta
+    let totalParticipantes = 0;
+    if (esIdentificada && respuestasData) {
+      const empleadoIds = respuestasData
+        .map(r => r.empleado_id)
+        .filter(id => id !== null && id !== undefined);
+      totalParticipantes = new Set(empleadoIds).size;
+    } else if (respuestasData && encuestaData.preguntas?.length > 0) {
+      // Para encuestas anónimas: contar respuestas de la primera pregunta como proxy de participantes
+      const primeraPreguntaId = encuestaData.preguntas[0].id;
+      totalParticipantes = respuestasData.filter(r => r.pregunta_id === primeraPreguntaId).length;
+    }
 
-    const uniqueEmpleadoIds = new Set(empleadoIds);
-    const totalParticipantes = uniqueEmpleadoIds.size;
-
-    console.log('[ResultadosEncuesta] empleado_ids encontrados:', empleadoIds);
-    console.log('[ResultadosEncuesta] empleado_ids únicos:', Array.from(uniqueEmpleadoIds));
-    console.log('[ResultadosEncuesta] Total participantes únicos:', totalParticipantes);
-
-    // Calcular departamentos únicos
-    const departamentosUnicos = new Set(
-      respuestasData
-        .map(r => r.departamento)
-        .filter(d => d !== null && d !== undefined && d !== '')
-    );
-    const totalDepartamentos = departamentosUnicos.size;
-    console.log('[ResultadosEncuesta] Departamentos únicos:', Array.from(departamentosUnicos));
-    console.log('[ResultadosEncuesta] Total departamentos:', totalDepartamentos);
+    // Calcular departamentos únicos (solo si el nivel de privacidad lo permite)
+    let totalDepartamentos = 0;
+    if (esParcial || esIdentificada) {
+      const departamentosUnicos = new Set(
+        respuestasData
+          .map(r => r.departamento)
+          .filter(d => d !== null && d !== undefined && d !== '')
+      );
+      totalDepartamentos = departamentosUnicos.size;
+    }
 
     // Process responses per question to generate chart data
     const preguntasConResultados = (encuestaData.preguntas || []).map(pregunta => {
       // Filter responses for this question
       const respuestasPregunta = respuestasData.filter(r => r.pregunta_id === pregunta.id);
       const totalRespuestasPregunta = respuestasPregunta.length;
-      console.log(`[ResultadosEncuesta] Pregunta "${pregunta.texto}" tiene ${totalRespuestasPregunta} respuestas`);
 
       // Count responses by value
       const conteo = {};
@@ -1067,22 +1070,16 @@ const cargarResultados = async () => {
       ? Math.round(sumaScores / preguntasConScore)
       : 50; // Default a 50% si no hay datos
 
-    console.log('[ResultadosEncuesta] Cálculo de bienestar académico:');
-    console.log(`  - Suma de scores: ${sumaScores}`);
-    console.log(`  - Preguntas con score: ${preguntasConScore}`);
-    console.log(`  - Bienestar calculado: ${calculatedBienestar}%`);
-
     indiceBienestarGlobal.value = calculatedBienestar;
 
     encuesta.value = {
       ...encuestaData,
       preguntas: preguntasConResultados,
       totalParticipantes,
+      totalDepartamentos,
+      // No almacenar respuestas crudas con empleado_id en el estado
       resultados: respuestasData
     };
-
-    console.log('[ResultadosEncuesta] Encuesta procesada:', encuesta.value);
-    console.log('[ResultadosEncuesta] Índice de bienestar calculado:', calculatedBienestar);
 
     await nextTick();
     crearGraficos();
@@ -1525,8 +1522,7 @@ const marcarAlertaComoGestionada = (alerta) => {
 
 // Handlers para RecomendacionesSmart
 const verDetalleRecomendacion = (recomendacion) => {
-  console.log('[ResultadosEncuesta] Ver detalle de recomendación:', recomendacion);
-  // Por ahora, mostrar en el modal existente adaptando los datos
+  // Mostrar en el modal existente adaptando los datos
   alertaSeleccionada.value = {
     id: recomendacion.id,
     tipo: recomendacion.nivel_riesgo === 'critico' ? 'critica' : recomendacion.nivel_riesgo,
@@ -1544,7 +1540,6 @@ const verDetalleRecomendacion = (recomendacion) => {
 };
 
 const onRecomendacionActualizada = (recomendacion) => {
-  console.log('[ResultadosEncuesta] Recomendación actualizada:', recomendacion);
   toast.add({
     severity: 'success',
     summary: 'Plan iniciado',

@@ -81,11 +81,11 @@
               {{ dato.interacciones }}%
             </span>
           </div>
-          <div class="w-full bg-gray-200 rounded-full h-3">
+          <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
             <div
               class="h-3 rounded-full transition-all duration-500"
               :class="dato.interacciones >= 80 ? 'bg-green-500' : dato.interacciones >= 60 ? 'bg-orange-500' : 'bg-red-500'"
-              :style="{ width: `${dato.interacciones}%` }"
+              :style="{ width: `${Math.min(dato.interacciones, 100)}%` }"
             ></div>
           </div>
         </div>

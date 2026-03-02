@@ -24,10 +24,7 @@ const analiticaService = {
    * Llama a la RPC analytics_overview
    */
   async getAnalytics(empresaId, dateFrom = null, dateTo = null, departmentIds = null) {
-    console.log('[Analítica] Cargando datos via RPC para empresa:', empresaId);
-
     if (!empresaId) {
-      console.warn('[Analítica] empresaId es null o undefined');
       return this._getEmptyAnalytics('No se especificó empresa');
     }
 
@@ -45,11 +42,8 @@ const analiticaService = {
       }
 
       if (!data) {
-        console.warn('[Analítica] RPC retornó null');
         return this._getEmptyAnalytics('Sin datos disponibles');
       }
-
-      console.log('[Analítica] Datos RPC recibidos:', data);
 
       // Obtener ranking de departamentos
       const deptRanking = await this._getDepartmentsRanking(dateFrom, dateTo);
@@ -93,13 +87,10 @@ const analiticaService = {
         _date_range: data.date_range
       };
 
-      console.log('[Analítica] Datos transformados:', resultado);
       return resultado;
 
     } catch (error) {
       console.error('[Analítica] Error general:', error);
-      // En caso de error, intentar fallback con queries directas
-      console.log('[Analítica] Intentando fallback con queries directas...');
       return this._getAnalyticsFallback(empresaId);
     }
   },
@@ -143,8 +134,6 @@ const analiticaService = {
    * Obtener evolución temporal del bienestar
    */
   async getEvolution(empresaId, meses = 6) {
-    console.log('[Analítica] Cargando evolución via RPC');
-
     if (!empresaId) {
       return [];
     }
@@ -165,7 +154,6 @@ const analiticaService = {
       }
 
       if (!data || !Array.isArray(data)) {
-        console.log('[Analítica] Sin datos de evolución');
         return [];
       }
 
@@ -176,7 +164,6 @@ const analiticaService = {
         participacion: d.participants || 0
       }));
 
-      console.log('[Analítica] Evolución calculada:', evolucion.length, 'períodos');
       return evolucion;
 
     } catch (error) {
@@ -189,8 +176,6 @@ const analiticaService = {
    * Obtener métricas por categoría de bienestar
    */
   async getCategorias(empresaId) {
-    console.log('[Analítica] Cargando categorías via RPC');
-
     if (!empresaId) {
       return [];
     }
@@ -207,7 +192,6 @@ const analiticaService = {
       }
 
       if (!data || !Array.isArray(data) || data.length === 0) {
-        console.log('[Analítica] Sin datos de categorías');
         return [];
       }
 
@@ -218,7 +202,6 @@ const analiticaService = {
         variacion: d.variation || 0
       }));
 
-      console.log('[Analítica] Categorías calculadas:', categorias.length);
       return categorias;
 
     } catch (error) {
@@ -232,8 +215,6 @@ const analiticaService = {
    * Compara RPC con counts directos
    */
   async verificarConsistencia() {
-    console.log('[Analítica] Verificando consistencia de datos...');
-
     try {
       const { data, error } = await supabase.rpc('analytics_debug');
 
@@ -242,7 +223,6 @@ const analiticaService = {
         return { error: error.message };
       }
 
-      console.log('[Analítica] Datos de debug:', data);
       return data;
 
     } catch (error) {
@@ -256,8 +236,6 @@ const analiticaService = {
    * Se usa si las RPCs fallan o no están disponibles
    */
   async _getAnalyticsFallback(empresaId) {
-    console.log('[Analítica] Usando fallback con queries directas');
-
     try {
       // 1. Empleados
       const { data: empleados, error: empError } = await supabase

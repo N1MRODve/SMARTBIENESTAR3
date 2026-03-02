@@ -259,14 +259,12 @@ const resetFormulario = () => {
 const handleSubmit = () => {
   if (!formularioValido.value) return;
   
-  console.log('Enviando datos del formulario:', formData.value);
   emit('save', { ...formData.value });
 };
 
 // Watch for recompensa prop changes (edit mode)
 watch(() => props.recompensa, (nuevaRecompensa) => {
   if (nuevaRecompensa) {
-    console.log('Editando recompensa:', nuevaRecompensa);
     formData.value = {
       titulo: nuevaRecompensa.titulo || '',
       descripcion: nuevaRecompensa.descripcion || '',

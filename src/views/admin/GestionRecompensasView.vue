@@ -124,10 +124,11 @@ const cargarHistorial = async () => {
       .from('canjes_recompensas')
       .select(`
         *,
-        empleado:empleados (
+        empleado:empleados!inner (
           id,
           nombre,
-          email
+          email,
+          empresa_id
         ),
         recompensa:recompensas (
           id,
@@ -135,7 +136,7 @@ const cargarHistorial = async () => {
           categoria
         )
       `)
-      .eq('recompensa.empresa_id', authStore.empresaId)
+      .eq('empleado.empresa_id', authStore.empresaId)
       .order('fecha_canje', { ascending: false });
 
     if (err) throw err;
@@ -192,7 +193,8 @@ const handleGuardarRecompensa = async (datos) => {
           imagen_url: datos.imagen_url,
           activa: datos.activa
         })
-        .eq('id', recompensaSeleccionada.value.id);
+        .eq('id', recompensaSeleccionada.value.id)
+        .eq('empresa_id', authStore.empresaId);
 
       if (err) throw err;
     } else {
@@ -232,7 +234,8 @@ const confirmarEliminar = async (id) => {
     const { error: err } = await supabase
       .from('recompensas')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('empresa_id', authStore.empresaId);
 
     if (err) throw err;
     await cargarRecompensas();
@@ -248,7 +251,8 @@ const toggleActiva = async (recompensa) => {
     const { error: err } = await supabase
       .from('recompensas')
       .update({ activa: !recompensa.activa })
-      .eq('id', recompensa.id);
+      .eq('id', recompensa.id)
+      .eq('empresa_id', authStore.empresaId);
 
     if (err) throw err;
     await cargarRecompensas();

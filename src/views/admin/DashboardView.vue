@@ -176,11 +176,14 @@ const loadMetrics = async () => {
       respuestas.forEach(resp => {
         const categoria = resp.preguntas_encuesta?.categoria;
         if (categoria && resp.respuesta) {
-          if (!categorias[categoria]) {
-            categorias[categoria] = { total: 0, count: 0 };
+          const valor = parseInt(resp.respuesta);
+          if (!isNaN(valor) && valor >= 1 && valor <= 5) {
+            if (!categorias[categoria]) {
+              categorias[categoria] = { total: 0, count: 0 };
+            }
+            categorias[categoria].total += valor;
+            categorias[categoria].count++;
           }
-          categorias[categoria].total += parseInt(resp.respuesta);
-          categorias[categoria].count++;
         }
       });
 

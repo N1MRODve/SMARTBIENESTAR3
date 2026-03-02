@@ -25,7 +25,7 @@ const progressBarColorClass = computed(() => {
 
 // Calcula el ancho de la barra de progreso en porcentaje
 const progressWidth = computed(() => {
-  return `${props.puntuacion * 10}%`; // Puntuación sobre 10
+  return `${Math.min(props.puntuacion * 10, 100)}%`; // Puntuación sobre 10
 });
 </script>
 
@@ -35,10 +35,10 @@ const progressWidth = computed(() => {
       <p class="font-semibold text-on-background">{{ titulo }}</p>
       <p class="text-2xl font-bold text-secondary-dark">{{ puntuacion }}</p>
     </div>
-    <div class="w-full bg-surface-variant rounded-full h-2 mt-2">
-      <div 
-        class="h-2 rounded-full" 
-        :class="progressBarColorClass" 
+    <div class="w-full bg-surface-variant rounded-full h-2 mt-2 overflow-hidden">
+      <div
+        class="h-2 rounded-full"
+        :class="progressBarColorClass"
         :style="{ width: progressWidth }"
       ></div>
     </div>

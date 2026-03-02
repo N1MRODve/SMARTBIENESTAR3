@@ -1,15 +1,17 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import Card from '@/components/ui/Card.vue';
+import { useAuthStore } from '@/stores/auth.store';
 import { recompensasService } from '@/services/recompensas.service';
 
+const authStore = useAuthStore();
 const historial = ref([]);
 const isLoading = ref(true);
 
 onMounted(async () => {
   isLoading.value = true;
   try {
-    const data = await recompensasService.getHistorialCanjes();
+    const data = await recompensasService.getHistorialCanjes(authStore.empresaId);
     historial.value = data.map(canje => ({
       id: canje.id,
       fecha: new Date(canje.fecha_canje).toLocaleDateString('es-ES', {
@@ -17,9 +19,9 @@ onMounted(async () => {
         month: 'short',
         day: 'numeric'
       }),
-      nombreEmpleado: canje.empleado_nombre || 'Empleado',
-      recompensaTitulo: canje.recompensa_nombre || 'Recompensa',
-      coste: canje.puntos_utilizados || canje.puntos_gastados || 0,
+      nombreEmpleado: canje.empleado?.nombre || 'Empleado',
+      recompensaTitulo: canje.recompensa?.nombre || 'Recompensa',
+      coste: canje.puntos_gastados || 0,
       estado: canje.estado
     }));
   } catch (error) {

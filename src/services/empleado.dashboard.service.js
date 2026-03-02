@@ -727,7 +727,6 @@ export const tipsService = {
       }
     } catch (e) {
       // Si la tabla no existe, usar tips estáticos
-      console.log('Usando tips estáticos');
     }
 
     return this.tipsEstaticos;

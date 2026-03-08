@@ -36,7 +36,7 @@ onMounted(async () => {
   <div class="space-y-6">
     <header>
       <h1 class="text-3xl font-bold text-on-background">Historial de Canjes</h1>
-      <p class="text-on-surface-variant">Revisa todas las recompensas canjeadas por los empleados.</p>
+      <p class="text-on-surface-variant">Revisa todas las recompensas canjeadas por los colaboradores.</p>
     </header>
 
     <div v-if="isLoading" class="text-center py-10">
@@ -49,7 +49,7 @@ onMounted(async () => {
           <thead class="bg-gray-50 border-b-2 border-gray-200">
             <tr>
               <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Fecha</th>
-              <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Empleado</th>
+              <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Colaborador</th>
               <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Recompensa</th>
               <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Puntos Canjeados</th>
               <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Estado</th>

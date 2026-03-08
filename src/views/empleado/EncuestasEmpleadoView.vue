@@ -119,7 +119,7 @@ const nombreEmpleado = computed(() => {
     const localPart = user.value.email.split('@')[0];
     return localPart.charAt(0).toUpperCase() + localPart.slice(1);
   }
-  return 'Empleado';
+  return 'Colaborador';
 });
 
 const nombreEmpresa = computed(() => {

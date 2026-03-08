@@ -384,7 +384,7 @@ const goToLogin = () => {
 
             <div>
               <label for="numEmpleados" class="block text-sm font-semibold text-gray-700 mb-2">
-                Número de Empleados
+                Número de Colaboradores
               </label>
               <select
                 id="numEmpleados"

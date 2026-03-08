@@ -110,7 +110,7 @@ onMounted(() => {
   <div class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
       <div class="border-b p-4 flex justify-between items-center">
-        <h2 class="text-xl font-semibold">Invitar Nuevos Empleados</h2>
+        <h2 class="text-xl font-semibold">Invitar Nuevos Colaboradores</h2>
         <button @click="$emit('close')" class="text-gray-500 hover:text-gray-800">&times;</button>
       </div>
 
@@ -137,7 +137,7 @@ onMounted(() => {
             </option>
           </select>
           <p v-if="mostrarErrorDepartamento" class="text-xs text-red-600 mt-1">
-            El departamento es obligatorio para invitar empleados
+            El departamento es obligatorio para invitar colaboradores
           </p>
           <p v-else-if="departamentosList.length === 0" class="text-xs text-amber-600 mt-1">
             No hay departamentos creados. Debes crear al menos uno primero.

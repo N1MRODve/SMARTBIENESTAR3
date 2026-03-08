@@ -397,10 +397,10 @@ const irAEncuestas = () => {
                 <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                   <span class="text-orange-700 font-bold text-sm">3</span>
                 </div>
-                <h4 class="font-semibold text-gray-900">Los empleados canjean</h4>
+                <h4 class="font-semibold text-gray-900">Los colaboradores canjean</h4>
               </div>
               <p class="text-sm text-gray-600 ml-11">
-                Los empleados acumulan puntos participando y los canjean por las recompensas que prefieras.
+                Los colaboradores acumulan puntos participando y los canjean por las recompensas que prefieras.
               </p>
             </div>
           </div>
@@ -433,7 +433,7 @@ const irAEncuestas = () => {
               </div>
               <div>
                 <h3 class="text-lg font-semibold text-white">Configuración del Sistema de Puntos</h3>
-                <p class="text-white/80 text-sm">Define cuántos puntos ganan los empleados por cada actividad</p>
+                <p class="text-white/80 text-sm">Define cuántos puntos ganan los colaboradores por cada actividad</p>
               </div>
             </div>
             <button
@@ -634,7 +634,7 @@ const irAEncuestas = () => {
             </li>
             <li class="flex items-start">
               <CheckCircle class="h-4 w-4 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
-              <span>Historial completo de canjes con datos de empleados</span>
+              <span>Historial completo de canjes con datos de colaboradores</span>
             </li>
             <li class="flex items-start">
               <CheckCircle class="h-4 w-4 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
@@ -886,7 +886,7 @@ const irAEncuestas = () => {
               <thead class="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Fecha</th>
-                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Empleado</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Colaborador</th>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Recompensa</th>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Puntos</th>
                   <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Estado</th>
@@ -906,7 +906,7 @@ const irAEncuestas = () => {
                         </span>
                       </div>
                       <div>
-                        <div class="text-sm font-medium text-gray-900">{{ canje.empleado?.nombre || 'Empleado' }}</div>
+                        <div class="text-sm font-medium text-gray-900">{{ canje.empleado?.nombre || 'Colaborador' }}</div>
                         <div class="text-xs text-gray-500">{{ canje.empleado?.email }}</div>
                       </div>
                     </div>

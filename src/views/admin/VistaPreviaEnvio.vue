@@ -107,9 +107,9 @@
                   />
                   <div class="ml-3 flex-1">
                     <div class="flex items-center justify-between">
-                      <span class="font-semibold text-gray-900">Todos los empleados</span>
+                      <span class="font-semibold text-gray-900">Todos los colaboradores</span>
                       <span class="text-sm font-medium text-indigo-700">
-                        {{ totalEmpleadosEmpresa }} empleados
+                        {{ totalEmpleadosEmpresa }} colaboradores
                       </span>
                     </div>
                   </div>
@@ -215,7 +215,7 @@
           <div class="flex justify-between items-start">
             <div>
               <h2 class="text-2xl font-bold text-gray-900">Vista Previa</h2>
-              <p class="text-gray-600 mt-1">Así verá la encuesta un empleado</p>
+              <p class="text-gray-600 mt-1">Así verá la encuesta un colaborador</p>
             </div>
             <button @click="mostrarVistaPrevia = false" class="text-gray-400 hover:text-gray-600 transition-colors">
               <X class="h-6 w-6" />

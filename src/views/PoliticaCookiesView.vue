@@ -154,7 +154,7 @@ function goBack() {
                 </div>
                 <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                   <span class="text-xs font-semibold text-slate-500 sm:w-40">Correo electrónico:</span>
-                  <span class="text-sm text-slate-700">info@smartbienestar.com</span>
+                  <span class="text-sm text-slate-700">privacidad@smartbienestar.es</span>
                 </div>
                 <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                   <span class="text-xs font-semibold text-slate-500 sm:w-40">Domicilio:</span>
@@ -385,7 +385,7 @@ function goBack() {
                 </div>
               </div>
               <p class="text-sm text-slate-600 leading-relaxed mb-2">
-                Para ejercer estos derechos, puede dirigirse a <strong>info@smartbienestar.com</strong> indicando en
+                Para ejercer estos derechos, puede dirigirse a <strong>privacidad@smartbienestar.es</strong> indicando en
                 el asunto "PROTECCIÓN DE DATOS" y adjuntando copia de su documento de identidad.
               </p>
               <p class="text-sm text-slate-600 leading-relaxed">
@@ -429,7 +429,7 @@ function goBack() {
               <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex flex-col gap-2">
                 <div class="flex items-center gap-2">
                   <Mail :size="14" class="text-blue-500" />
-                  <span class="text-sm text-slate-700">info@smartbienestar.com</span>
+                  <span class="text-sm text-slate-700">privacidad@smartbienestar.es</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <Globe :size="14" class="text-blue-500" />

@@ -34,7 +34,7 @@
               <p class="text-blue-700">
                 Para garantizar el anonimato de las respuestas, solo mostramos datos agregados
                 cuando hay suficientes participantes en cada grupo. Esto protege la identidad
-                de los empleados y fomenta respuestas honestas.
+                de los colaboradores y fomenta respuestas honestas.
               </p>
             </div>
           </div>
@@ -92,7 +92,7 @@
               <p class="text-3xl font-bold text-primary">
                 {{ participacionGlobal.toFixed(0) }}%
               </p>
-              <p class="text-xs text-gray-500 mt-1">de todos los empleados</p>
+              <p class="text-xs text-gray-500 mt-1">de todos los colaboradores</p>
             </div>
             <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
               <Users class="h-8 w-8 text-primary" />
@@ -145,7 +145,7 @@
                 <!-- Participantes -->
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="text-sm font-semibold text-gray-900">{{ dept.participantes }}</span>
-                  <span class="text-sm text-gray-500"> empleados</span>
+                  <span class="text-sm text-gray-500"> colaboradores</span>
                 </td>
 
                 <!-- Promedio -->

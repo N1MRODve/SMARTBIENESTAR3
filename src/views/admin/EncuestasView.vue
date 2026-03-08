@@ -214,7 +214,7 @@ const formatearFecha = (fecha) => {
                   <h4 class="font-semibold text-gray-900">Asigna recompensas</h4>
                 </div>
                 <p class="text-sm text-gray-600 ml-11">
-                  Define cuántos puntos ganarán los empleados al completarla (base: 50, bonus opcional).
+                  Define cuántos puntos ganarán los colaboradores al completarla (base: 50, bonus opcional).
                 </p>
               </div>
 
@@ -264,7 +264,7 @@ const formatearFecha = (fecha) => {
 
         <div class="p-6">
           <p class="text-gray-700 mb-6">
-            Incentiva la participación otorgando puntos que tus empleados podrán canjear por recompensas.
+            Incentiva la participación otorgando puntos que tus colaboradores podrán canjear por recompensas.
             Tú decides cuántos puntos vale cada encuesta.
           </p>
 
@@ -421,7 +421,7 @@ const formatearFecha = (fecha) => {
           </div>
           <div class="flex-1">
             <h3 class="text-lg font-bold text-amber-900 mb-2">Sistema de Recompensas por Participación</h3>
-            <p class="text-sm text-amber-800 mb-3">Los empleados ganan puntos automáticamente al completar encuestas. Configura cuántos puntos otorga cada encuesta al crearla o editarla.</p>
+            <p class="text-sm text-amber-800 mb-3">Los colaboradores ganan puntos automáticamente al completar encuestas. Configura cuántos puntos otorga cada encuesta al crearla o editarla.</p>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
               <div class="bg-white rounded-lg p-3 border border-amber-200">
                 <p class="text-xl font-bold text-amber-600">+50 pts</p>
@@ -436,7 +436,7 @@ const formatearFecha = (fecha) => {
                 <p class="text-xs text-amber-800">Al crear encuesta</p>
               </div>
             </div>
-            <p class="text-xs text-amber-700 mt-3">💡 Los puntos se acreditan automáticamente al completar la encuesta. Los empleados pueden canjearlos en el catálogo de recompensas.</p>
+            <p class="text-xs text-amber-700 mt-3">💡 Los puntos se acreditan automáticamente al completar la encuesta. Los colaboradores pueden canjearlos en el catálogo de recompensas.</p>
           </div>
         </div>
       </div>

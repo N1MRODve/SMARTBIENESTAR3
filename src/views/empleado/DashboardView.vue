@@ -118,7 +118,7 @@ const nombreEmpleado = computed(() => {
     const localPart = user.value.email.split('@')[0];
     return localPart.charAt(0).toUpperCase() + localPart.slice(1);
   }
-  return 'Empleado';
+  return 'Colaborador';
 });
 
 const nombreEmpresa = computed(() => {
@@ -922,7 +922,7 @@ const formatearHora = (fecha) => {
                 <h4 class="font-semibold text-gray-900 text-sm">Tu privacidad está protegida</h4>
                 <p class="text-xs text-gray-600 mt-1 leading-relaxed">
                   Tus respuestas a encuestas son <strong>anónimas</strong>.
-                  Solo ves información de <strong>{{ nombreEmpresa }}</strong> y nunca datos de otros empleados.
+                  Solo ves información de <strong>{{ nombreEmpresa }}</strong> y nunca datos de otros colaboradores.
                 </p>
               </div>
             </div>

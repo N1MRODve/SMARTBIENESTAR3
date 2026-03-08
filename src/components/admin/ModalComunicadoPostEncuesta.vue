@@ -244,10 +244,10 @@ const plantillasComunicado = ref([
 ]);
 
 const opcionesDestinatarios = ref([
-  { id: 'todos', label: 'Todos los empleados', icono: '👥', descripcion: 'Enviar a toda la organización' },
+  { id: 'todos', label: 'Todos los colaboradores', icono: '👥', descripcion: 'Enviar a toda la organización' },
   { id: 'lideres', label: 'Líderes de equipo', icono: '👔', descripcion: 'Solo líderes y gerentes' },
-  { id: 'riesgo_alto', label: 'Empleados en riesgo alto', icono: '⚠️', descripcion: 'Basado en resultados de encuesta' },
-  { id: 'riesgo_moderado', label: 'Empleados en riesgo moderado', icono: '⚡', descripcion: 'Basado en resultados de encuesta' }
+  { id: 'riesgo_alto', label: 'Colaboradores en riesgo alto', icono: '⚠️', descripcion: 'Basado en resultados de encuesta' },
+  { id: 'riesgo_moderado', label: 'Colaboradores en riesgo moderado', icono: '⚡', descripcion: 'Basado en resultados de encuesta' }
 ]);
 
 // Estado

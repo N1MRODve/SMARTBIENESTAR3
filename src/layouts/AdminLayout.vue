@@ -52,7 +52,11 @@ const loadBadgeCounts = async () => {
 };
 
 const handleLogout = async () => {
-  await authStore.logout();
+  try {
+    await authStore.logout();
+  } catch (error) {
+    console.error('Error durante cierre de sesión:', error);
+  }
   router.push('/login');
 };
 
@@ -100,7 +104,7 @@ const showBreadcrumbs = computed(() => {
             <li>
               <router-link to="/admin/empleados" class="nav-item">
                 <Users class="nav-icon" />
-                <span class="flex-1">Empleados</span>
+                <span class="flex-1">Colaboradores</span>
                 <span v-if="empleadosInvitados > 0" class="badge badge-blue">
                   {{ empleadosInvitados }}
                 </span>

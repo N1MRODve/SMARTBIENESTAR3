@@ -35,7 +35,7 @@ const steps = [
   {
     number: 2,
     title: 'Invita a tu equipo',
-    description: 'Comienza agregando empleados',
+    description: 'Comienza agregando colaboradores',
     icon: Users
   },
   {
@@ -155,7 +155,7 @@ const goToStep = (action) => {
               <div class="bg-blue-50 rounded-xl p-6">
                 <Users class="h-8 w-8 text-blue-600 mx-auto mb-3" />
                 <h3 class="font-semibold text-gray-900 mb-2">Gestiona tu equipo</h3>
-                <p class="text-sm text-gray-600">Invita y administra empleados</p>
+                <p class="text-sm text-gray-600">Invita y administra colaboradores</p>
               </div>
               <div class="bg-indigo-50 rounded-xl p-6">
                 <MessageSquare class="h-8 w-8 text-indigo-600 mx-auto mb-3" />
@@ -192,7 +192,7 @@ const goToStep = (action) => {
 
             <div class="bg-gray-50 rounded-xl p-6 max-w-md mx-auto mb-8">
               <p class="text-sm text-gray-600 mb-2">Puedes hacer esto ahora o después desde:</p>
-              <p class="font-semibold text-gray-900">Panel de Admin → Empleados</p>
+              <p class="font-semibold text-gray-900">Panel de Admin → Colaboradores</p>
             </div>
 
             <div class="flex gap-4 justify-center">
@@ -200,7 +200,7 @@ const goToStep = (action) => {
                 Hacer después
               </Button>
               <Button @click="goToStep('invite')">
-                Invitar empleados ahora
+                Invitar colaboradores ahora
               </Button>
             </div>
           </div>

@@ -98,7 +98,7 @@ const goBack = () => {
           <div class="text-center p-4 bg-gray-50 rounded-lg">
             <Users class="w-6 h-6 text-blue-600 mx-auto mb-2" />
             <p class="text-2xl font-bold text-gray-900">{{ empresa.stats?.totalEmpleados || 0 }}</p>
-            <p class="text-sm text-gray-500">Empleados</p>
+            <p class="text-sm text-gray-500">Colaboradores</p>
           </div>
           <div class="text-center p-4 bg-gray-50 rounded-lg">
             <FileText class="w-6 h-6 text-emerald-600 mx-auto mb-2" />

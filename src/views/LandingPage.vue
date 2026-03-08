@@ -53,8 +53,8 @@ const screenshots = [
   },
   {
     id: 'empleado-dashboard',
-    title: 'Portal del Empleado',
-    description: 'Interfaz intuitiva para empleados con encuestas, comunicados y recompensas.',
+    title: 'Portal del Colaborador',
+    description: 'Interfaz intuitiva para colaboradores con encuestas, comunicados y recompensas.',
     role: 'empleado'
   }
 ];
@@ -84,7 +84,7 @@ const beneficiosAdmin = [
   {
     icon: Shield,
     title: 'Datos Confidenciales',
-    description: 'Resultados agregados que protegen la privacidad individual de cada empleado.'
+    description: 'Resultados agregados que protegen la privacidad individual de cada colaborador.'
   },
   {
     icon: TrendingUp,
@@ -191,7 +191,7 @@ const goToDemo = () => {
               Plataforma
             </button>
             <button @click="scrollToSection('para-empleados')" class="text-gray-600 hover:text-gray-900 text-sm font-medium transition-colors">
-              Para Empleados
+              Para Colaboradores
             </button>
           </div>
 
@@ -231,7 +231,7 @@ const goToDemo = () => {
               Plataforma
             </button>
             <button @click="scrollToSection('para-empleados')" class="text-gray-600 hover:text-gray-900 text-sm font-medium text-left">
-              Para Empleados
+              Para Colaboradores
             </button>
             <div class="flex flex-col gap-2 pt-4 border-t border-gray-100">
               <button @click="goToLogin" class="w-full py-2.5 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
@@ -417,7 +417,7 @@ const goToDemo = () => {
             Diseñada para ser fácil de usar
           </h2>
           <p class="mt-4 text-xl text-gray-600">
-            Interfaz intuitiva tanto para administradores como para empleados.
+            Interfaz intuitiva tanto para administradores como para colaboradores.
           </p>
         </div>
 
@@ -471,7 +471,7 @@ const goToDemo = () => {
                   <div class="grid grid-cols-4 gap-4">
                     <div class="bg-indigo-50 rounded-lg p-4">
                       <div class="text-2xl font-bold text-indigo-600">48</div>
-                      <div class="text-xs text-gray-600">Empleados</div>
+                      <div class="text-xs text-gray-600">Colaboradores</div>
                     </div>
                     <div class="bg-orange-50 rounded-lg p-4">
                       <div class="text-2xl font-bold text-orange-600">3</div>
@@ -608,7 +608,7 @@ const goToDemo = () => {
         <div class="text-center max-w-3xl mx-auto mb-16">
           <div class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-4">
             <Heart class="h-4 w-4" />
-            Para Empleados
+            Para Colaboradores
           </div>
           <h2 class="text-3xl sm:text-4xl font-bold text-gray-900">
             Tu voz importa y está protegida
@@ -641,7 +641,7 @@ const goToDemo = () => {
             <div class="text-center md:text-left">
               <h3 class="text-xl font-bold text-green-900">Compromiso con la Privacidad</h3>
               <p class="mt-2 text-green-700">
-                Las respuestas de cada empleado son completamente confidenciales. Los administradores solo ven resultados agregados y anónimos, nunca respuestas individuales. Tu honestidad está protegida.
+                Las respuestas de cada colaborador son completamente confidenciales. Los administradores solo ven resultados agregados y anónimos, nunca respuestas individuales. Tu honestidad está protegida.
               </p>
             </div>
           </div>
@@ -717,6 +717,7 @@ const goToDemo = () => {
           <div class="flex items-center gap-6 text-gray-400 text-sm">
             <a href="#" class="hover:text-white transition-colors">Términos de uso</a>
             <a href="#" class="hover:text-white transition-colors">Privacidad</a>
+            <router-link to="/politica-cookies" class="hover:text-white transition-colors">Política de Cookies</router-link>
             <a href="#" class="hover:text-white transition-colors">Contacto</a>
           </div>
           <div class="text-gray-500 text-sm">

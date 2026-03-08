@@ -46,7 +46,7 @@ const pendingActions = computed(() => {
         actions.push({
           id: `low-participation-${encuesta.id}`,
           icon: FileText,
-          title: `${encuesta.totalPendientes} empleados sin responder encuesta`,
+          title: `${encuesta.totalPendientes} colaboradores sin responder encuesta`,
           description: `"${encuesta.titulo}" tiene ${encuesta.participacion}% de participación`,
           actionLabel: 'Ver encuesta',
           priority: 'high',

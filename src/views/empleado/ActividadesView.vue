@@ -36,7 +36,7 @@ const tips = [
   {
     icon: Dumbbell,
     titulo: 'Ejercicio y productividad',
-    texto: 'Los empleados activos son un 23% más productivos y reportan mayor satisfacción laboral.'
+    texto: 'Los colaboradores activos son un 23% más productivos y reportan mayor satisfacción laboral.'
   },
   {
     icon: Heart,

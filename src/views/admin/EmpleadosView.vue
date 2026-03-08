@@ -207,7 +207,7 @@ const cargarEmpleados = async () => {
     }));
   } catch (error) {
     console.error('Error cargando empleados:', error);
-    toast.error('Error al cargar empleados');
+    toast.error('Error al cargar colaboradores');
   } finally {
     isLoading.value = false;
   }
@@ -255,12 +255,12 @@ const handleInvitar = async (datosEmpleados) => {
     toast.success(
       count === 1
         ? `${datosEmpleados[0].nombre} ha sido invitado correctamente`
-        : `${count} empleados han sido invitados correctamente`,
+        : `${count} colaboradores han sido invitados correctamente`,
       { icon: '👥', timeout: 5000 }
     );
   } catch (error) {
     console.error('Error invitando empleados:', error);
-    toast.error('Error al invitar empleados. Por favor, verifica los datos e intenta de nuevo.');
+    toast.error('Error al invitar colaboradores. Por favor, verifica los datos e intenta de nuevo.');
   }
 };
 
@@ -286,10 +286,10 @@ const handleActualizarEmpleado = async (datosActualizados) => {
 
     await cargarEmpleados();
     isEditModalVisible.value = false;
-    toast.success('Empleado actualizado correctamente', { icon: '✅' });
+    toast.success('Colaborador actualizado correctamente', { icon: '✅' });
   } catch (error) {
     console.error('Error actualizando empleado:', error);
-    toast.error('Error al actualizar empleado. Por favor, verifica los datos e intenta de nuevo.');
+    toast.error('Error al actualizar colaborador. Por favor, verifica los datos e intenta de nuevo.');
   }
 };
 
@@ -350,7 +350,7 @@ const reenviarInvitacionesBloque = async () => {
     );
 
     if (empleadosInvitados.length === 0) {
-      toast.warning('Selecciona al menos un empleado con estado "Invitado"');
+      toast.warning('Selecciona al menos un colaborador con estado "Invitado"');
       return;
     }
 
@@ -371,7 +371,7 @@ const reenviarInvitacionesBloque = async () => {
 };
 
 const eliminarBloque = async () => {
-  if (!confirm(`¿Estás seguro de eliminar ${empleadosSeleccionados.value.length} empleados?`)) {
+  if (!confirm(`¿Estás seguro de eliminar ${empleadosSeleccionados.value.length} colaboradores?`)) {
     return;
   }
 
@@ -383,12 +383,12 @@ const eliminarBloque = async () => {
 
     if (error) throw error;
 
-    toast.success(`${empleadosSeleccionados.value.length} empleados eliminados`, { icon: '🗑️' });
+    toast.success(`${empleadosSeleccionados.value.length} colaboradores eliminados`, { icon: '🗑️' });
     empleadosSeleccionados.value = [];
     await cargarEmpleados();
   } catch (error) {
     console.error('Error eliminando empleados:', error);
-    toast.error('Error al eliminar empleados');
+    toast.error('Error al eliminar colaboradores');
   }
 };
 
@@ -407,7 +407,7 @@ const cambiarEstadoBloque = async () => {
 
     if (error) throw error;
 
-    toast.success(`Estado actualizado para ${empleadosSeleccionados.value.length} empleados`);
+    toast.success(`Estado actualizado para ${empleadosSeleccionados.value.length} colaboradores`);
     empleadosSeleccionados.value = [];
     await cargarEmpleados();
   } catch (error) {
@@ -511,9 +511,9 @@ const verActividad = (empleado) => {
             <Users class="h-8 w-8 text-white" />
           </div>
           <div>
-            <h1 class="text-3xl font-bold text-white">Gestión de Empleados</h1>
+            <h1 class="text-3xl font-bold text-white">Gestión de Colaboradores</h1>
             <p class="text-white/80 mt-1">
-              {{ empleados.length }} empleado{{ empleados.length !== 1 ? 's' : '' }} en tu organización
+              {{ empleados.length }} colaborador{{ empleados.length !== 1 ? 'es' : '' }} en tu organización
             </p>
           </div>
         </div>
@@ -522,7 +522,7 @@ const verActividad = (empleado) => {
           class="bg-white text-blue-600 font-semibold py-3 px-6 rounded-xl hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
         >
           <Plus class="h-5 w-5" />
-          Invitar Empleados
+          Invitar Colaboradores
         </button>
       </div>
     </div>
@@ -536,9 +536,9 @@ const verActividad = (empleado) => {
     <div v-else-if="!hasEmpleados" class="bg-white rounded-2xl shadow-lg border border-gray-100">
       <EmptyState
         :icon="Users"
-        title="No hay empleados aún"
+        title="No hay colaboradores aún"
         description="Comienza invitando a los miembros de tu equipo. Ellos recibirán una invitación por email para unirse a la plataforma."
-        action-text="Invitar empleados"
+        action-text="Invitar colaboradores"
         :action-icon="Mail"
         @action="isModalVisible = true"
       />
@@ -552,7 +552,7 @@ const verActividad = (empleado) => {
         <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Total Empleados</p>
+              <p class="text-sm font-medium text-gray-600">Total Colaboradores</p>
               <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats.total }}</p>
             </div>
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -666,7 +666,7 @@ const verActividad = (empleado) => {
 
           <!-- Contador de resultados -->
           <span class="text-sm text-gray-500 ml-auto">
-            {{ empleadosFiltrados.length }} de {{ empleados.length }} empleados
+            {{ empleadosFiltrados.length }} de {{ empleados.length }} colaboradores
           </span>
         </div>
       </div>
@@ -918,7 +918,7 @@ const verActividad = (empleado) => {
                         <Edit3 class="h-4 w-4" />
                       </button>
                       <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                        Editar empleado
+                        Editar colaborador
                         <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
                       </span>
                     </div>

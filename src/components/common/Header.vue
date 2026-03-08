@@ -71,7 +71,7 @@ const nombreUsuario = computed(() => {
 const rolUsuario = computed(() => {
   const roles = {
     'administrador': 'Administrador',
-    'empleado': 'Empleado'
+    'empleado': 'Colaborador'
   };
   return roles[authStore.userRole] || 'Usuario';
 });
@@ -85,23 +85,9 @@ const iniciales = computed(() => {
 const handleLogout = async () => {
   try {
     await authStore.logout();
-    
-    toast.add({
-      severity: 'info',
-      summary: 'Sesión cerrada',
-      detail: 'Has cerrado sesión correctamente',
-      life: 3000
-    });
-    
-    router.push('/login');
   } catch (error) {
     console.error('Error al cerrar sesión:', error);
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'No se pudo cerrar la sesión',
-      life: 4000
-    });
   }
+  router.push('/login');
 };
 </script>

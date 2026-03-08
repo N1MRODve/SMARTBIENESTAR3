@@ -314,7 +314,7 @@ const verEncuesta = (encuestaId) => {
                 </h2>
 
                 <p class="text-gray-700 text-lg mb-6 leading-relaxed">
-                  La participación mide <strong>cuántos empleados responden tus encuestas</strong> y te ayuda a detectar
+                  La participación mide <strong>cuántos colaboradores responden tus encuestas</strong> y te ayuda a detectar
                   desinterés, saturación o problemas de comunicación antes de que se conviertan en crisis.
                 </p>
 
@@ -367,7 +367,7 @@ const verEncuesta = (encuestaId) => {
                     <TrendingUp class="h-5 w-5 text-gray-400" />
                   </div>
                   <p class="text-2xl font-bold text-gray-400">---%</p>
-                  <p class="text-xs text-gray-500 mt-1">Porcentaje medio de empleados que responden</p>
+                  <p class="text-xs text-gray-500 mt-1">Porcentaje medio de colaboradores que responden</p>
                 </div>
 
                 <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50">
@@ -376,7 +376,7 @@ const verEncuesta = (encuestaId) => {
                     <CheckCircle class="h-5 w-5 text-gray-400" />
                   </div>
                   <p class="text-2xl font-bold text-gray-400">---</p>
-                  <p class="text-xs text-gray-500 mt-1">Respuestas recibidas vs total de empleados</p>
+                  <p class="text-xs text-gray-500 mt-1">Respuestas recibidas vs total de colaboradores</p>
                 </div>
 
                 <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-gray-50">
@@ -566,7 +566,7 @@ const verEncuesta = (encuestaId) => {
                         :style="{ width: `${item.tasa}%` }"
                       ></div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">{{ item.respondidos }}/{{ item.enviados }} empleados</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ item.respondidos }}/{{ item.enviados }} colaboradores</p>
                   </div>
                 </div>
               </div>

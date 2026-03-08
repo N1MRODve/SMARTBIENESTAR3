@@ -11,7 +11,7 @@
         </span>
       </div>
       <p class="text-sm text-gray-500 mt-1">
-        Feedback cualitativo de los empleados (100% anónimo)
+        Feedback cualitativo de los colaboradores (100% anónimo)
       </p>
     </div>
 
@@ -21,7 +21,7 @@
         <MessageSquare class="h-12 w-12 text-gray-400 mx-auto mb-4" />
         <h4 class="text-lg font-medium text-gray-900 mb-2">No se han recibido comentarios</h4>
         <p class="text-gray-500">
-          Los empleados aún no han dejado comentarios en las preguntas de texto abierto.
+          Los colaboradores aún no han dejado comentarios en las preguntas de texto abierto.
         </p>
       </div>
 
@@ -44,7 +44,7 @@
               </p>
               <div class="flex items-center mt-2 text-xs text-gray-500">
                 <User class="h-3 w-3 mr-1" />
-                <span>Empleado anónimo</span>
+                <span>Colaborador anónimo</span>
               </div>
             </div>
           </div>

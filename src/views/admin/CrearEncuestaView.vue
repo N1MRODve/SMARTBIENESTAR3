@@ -97,7 +97,7 @@
                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Ej: Pulso de Bienestar Q4 2024"
                 />
-                <p class="text-xs text-gray-500">Un nombre que los empleados reconozcan fácilmente</p>
+                <p class="text-xs text-gray-500">Un nombre que los colaboradores reconozcan fácilmente</p>
               </div>
 
               <!-- Descripción -->
@@ -114,7 +114,7 @@
                   maxlength="200"
                 />
                 <p class="text-xs text-gray-500">
-                  {{ encuesta.descripcion?.length || 0 }}/200 - Ayuda a los empleados a entender el propósito de la encuesta
+                  {{ encuesta.descripcion?.length || 0 }}/200 - Ayuda a los colaboradores a entender el propósito de la encuesta
                 </p>
               </div>
             </div>
@@ -304,7 +304,7 @@
                     <h4 class="font-semibold text-purple-900">Feedback cualitativo</h4>
                     <span class="text-xs px-2 py-0.5 bg-purple-200 text-purple-800 rounded-full">Recomendada</span>
                   </div>
-                  <p class="text-sm text-purple-700 mb-4">Permite a los empleados expresar ideas que no captan las preguntas cerradas.</p>
+                  <p class="text-sm text-purple-700 mb-4">Permite a los colaboradores expresar ideas que no captan las preguntas cerradas.</p>
 
                   <label
                     v-for="pregunta in getPreguntasAbiertas"
@@ -718,7 +718,7 @@
             <div class="grid grid-cols-3 gap-4 mb-6">
               <div class="bg-indigo-50 rounded-xl p-4 text-center">
                 <p class="text-3xl font-bold text-indigo-600">{{ audienciaEstimada }}</p>
-                <p class="text-sm text-indigo-700">Empleados alcanzados</p>
+                <p class="text-sm text-indigo-700">Colaboradores alcanzados</p>
               </div>
               <div class="bg-green-50 rounded-xl p-4 text-center">
                 <p class="text-3xl font-bold text-green-600">{{ departamentosSeleccionados.length || departamentos.length }}</p>
@@ -749,7 +749,7 @@
                   </div>
                   <div>
                     <h4 class="font-semibold text-gray-900">Toda la empresa</h4>
-                    <p class="text-sm text-gray-600">Enviar a todos los {{ totalEmpleados }} empleados</p>
+                    <p class="text-sm text-gray-600">Enviar a todos los {{ totalEmpleados }} colaboradores</p>
                   </div>
                 </label>
 
@@ -786,7 +786,7 @@
               <div v-else-if="departamentos.length === 0" class="text-center py-8 bg-gray-50 rounded-xl">
                 <Building class="h-12 w-12 text-gray-400 mx-auto mb-3" />
                 <p class="text-gray-600">No hay departamentos configurados</p>
-                <p class="text-sm text-gray-500">Configura departamentos en la sección de empleados</p>
+                <p class="text-sm text-gray-500">Configura departamentos en la sección de colaboradores</p>
               </div>
 
               <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -807,7 +807,7 @@
                   />
                   <div class="ml-3 flex-1">
                     <h4 class="font-medium text-gray-900">{{ dept.nombre }}</h4>
-                    <p class="text-sm text-gray-500">{{ getEmpleadosPorDepartamento(dept.id) }} empleados</p>
+                    <p class="text-sm text-gray-500">{{ getEmpleadosPorDepartamento(dept.id) }} colaboradores</p>
                   </div>
                 </label>
               </div>
@@ -820,7 +820,7 @@
                 <div>
                   <h4 class="font-semibold text-yellow-900">Muestra pequeña</h4>
                   <p class="text-sm text-yellow-800">
-                    Con menos de 5 empleados, los resultados pueden no ser estadísticamente representativos.
+                    Con menos de 5 colaboradores, los resultados pueden no ser estadísticamente representativos.
                     Considera ampliar la audiencia para obtener datos más fiables.
                   </p>
                 </div>
@@ -929,7 +929,7 @@
                 <div class="flex-1">
                   <h4 class="font-bold text-gray-900 text-lg">Identificado (con consentimiento)</h4>
                   <p class="text-gray-600 mt-1">
-                    Las respuestas se asocian al empleado. Requiere consentimiento explícito.
+                    Las respuestas se asocian al colaborador. Requiere consentimiento explícito.
                   </p>
                   <div class="mt-3 p-3 bg-white border border-blue-200 rounded-lg space-y-2">
                     <p class="text-sm text-blue-800 flex items-center gap-2">
@@ -954,7 +954,7 @@
                   <p class="text-sm text-indigo-800">
                     SMART Bienestar cumple con el Reglamento General de Protección de Datos.
                     Todos los datos se cifran y almacenan en servidores europeos.
-                    Los empleados verán la configuración de privacidad antes de responder.
+                    Los colaboradores verán la configuración de privacidad antes de responder.
                   </p>
                 </div>
               </div>
@@ -1011,7 +1011,7 @@
                     </p>
                   </div>
                   <div>
-                    <p class="text-xs text-gray-500">Empleados</p>
+                    <p class="text-xs text-gray-500">Colaboradores</p>
                     <p class="font-medium text-gray-900">{{ audienciaEstimada }} personas</p>
                   </div>
                   <div>
@@ -1429,7 +1429,7 @@ const preguntasPorCategoria = {
     // Preguntas clave
     { id: 'co-1', texto: '¿Qué tan clara es la comunicación sobre objetivos y expectativas en tu equipo?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
     { id: 'co-2', texto: '¿Recibes información oportuna sobre cambios que afectan tu trabajo?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
-    { id: 'co-3', texto: '¿Qué tan efectiva es la comunicación de la dirección hacia los empleados?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
+    { id: 'co-3', texto: '¿Qué tan efectiva es la comunicación de la dirección hacia los colaboradores?', tipo: 'escala_1_5', opciones: [], esValidada: true, esClave: true, categoria: 'clave' },
     // Preguntas complementarias
     { id: 'co-4', texto: '¿Recibes feedback regular y constructivo sobre tu trabajo?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
     { id: 'co-5', texto: '¿Sientes que tu voz es escuchada cuando compartes ideas o preocupaciones?', tipo: 'si_no', opciones: [], esValidada: true, esClave: false, categoria: 'complementaria' },
@@ -1569,7 +1569,7 @@ const getPrivacidadDescripcion = computed(() => {
   const desc = {
     'anonimato_completo': 'Máxima privacidad garantizada',
     'anonimato_parcial': 'Resultados agrupados por área',
-    'identificado': 'Requiere consentimiento del empleado'
+    'identificado': 'Requiere consentimiento del colaborador'
   };
   return desc[encuesta.value.privacidadNivel];
 });
@@ -1790,7 +1790,7 @@ const guardarBorrador = async () => {
     return;
   }
   if (!encuesta.value.descripcion?.trim()) {
-    toast.warning('Añade una descripción para que los empleados entiendan el propósito');
+    toast.warning('Añade una descripción para que los colaboradores entiendan el propósito');
     return;
   }
 

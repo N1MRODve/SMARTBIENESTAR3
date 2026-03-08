@@ -37,7 +37,7 @@ const handlePublicar = async () => {
   <div class="space-y-6">
     <header>
       <h1 class="text-3xl font-bold text-on-background">Crear Nuevo Comunicado</h1>
-      <p class="text-on-surface-variant">Redacta y publica un anuncio para todos los empleados.</p>
+      <p class="text-on-surface-variant">Redacta y publica un anuncio para todos los colaboradores.</p>
     </header>
     <Card>
       <form @submit.prevent="handlePublicar" class="p-6 space-y-4">

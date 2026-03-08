@@ -367,7 +367,7 @@
               class="text-sm"
               :class="alcanceEstimado > 0 ? 'text-green-700' : 'text-amber-700'"
             >
-              {{ alcanceEstimado > 0 ? 'recibirán este comunicado' : 'No hay empleados en los departamentos seleccionados' }}
+              {{ alcanceEstimado > 0 ? 'recibirán este comunicado' : 'No hay colaboradores en los departamentos seleccionados' }}
             </p>
           </div>
           <div v-if="alcanceEstimado > 0" class="ml-auto text-right">
@@ -375,7 +375,7 @@
             <p class="text-xs text-green-600">{{ porcentajeAlcance }}% de la empresa</p>
           </div>
           <div v-else class="ml-auto">
-            <p class="text-xs text-amber-600 font-medium">Asigna empleados a departamentos</p>
+            <p class="text-xs text-amber-600 font-medium">Asigna colaboradores a departamentos</p>
           </div>
         </div>
       </div>
@@ -836,9 +836,9 @@ const departamentos = ref([
 ]);
 
 const roles = ref([
-  { id: 1, nombre: 'Todos', descripcion: 'Todos los empleados' },
+  { id: 1, nombre: 'Todos', descripcion: 'Todos los colaboradores' },
   { id: 2, nombre: 'Líderes', descripcion: 'Managers y supervisores' },
-  { id: 3, nombre: 'Colaboradores', descripcion: 'Empleados sin equipo a cargo' }
+  { id: 3, nombre: 'Colaboradores', descripcion: 'Colaboradores sin equipo a cargo' }
 ]);
 
 const plantillaSeleccionada = ref(null);
@@ -922,7 +922,7 @@ const mensajeBotonDeshabilitado = computed(() => {
   if (!formData.value.contenido.trim()) return 'Escribe el contenido del mensaje';
   if (formData.value.destinatarios.length === 0) return 'Selecciona al menos un departamento';
   if (formData.value.roles.length === 0) return 'Selecciona al menos un rol';
-  if (alcanceEstimado.value === 0) return 'No hay empleados en los departamentos seleccionados';
+  if (alcanceEstimado.value === 0) return 'No hay colaboradores en los departamentos seleccionados';
   if (tipoEnvio.value === 'programado' && !formData.value.fecha_envio) return 'Selecciona una fecha de envío';
   return '';
 });

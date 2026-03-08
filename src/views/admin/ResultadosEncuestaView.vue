@@ -581,7 +581,7 @@
               </div>
               <div class="text-center p-4 bg-gray-50 rounded-lg">
                 <p class="text-2xl font-bold text-gray-600">{{ totalEmpleadosEmpresa }}</p>
-                <p class="text-sm text-gray-700">Total Empleados</p>
+                <p class="text-sm text-gray-700">Total Colaboradores</p>
               </div>
               <div class="text-center p-4 bg-green-50 rounded-lg">
                 <p class="text-2xl font-bold text-green-600">{{ tasaParticipacion }}%</p>

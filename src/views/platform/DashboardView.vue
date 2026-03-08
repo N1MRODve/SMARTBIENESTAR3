@@ -102,7 +102,7 @@ const getEstadoColor = (estado) => {
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-500">Total Empleados</p>
+              <p class="text-sm font-medium text-gray-500">Total Colaboradores</p>
               <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.totalEmpleados }}</p>
             </div>
             <div class="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">

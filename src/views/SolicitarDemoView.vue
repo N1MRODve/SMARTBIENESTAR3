@@ -133,7 +133,7 @@
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-slate-700 mb-2">
-                        Número de empleados *
+                        Número de colaboradores *
                       </label>
                       <select
                         v-model="form.tamano"
@@ -141,11 +141,11 @@
                         class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                       >
                         <option value="">Selecciona un rango</option>
-                        <option value="1-10">1 - 10 empleados</option>
-                        <option value="11-50">11 - 50 empleados</option>
-                        <option value="51-200">51 - 200 empleados</option>
-                        <option value="201-500">201 - 500 empleados</option>
-                        <option value="501+">Más de 500 empleados</option>
+                        <option value="1-10">1 - 10 colaboradores</option>
+                        <option value="11-50">11 - 50 colaboradores</option>
+                        <option value="51-200">51 - 200 colaboradores</option>
+                        <option value="201-500">201 - 500 colaboradores</option>
+                        <option value="501+">Más de 500 colaboradores</option>
                       </select>
                     </div>
                   </div>
@@ -292,7 +292,7 @@
                 <Star v-for="i in 5" :key="i" class="w-4 h-4 text-yellow-400 fill-yellow-400" />
               </div>
               <p class="text-slate-600 text-sm italic mb-4">
-                "SMART Bienestar nos ayudó a entender realmente cómo se sienten nuestros empleados
+                "SMART Bienestar nos ayudó a entender realmente cómo se sienten nuestros colaboradores
                 y a tomar acciones concretas para mejorar su bienestar."
               </p>
               <p class="text-sm font-medium text-slate-900">— Director de RRHH</p>

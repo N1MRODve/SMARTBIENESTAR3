@@ -57,7 +57,7 @@
               Participación
             </p>
             <p class="text-5xl font-bold text-gray-900 mb-1">{{ analitica.participacion_global }}%</p>
-            <p class="text-sm text-gray-500">de empleados</p>
+            <p class="text-sm text-gray-500">de colaboradores</p>
             <div class="mt-4 w-full bg-gray-200 rounded-full h-2 overflow-hidden">
               <div
                 class="bg-blue-500 h-2 rounded-full transition-all duration-1000"
@@ -183,7 +183,7 @@
                   </div>
                   <div>
                     <p class="text-xl font-bold text-gray-900">{{ dept.nombre }}</p>
-                    <p class="text-sm text-gray-600">{{ dept.empleados }} empleados</p>
+                    <p class="text-sm text-gray-600">{{ dept.empleados }} colaboradores</p>
                   </div>
                 </div>
                 <div class="text-right">
@@ -213,7 +213,7 @@
                   </div>
                   <div>
                     <p class="text-xl font-bold text-gray-900">{{ dept.nombre }}</p>
-                    <p class="text-sm text-gray-600">{{ dept.empleados }} empleados</p>
+                    <p class="text-sm text-gray-600">{{ dept.empleados }} colaboradores</p>
                   </div>
                 </div>
                 <div class="text-right">
@@ -241,7 +241,7 @@
               <div class="grid grid-cols-3 gap-6 text-center">
                 <div>
                   <p class="text-3xl font-bold text-indigo-600">{{ analitica.empleados_totales }}</p>
-                  <p class="text-sm text-gray-600 mt-1">Empleados</p>
+                  <p class="text-sm text-gray-600 mt-1">Colaboradores</p>
                 </div>
                 <div>
                   <p class="text-3xl font-bold text-purple-600">{{ analitica.encuestas_completadas }}</p>

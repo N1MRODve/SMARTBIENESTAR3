@@ -65,7 +65,7 @@ const nombreEmpleado = computed(() => {
   if (user.value?.email) {
     return user.value.email.split('@')[0];
   }
-  return 'Empleado';
+  return 'Colaborador';
 });
 
 // Badges para navegación
@@ -172,12 +172,12 @@ const handleLogout = async () => {
   loggingOut.value = true;
   try {
     await authStore.logout();
-    showLogoutModal.value = false;
-    router.push('/login');
   } catch (error) {
     console.error('Error during logout:', error);
   } finally {
+    showLogoutModal.value = false;
     loggingOut.value = false;
+    router.push('/login');
   }
 };
 

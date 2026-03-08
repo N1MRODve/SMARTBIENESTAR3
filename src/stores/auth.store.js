@@ -123,17 +123,21 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   const logout = async () => {
+    // Limpiar estado local SIEMPRE, independientemente de si signOut falla
+    user.value = null;
+    empleado.value = null;
+    platformUser.value = null;
+    userType.value = null;
+    session.value = null;
+    loading.value = false;
+    initializationDone.value = false;
+
     try {
       await authService.signOut();
-      user.value = null;
-      empleado.value = null;
-      platformUser.value = null;
-      userType.value = null;
-      session.value = null;
-      loading.value = false;
     } catch (error) {
-      console.error('Error logging out:', error);
-      throw error;
+      // signOut puede fallar si la sesión ya expiró (AuthSessionMissingError)
+      // o por problemas de red — no es crítico porque ya limpiamos el estado local
+      console.warn('Error en signOut (estado local ya limpiado):', error.message || error);
     }
   };
 

@@ -423,7 +423,7 @@ const cargarSolicitudes = async () => {
       estado: capitalizeEstado(s.estado),
       objetivos: s.motivo,
       comentarios: s.notas_admin,
-      solicitante: s.empleado?.nombre || 'Empleado'
+      solicitante: s.empleado?.nombre || 'Colaborador'
     }));
   } catch (err) {
     console.error('Error cargando solicitudes:', err);

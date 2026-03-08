@@ -1,7 +1,7 @@
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-      <h2 class="text-2xl font-bold mb-4 text-gray-800">Editar Empleado</h2>
+      <h2 class="text-2xl font-bold mb-4 text-gray-800">Editar Colaborador</h2>
 
       <form @submit.prevent="handleSubmit">
         <div class="mb-4">

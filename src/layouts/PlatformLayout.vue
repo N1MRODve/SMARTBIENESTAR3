@@ -46,7 +46,11 @@ const loadStats = async () => {
 };
 
 const handleLogout = async () => {
-  await authStore.logout();
+  try {
+    await authStore.logout();
+  } catch (error) {
+    console.error('Error durante cierre de sesión:', error);
+  }
   router.push('/login');
 };
 

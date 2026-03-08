@@ -124,7 +124,7 @@ const verDetalle = (empresaId) => {
               Empresa
             </th>
             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Empleados
+              Colaboradores
             </th>
             <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Solicitudes

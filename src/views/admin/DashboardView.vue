@@ -292,8 +292,8 @@ const contextualActions = computed(() => {
   // Prioridad 1: Acciones urgentes basadas en estado
   if (stats.value.totalEmpleados === 0) {
     actions.push({
-      title: 'Invitar empleados',
-      description: 'Tu equipo está vacío. Invita empleados para comenzar.',
+      title: 'Invitar colaboradores',
+      description: 'Tu equipo está vacío. Invita colaboradores para comenzar.',
       icon: UserPlus,
       route: '/admin/empleados',
       priority: 'high',
@@ -361,8 +361,8 @@ const contextualActions = computed(() => {
   if (actions.length < 3) {
     const defaultActions = [
       {
-        title: 'Gestionar empleados',
-        description: `${stats.value.totalEmpleados} empleado${stats.value.totalEmpleados !== 1 ? 's' : ''} activo${stats.value.totalEmpleados !== 1 ? 's' : ''} en tu equipo.`,
+        title: 'Gestionar colaboradores',
+        description: `${stats.value.totalEmpleados} colaborador${stats.value.totalEmpleados !== 1 ? 'es' : ''} activo${stats.value.totalEmpleados !== 1 ? 's' : ''} en tu equipo.`,
         icon: Users,
         route: '/admin/empleados',
         priority: 'low',
@@ -431,14 +431,14 @@ const wellbeingMetrics = computed(() => [
     value: metrics.value.satisfaccionLaboral,
     icon: Heart,
     description: 'Nivel de satisfacción',
-    tooltip: 'Indica qué tan contentos están los empleados con su trabajo. 7+ es positivo.'
+    tooltip: 'Indica qué tan contentos están los colaboradores con su trabajo. 7+ es positivo.'
   },
   {
     label: 'Balance Vida-Trabajo',
     value: metrics.value.balanceVidaTrabajo,
     icon: Home,
     description: 'Equilibrio personal',
-    tooltip: 'Mide si los empleados logran equilibrar trabajo y vida personal. 7+ es saludable.'
+    tooltip: 'Mide si los colaboradores logran equilibrar trabajo y vida personal. 7+ es saludable.'
   },
   {
     label: 'Ambiente Laboral',
@@ -669,14 +669,14 @@ const getInsightColors = (color) => {
               <span class="group relative cursor-help">
                 <HelpCircle class="w-5 h-5 text-white/60 hover:text-white/90" />
                 <span class="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg">
-                  Empleados activos en tu organización
+                  Colaboradores activos en tu organización
                 </span>
               </span>
             </div>
 
             <div class="mb-4">
               <span class="text-5xl font-bold text-white">{{ stats.totalEmpleados }}</span>
-              <p class="text-lg font-medium text-white/90 mt-1">Empleados activos</p>
+              <p class="text-lg font-medium text-white/90 mt-1">Colaboradores activos</p>
             </div>
 
             <div class="flex items-center justify-between pt-4 border-t border-white/20">
@@ -706,7 +706,7 @@ const getInsightColors = (color) => {
               <span class="group/tooltip relative cursor-help">
                 <HelpCircle class="w-4 h-4 text-gray-400 hover:text-gray-600" />
                 <span class="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg">
-                  Mensajes enviados a empleados
+                  Mensajes enviados a colaboradores
                 </span>
               </span>
             </div>

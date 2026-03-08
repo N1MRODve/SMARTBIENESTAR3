@@ -23,7 +23,7 @@ const route = useRoute();
 const routeNames = {
   // Admin
   'admin': 'Administración',
-  'empleados': 'Empleados',
+  'empleados': 'Colaboradores',
   'encuestas': 'Encuestas',
   'crear': 'Crear',
   'editar': 'Editar',
@@ -38,7 +38,7 @@ const routeNames = {
   'analitica': 'Analítica',
   'presentacion': 'Modo Presentación',
   // Empleado
-  'empleado': 'Empleado',
+  'empleado': 'Colaborador',
   'dashboard': 'Inicio',
   'encuesta': 'Encuestas',
   'responder': 'Responder',

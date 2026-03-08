@@ -36,14 +36,14 @@
         </div>
         <h3 class="text-xl font-bold text-gray-900 mb-3">Sin datos de analítica</h3>
         <p class="text-gray-600 mb-6">
-          Para ver la analítica ejecutiva, primero necesitas tener empleados registrados y encuestas con respuestas.
+          Para ver la analítica ejecutiva, primero necesitas tener colaboradores registrados y encuestas con respuestas.
         </p>
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
           <router-link
             to="/admin/empleados"
             class="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
           >
-            Gestionar empleados
+            Gestionar colaboradores
           </router-link>
           <router-link
             to="/admin/encuestas"
@@ -184,7 +184,7 @@
           </div>
           <!-- Tooltip -->
           <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-64 z-10">
-            <strong>Cómo se calcula:</strong> (Empleados con actividad / Total empleados) x 100. Actividad = respuesta a encuesta o lectura de comunicado.
+            <strong>Cómo se calcula:</strong> (Colaboradores con actividad / Total colaboradores) x 100. Actividad = respuesta a encuesta o lectura de comunicado.
           </div>
         </div>
 
@@ -246,7 +246,7 @@
         <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg p-5 border-2 border-slate-200 shadow-md hover:shadow-lg transition-all">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-semibold text-slate-700 mb-1">Empleados Activos</p>
+              <p class="text-sm font-semibold text-slate-700 mb-1">Colaboradores Activos</p>
               <p class="text-3xl font-bold text-slate-900">{{ analitica.empleados_totales }}</p>
             </div>
             <div class="w-12 h-12 bg-gradient-to-br from-slate-500 to-gray-600 rounded-lg flex items-center justify-center shadow-md">
@@ -284,7 +284,7 @@
                   </div>
                   <div>
                     <p class="font-bold text-gray-900">{{ dept.nombre }}</p>
-                    <p class="text-xs text-emerald-700 font-medium">{{ dept.empleados }} empleados</p>
+                    <p class="text-xs text-emerald-700 font-medium">{{ dept.empleados }} colaboradores</p>
                   </div>
                 </div>
                 <div class="text-right">
@@ -331,7 +331,7 @@
                   </div>
                   <div>
                     <p class="font-bold text-gray-900">{{ dept.nombre }}</p>
-                    <p class="text-xs text-amber-700 font-medium">{{ dept.empleados }} empleados</p>
+                    <p class="text-xs text-amber-700 font-medium">{{ dept.empleados }} colaboradores</p>
                   </div>
                 </div>
                 <div class="text-right">

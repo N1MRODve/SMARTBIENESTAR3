@@ -272,8 +272,9 @@ export const recompensasService = {
 
   /**
    * Actualiza estado de un canje, validando que pertenece a la empresa
+   * Si se cancela, devuelve los puntos al empleado
    * @param {string} canjeId - ID del canje
-   * @param {string} estado - Nuevo estado
+   * @param {string} estado - Nuevo estado ('pendiente', 'procesado', 'entregado', 'cancelado')
    * @param {string} empresaId - ID de la empresa
    * @param {string} notas - Notas opcionales
    */
@@ -287,6 +288,9 @@ export const recompensasService = {
       .from('canjes_recompensas')
       .select(`
         id,
+        estado,
+        empleado_id,
+        puntos_gastados,
         empleado:empleados!inner (empresa_id)
       `)
       .eq('id', canjeId)
@@ -295,6 +299,25 @@ export const recompensasService = {
     if (canjeError) throw canjeError;
     if (canje.empleado.empresa_id !== empresaId) {
       throw new Error('No tienes acceso a este canje');
+    }
+
+    // Si se cancela y no estaba cancelado, devolver puntos al empleado
+    if (estado === 'cancelado' && canje.estado !== 'cancelado') {
+      const { error: transError } = await supabase
+        .from('transacciones_puntos')
+        .insert([{
+          empleado_id: canje.empleado_id,
+          cantidad: canje.puntos_gastados, // Positivo = devolucion
+          tipo: 'devolucion',
+          motivo: `Canje cancelado${notas ? ': ' + notas : ''}`,
+          referencia_id: canjeId,
+          referencia_tipo: 'canje_cancelado'
+        }]);
+
+      if (transError) {
+        console.error('Error creando transaccion de devolucion:', transError);
+        throw new Error('Error al devolver los puntos');
+      }
     }
 
     const updates = {

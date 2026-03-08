@@ -3,12 +3,15 @@ import { ref, onMounted } from 'vue';
 import Card from '@/components/ui/Card.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { recompensasService } from '@/services/recompensas.service';
+import { useToast } from '@/composables/useToast';
 
 const authStore = useAuthStore();
+const toast = useToast();
 const historial = ref([]);
 const isLoading = ref(true);
+const actualizandoId = ref(null);
 
-onMounted(async () => {
+const cargarHistorial = async () => {
   isLoading.value = true;
   try {
     const data = await recompensasService.getHistorialCanjes(authStore.empresaId);
@@ -26,21 +29,60 @@ onMounted(async () => {
     }));
   } catch (error) {
     console.error("Error al cargar el historial de canjes:", error);
+    toast.error('Error al cargar el historial');
   } finally {
     isLoading.value = false;
   }
-});
+};
+
+const actualizarEstado = async (canjeId, nuevoEstado) => {
+  if (actualizandoId.value) return;
+
+  actualizandoId.value = canjeId;
+  try {
+    await recompensasService.updateEstadoCanje(
+      canjeId,
+      nuevoEstado,
+      authStore.empresaId
+    );
+
+    // Actualizar estado local
+    const canje = historial.value.find(c => c.id === canjeId);
+    if (canje) {
+      canje.estado = nuevoEstado;
+    }
+
+    const mensajes = {
+      pendiente: 'Canje marcado como pendiente',
+      procesado: 'Canje en proceso',
+      entregado: 'Recompensa entregada correctamente',
+      cancelado: 'Canje cancelado. Puntos devueltos al empleado.'
+    };
+
+    toast.success(mensajes[nuevoEstado] || 'Estado actualizado');
+  } catch (error) {
+    console.error('Error actualizando estado:', error);
+    toast.error(error.message || 'Error al actualizar el estado');
+    // Recargar para sincronizar
+    await cargarHistorial();
+  } finally {
+    actualizandoId.value = null;
+  }
+};
+
+onMounted(cargarHistorial);
 </script>
 
 <template>
   <div class="space-y-6">
     <header>
       <h1 class="text-3xl font-bold text-on-background">Historial de Canjes</h1>
-      <p class="text-on-surface-variant">Revisa todas las recompensas canjeadas por los colaboradores.</p>
+      <p class="text-on-surface-variant">Gestiona las recompensas canjeadas por los colaboradores.</p>
     </header>
 
     <div v-if="isLoading" class="text-center py-10">
-      <p>Cargando historial...</p>
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-2"></div>
+      <p class="text-gray-600">Cargando historial...</p>
     </div>
 
     <Card v-else-if="historial.length > 0">
@@ -51,8 +93,9 @@ onMounted(async () => {
               <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Fecha</th>
               <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Colaborador</th>
               <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Recompensa</th>
-              <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Puntos Canjeados</th>
+              <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Puntos</th>
               <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Estado</th>
+              <th class="p-4 font-semibold text-gray-600 uppercase text-xs">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -72,13 +115,33 @@ onMounted(async () => {
               <td class="p-4">
                 <span
                   :class="{
-                    'bg-green-100 text-green-800': item.estado === 'utilizado',
+                    'bg-green-100 text-green-800': item.estado === 'entregado',
                     'bg-yellow-100 text-yellow-800': item.estado === 'pendiente',
-                    'bg-blue-100 text-blue-800': item.estado === 'procesado'
+                    'bg-blue-100 text-blue-800': item.estado === 'procesado',
+                    'bg-red-100 text-red-800': item.estado === 'cancelado'
                   }"
                   class="px-3 py-1 text-xs font-medium rounded-full capitalize"
                 >
                   {{ item.estado }}
+                </span>
+              </td>
+              <td class="p-4">
+                <div v-if="item.estado !== 'cancelado' && item.estado !== 'entregado'" class="flex gap-2">
+                  <select
+                    :value="item.estado"
+                    @change="actualizarEstado(item.id, $event.target.value)"
+                    :disabled="actualizandoId === item.id"
+                    class="text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50"
+                  >
+                    <option value="pendiente">Pendiente</option>
+                    <option value="procesado">Procesando</option>
+                    <option value="entregado">Entregado</option>
+                    <option value="cancelado">Cancelar</option>
+                  </select>
+                  <span v-if="actualizandoId === item.id" class="animate-spin h-5 w-5 border-2 border-orange-600 border-t-transparent rounded-full"></span>
+                </div>
+                <span v-else class="text-xs text-gray-500 italic">
+                  {{ item.estado === 'entregado' ? 'Completado' : 'Cancelado' }}
                 </span>
               </td>
             </tr>
@@ -88,7 +151,10 @@ onMounted(async () => {
     </Card>
 
     <div v-else class="text-center py-10 bg-surface rounded-xl">
-      <p class="text-on-surface-variant">Aún no se ha canjeado ninguna recompensa.</p>
+      <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+      </svg>
+      <p class="text-on-surface-variant">No hay canjes registrados todavia.</p>
     </div>
   </div>
 </template>

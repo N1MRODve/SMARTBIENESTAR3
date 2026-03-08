@@ -110,7 +110,8 @@ export const platformService = {
       .from('solicitudes_servicios')
       .select(`
         *,
-        servicios (id, nombre, categoria)
+        empresas:empresa_id (id, nombre),
+        servicios:servicio_id (id, nombre, categoria)
       `)
       .order('fecha_solicitud', { ascending: false });
 

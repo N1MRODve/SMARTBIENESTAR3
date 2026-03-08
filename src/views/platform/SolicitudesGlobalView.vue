@@ -55,6 +55,7 @@ const filteredSolicitudes = computed(() => {
     const search = searchQuery.value.toLowerCase();
     result = result.filter(s =>
       s.empresas?.nombre?.toLowerCase().includes(search) ||
+      s.servicio_nombre?.toLowerCase().includes(search) ||
       s.servicios?.nombre?.toLowerCase().includes(search)
     );
   }
@@ -197,13 +198,13 @@ const pendientesCount = computed(() => {
                 <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center">
                   <Building2 class="w-4 h-4 text-slate-600" />
                 </div>
-                <span class="font-medium text-gray-900">{{ solicitud.empresas?.nombre || 'N/A' }}</span>
+                <span class="font-medium text-gray-900">{{ solicitud.empresas?.nombre || 'Sin empresa' }}</span>
               </div>
             </td>
             <td class="px-6 py-4">
               <div>
-                <p class="text-gray-900">{{ solicitud.servicios?.nombre || 'N/A' }}</p>
-                <p class="text-sm text-gray-500">{{ solicitud.servicios?.categoria || '' }}</p>
+                <p class="text-gray-900">{{ solicitud.servicios?.nombre || solicitud.servicio_nombre || 'N/A' }}</p>
+                <p class="text-sm text-gray-500">{{ solicitud.servicios?.categoria || solicitud.servicio_categoria || '' }}</p>
               </div>
             </td>
             <td class="px-6 py-4">
@@ -254,7 +255,7 @@ const pendientesCount = computed(() => {
               </div>
               <div>
                 <p class="text-sm text-gray-500">Servicio solicitado</p>
-                <p class="font-medium text-gray-900">{{ selectedSolicitud?.servicios?.nombre }}</p>
+                <p class="font-medium text-gray-900">{{ selectedSolicitud?.servicios?.nombre || selectedSolicitud?.servicio_nombre || 'N/A' }}</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">Fecha de solicitud</p>

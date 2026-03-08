@@ -7,14 +7,14 @@
     :closable="!loading"
   >
     <form @submit.prevent="handleSubmit" class="space-y-6">
-      <!-- Título -->
+      <!-- Nombre -->
       <div class="form-group">
-        <label for="titulo" class="form-label">
-          Título de la Recompensa *
+        <label for="nombre" class="form-label">
+          Nombre de la Recompensa *
         </label>
         <input
-          id="titulo"
-          v-model="formData.titulo"
+          id="nombre"
+          v-model="formData.nombre"
           type="text"
           class="input"
           placeholder="Ej: Día Libre Adicional"
@@ -39,19 +39,19 @@
         ></textarea>
       </div>
 
-      <!-- Coste y Categoría -->
+      <!-- Costo y Categoría -->
       <div class="grid grid-cols-2 gap-4">
         <div class="form-group">
-          <label for="coste" class="form-label">
-            Coste en Puntos *
+          <label for="costo_puntos" class="form-label">
+            Costo en Puntos *
           </label>
           <input
-            id="coste"
-            v-model="formData.coste"
+            id="costo_puntos"
+            v-model="formData.costo_puntos"
             type="number"
             class="input"
             min="1"
-            max="1000"
+            max="10000"
             step="5"
             required
             :disabled="loading"
@@ -70,60 +70,34 @@
             :disabled="loading"
           >
             <option value="">Selecciona categoría</option>
-            <option value="tiempo">⏰ Tiempo Libre</option>
-            <option value="bienestar">💆‍♀️ Bienestar</option>
-            <option value="gastronomia">🍽️ Gastronomía</option>
-            <option value="compras">🎁 Compras</option>
-            <option value="entretenimiento">🎬 Entretenimiento</option>
-            <option value="comodidad">🚗 Comodidad</option>
-            <option value="salud">🥗 Salud</option>
+            <option value="tiempo">Tiempo Libre</option>
+            <option value="bienestar">Bienestar</option>
+            <option value="gastronomia">Gastronomia</option>
+            <option value="compras">Compras</option>
+            <option value="entretenimiento">Entretenimiento</option>
+            <option value="comodidad">Comodidad</option>
+            <option value="salud">Salud</option>
           </select>
         </div>
       </div>
 
-      <!-- Icono -->
-      <div class="form-group">
-        <label for="icono" class="form-label">
-          Icono (Emoji) *
-        </label>
-        <div class="flex items-center space-x-3">
-          <input
-            id="icono"
-            v-model="formData.icono"
-            type="text"
-            class="input flex-1"
-            placeholder="🎁"
-            maxlength="2"
-            required
-            :disabled="loading"
-          />
-          <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-            <span class="text-2xl">{{ formData.icono || '❓' }}</span>
-          </div>
-        </div>
-        <p class="mt-1 text-xs text-gray-500">
-          Usa un emoji que represente la recompensa
-        </p>
-      </div>
-
-      <!-- Popularidad y Disponibilidad -->
+      <!-- Stock y Estado -->
       <div class="grid grid-cols-2 gap-4">
         <div class="form-group">
-          <label for="popularidad" class="form-label">
-            Popularidad (1-5 estrellas)
+          <label for="stock" class="form-label">
+            Stock disponible
           </label>
-          <select
-            id="popularidad"
-            v-model="formData.popularidad"
+          <input
+            id="stock"
+            v-model="formData.stock"
+            type="number"
             class="input"
+            min="-1"
             :disabled="loading"
-          >
-            <option :value="1">⭐ (1 estrella)</option>
-            <option :value="2">⭐⭐ (2 estrellas)</option>
-            <option :value="3">⭐⭐⭐ (3 estrellas)</option>
-            <option :value="4">⭐⭐⭐⭐ (4 estrellas)</option>
-            <option :value="5">⭐⭐⭐⭐⭐ (5 estrellas)</option>
-          </select>
+          />
+          <p class="mt-1 text-xs text-gray-500">
+            -1 = ilimitado
+          </p>
         </div>
 
         <div class="form-group">
@@ -132,14 +106,14 @@
           </label>
           <div class="flex items-center space-x-3 mt-2">
             <input
-              id="disponible"
-              v-model="formData.disponible"
+              id="activa"
+              v-model="formData.activa"
               type="checkbox"
               class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
               :disabled="loading"
             />
-            <label for="disponible" class="text-sm text-gray-700">
-              Disponible para canje
+            <label for="activa" class="text-sm text-gray-700">
+              Activa para canje
             </label>
           </div>
         </div>
@@ -150,17 +124,19 @@
         <label class="form-label">Vista Previa</label>
         <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div class="flex items-center">
-            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center mr-4 shadow-sm">
-              <span class="text-2xl">{{ formData.icono || '❓' }}</span>
+            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4 shadow-sm">
+              <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+              </svg>
             </div>
             <div class="flex-1">
-              <h4 class="font-medium text-gray-900">{{ formData.titulo || 'Título de la recompensa' }}</h4>
-              <p class="text-sm text-gray-600">{{ formData.descripcion || 'Descripción de la recompensa' }}</p>
+              <h4 class="font-medium text-gray-900">{{ formData.nombre || 'Nombre de la recompensa' }}</h4>
+              <p class="text-sm text-gray-600">{{ formData.descripcion || 'Descripcion de la recompensa' }}</p>
               <div class="flex items-center mt-1">
                 <svg class="w-4 h-4 text-yellow-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                 </svg>
-                <span class="text-sm font-medium text-gray-700">{{ formData.coste || 0 }} puntos</span>
+                <span class="text-sm font-medium text-gray-700">{{ formData.costo_puntos || 0 }} puntos</span>
               </div>
             </div>
           </div>
@@ -213,15 +189,14 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'save']);
 
-// Local state
+// Local state - campos alineados con schema de BD
 const formData = ref({
-  titulo: '',
+  nombre: '',
   descripcion: '',
-  coste: 100,
+  costo_puntos: 100,
   categoria: '',
-  icono: '🎁',
-  popularidad: 3,
-  disponible: true
+  stock: -1,  // -1 = ilimitado
+  activa: true
 });
 
 // Computed properties
@@ -231,11 +206,10 @@ const isVisible = computed({
 });
 
 const formularioValido = computed(() => {
-  return formData.value.titulo.trim() &&
+  return formData.value.nombre.trim() &&
          formData.value.descripcion.trim() &&
-         formData.value.coste > 0 &&
-         formData.value.categoria &&
-         formData.value.icono.trim();
+         formData.value.costo_puntos > 0 &&
+         formData.value.categoria;
 });
 
 // Methods
@@ -246,13 +220,12 @@ const cerrarModal = () => {
 
 const resetFormulario = () => {
   formData.value = {
-    titulo: '',
+    nombre: '',
     descripcion: '',
-    coste: 100,
+    costo_puntos: 100,
     categoria: '',
-    icono: '🎁',
-    popularidad: 3,
-    disponible: true
+    stock: -1,
+    activa: true
   };
 };
 
@@ -266,13 +239,12 @@ const handleSubmit = () => {
 watch(() => props.recompensa, (nuevaRecompensa) => {
   if (nuevaRecompensa) {
     formData.value = {
-      titulo: nuevaRecompensa.titulo || '',
+      nombre: nuevaRecompensa.nombre || '',
       descripcion: nuevaRecompensa.descripcion || '',
-      coste: nuevaRecompensa.coste || 100,
+      costo_puntos: nuevaRecompensa.costo_puntos || 100,
       categoria: nuevaRecompensa.categoria || '',
-      icono: nuevaRecompensa.icono || '🎁',
-      popularidad: nuevaRecompensa.popularidad || 3,
-      disponible: nuevaRecompensa.disponible !== false
+      stock: nuevaRecompensa.stock ?? -1,
+      activa: nuevaRecompensa.activa !== false
     };
   } else {
     resetFormulario();

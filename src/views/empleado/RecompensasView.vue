@@ -611,13 +611,8 @@ const confirmarCanje = async () => {
   canjeandoId.value = recompensaSeleccionada.value.id;
 
   try {
-    // Intentar RPC primero, luego fallback
-    let resultado;
-    try {
-      resultado = await empleadoRecompensasService.canjearRecompensa(recompensaSeleccionada.value.id);
-    } catch {
-      resultado = await empleadoRecompensasService.canjearRecompensaFallback(recompensaSeleccionada.value.id);
-    }
+    // Usar RPC atómico (sin fallback para evitar race conditions)
+    const resultado = await empleadoRecompensasService.canjearRecompensa(recompensaSeleccionada.value.id);
 
     if (resultado.success) {
       // Actualizar puntos

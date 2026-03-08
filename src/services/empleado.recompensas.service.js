@@ -111,15 +111,30 @@ export const empleadoRecompensasService = {
   },
 
   /**
-   * Obtiene el catálogo de recompensas disponibles para la empresa
+   * Obtiene el catálogo de recompensas disponibles para la empresa del empleado
+   * Incluye recompensas de su empresa + globales (empresa_id = null)
    */
   async getCatalogoRecompensas() {
-    const puntos = await this.getPuntos();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('No autenticado');
 
+    // Obtener puntos y empresa_id del empleado
+    const { data: empleado, error: empError } = await supabase
+      .from('empleados')
+      .select('puntos, empresa_id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (empError || !empleado) throw new Error('Empleado no encontrado');
+
+    const puntos = empleado.puntos || 0;
+
+    // Filtrar por empresa_id del empleado O recompensas globales (empresa_id = null)
     const { data, error } = await supabase
       .from('recompensas')
       .select('*')
       .eq('activa', true)
+      .or(`empresa_id.eq.${empleado.empresa_id},empresa_id.is.null`)
       .order('costo_puntos');
 
     if (error) throw error;
@@ -142,7 +157,8 @@ export const empleadoRecompensasService = {
   },
 
   /**
-   * Canjear una recompensa usando la función RPC
+   * Canjear una recompensa usando la función RPC atómica
+   * IMPORTANTE: Solo usar RPC, no hay fallback para evitar race conditions
    */
   async canjearRecompensa(recompensaId) {
     const { data, error } = await supabase.rpc('canjear_recompensa', {
@@ -151,7 +167,8 @@ export const empleadoRecompensasService = {
 
     if (error) {
       console.error('Error en RPC canjear_recompensa:', error);
-      throw new Error('Error al procesar el canje');
+      // Mensaje claro sin fallback inseguro
+      throw new Error('Error al procesar el canje. Por favor, intenta de nuevo en unos segundos.');
     }
 
     if (!data.success) {
@@ -164,87 +181,6 @@ export const empleadoRecompensasService = {
       recompensa: data.recompensa,
       puntosGastados: data.puntos_gastados,
       puntosRestantes: data.puntos_restantes
-    };
-  },
-
-  /**
-   * Canjear recompensa (fallback si RPC no existe)
-   */
-  async canjearRecompensaFallback(recompensaId) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('No autenticado');
-
-    // Obtener empleado
-    const { data: empleado, error: empError } = await supabase
-      .from('empleados')
-      .select('id, puntos')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (empError || !empleado) throw new Error('Empleado no encontrado');
-
-    // Obtener recompensa
-    const { data: recompensa, error: recError } = await supabase
-      .from('recompensas')
-      .select('*')
-      .eq('id', recompensaId)
-      .eq('activa', true)
-      .single();
-
-    if (recError || !recompensa) throw new Error('Recompensa no encontrada');
-
-    // Validar stock
-    if (recompensa.stock === 0) {
-      throw new Error('Esta recompensa no tiene stock disponible');
-    }
-
-    // Validar puntos
-    if ((empleado.puntos || 0) < recompensa.costo_puntos) {
-      throw new Error('No tienes suficientes puntos para esta recompensa');
-    }
-
-    // Crear canje
-    const { data: canje, error: canjeError } = await supabase
-      .from('canjes_recompensas')
-      .insert([{
-        empleado_id: empleado.id,
-        recompensa_id: recompensaId,
-        puntos_gastados: recompensa.costo_puntos,
-        estado: 'pendiente'
-      }])
-      .select()
-      .single();
-
-    if (canjeError) throw canjeError;
-
-    // Crear transacción de puntos
-    const { error: transError } = await supabase
-      .from('transacciones_puntos')
-      .insert([{
-        empleado_id: empleado.id,
-        cantidad: -recompensa.costo_puntos,
-        tipo: 'gastados',
-        motivo: `Canje de recompensa: ${recompensa.nombre}`,
-        referencia_id: canje.id,
-        referencia_tipo: 'canje'
-      }]);
-
-    if (transError) throw transError;
-
-    // Actualizar stock si no es ilimitado
-    if (recompensa.stock > 0) {
-      await supabase
-        .from('recompensas')
-        .update({ stock: recompensa.stock - 1 })
-        .eq('id', recompensaId);
-    }
-
-    return {
-      success: true,
-      canjeId: canje.id,
-      recompensa: recompensa.nombre,
-      puntosGastados: recompensa.costo_puntos,
-      puntosRestantes: (empleado.puntos || 0) - recompensa.costo_puntos
     };
   },
 

@@ -373,7 +373,7 @@ const servicios = ref([
   {
     id: 'liderazgo-consciente',
     nombre: 'Liderazgo Consciente',
-    descripcion: 'Un programa de formación diseñado para dotar a los líderes de herramientas prácticas que les permitan gestionarse emocionalmente, detectar señales tempranas de estrés, ansiedad, depresión o agotamiento en sus equipos y buscar soluciones sin necesidad de asumir funciones terapéuticas. Evitando así bajas o rotación de talento.',
+    descripcion: 'Un programa de formación diseñado para dotar a los líderes de herramientas prácticas que les permitan gestionarse emocionalmente, pero sobre todo detectar señales tempranas de estrés, ansiedad, depresión o agotamiento en sus equipos y buscar soluciones sin necesidad de asumir funciones terapéuticas. Evitando así bajas o rotación de talento.',
     categoria: 'Salud Mental',
     icono: '🧠',
     duracion: '180 min (2 sesiones de 90 min)',

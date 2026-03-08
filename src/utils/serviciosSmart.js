@@ -1,113 +1,176 @@
-// TODO: conectar con tabla "servicios" y lógica de recomendaciones personalizada en futuras iteraciones.
+// Catálogo oficial de servicios SMART Bienestar
+// Fuente: Catálogo de servicios detallados SMART Bienestar (Google Docs)
+// Última actualización: Marzo 2026
 
 export const serviciosSmart = [
+  // ── SALUD MENTAL ──
   {
-    id: 'clima-laboral',
-    nombre: 'Programa de Clima Laboral Positivo',
-    descripcion: 'Talleres y dinámicas para mejorar el ambiente de trabajo y las relaciones interpersonales.',
-    icono: '🌟',
-    dimensiones: ['clima_laboral', 'ambiente_trabajo'],
-    umbralActivacion: 3.5,
-    categoria: 'bienestar_organizacional'
-  },
-  {
-    id: 'liderazgo-efectivo',
-    nombre: 'Capacitación en Liderazgo Efectivo',
-    descripcion: 'Programa de desarrollo de habilidades de liderazgo para mandos medios y directivos.',
-    icono: '👥',
-    dimensiones: ['liderazgo', 'supervision', 'gestion_equipos'],
-    umbralActivacion: 3.5,
-    categoria: 'desarrollo_liderazgo'
-  },
-  {
-    id: 'balance-vida',
-    nombre: 'Equilibrio Vida-Trabajo',
-    descripcion: 'Estrategias de gestión del tiempo, flexibilidad laboral y bienestar personal.',
-    icono: '⚖️',
-    dimensiones: ['balance_vida_trabajo', 'carga_trabajo', 'horarios'],
+    id: 'liderazgo-consciente',
+    nombre: 'Liderazgo Consciente',
+    descripcion: 'Un programa de formación diseñado para dotar a los líderes de herramientas prácticas que les permitan gestionarse emocionalmente, pero sobre todo detectar señales tempranas de estrés, ansiedad, depresión o agotamiento en sus equipos y buscar soluciones sin necesidad de asumir funciones terapéuticas. Evitando así bajas o rotación de talento.',
+    icono: '🧠',
+    dimensiones: ['estres', 'salud_mental', 'bienestar_emocional', 'burnout', 'liderazgo', 'gestion_equipos'],
     umbralActivacion: 3.3,
-    categoria: 'bienestar_personal'
+    categoria: 'salud_mental',
+    incluidoEnPrecio: true,
+    duracion: '180 min (2 sesiones de 90 min)',
+    formato: 'Programa grupal',
+    participantes: 'Líderes y mandos medios'
   },
   {
-    id: 'comunicacion-interna',
-    nombre: 'Mejora de Comunicación Organizacional',
-    descripcion: 'Herramientas y canales para optimizar la comunicación entre equipos y niveles.',
-    icono: '💬',
-    dimensiones: ['comunicacion', 'transparencia', 'informacion'],
-    umbralActivacion: 3.5,
-    categoria: 'comunicacion'
-  },
-  {
-    id: 'reconocimiento',
-    nombre: 'Sistema de Reconocimiento y Recompensas',
-    descripcion: 'Programa para valorar logros, esfuerzos y contribuciones del equipo.',
-    icono: '🏆',
-    dimensiones: ['reconocimiento', 'motivacion', 'valoracion'],
-    umbralActivacion: 3.5,
-    categoria: 'motivacion'
-  },
-  {
-    id: 'desarrollo-profesional',
-    nombre: 'Plan de Desarrollo y Crecimiento',
-    descripcion: 'Rutas de carrera, capacitaciones y oportunidades de crecimiento profesional.',
-    icono: '📈',
-    dimensiones: ['desarrollo', 'crecimiento', 'capacitacion', 'carrera'],
-    umbralActivacion: 3.5,
-    categoria: 'desarrollo_profesional'
-  },
-  {
-    id: 'salud-mental',
-    nombre: 'Apoyo en Salud Mental y Bienestar',
-    descripcion: 'Sesiones de psicología, mindfulness y gestión del estrés.',
-    icono: '🧘',
-    dimensiones: ['estres', 'salud_mental', 'bienestar_emocional', 'presion'],
+    id: 'smart-care',
+    nombre: 'SMART Care',
+    descripcion: 'Servicio de orientación y apoyo psicológico externo que ofrece a todos los colaboradores un espacio seguro y profesional para abordar retos emocionales o personales que impactan en su vida laboral.',
+    icono: '💜',
+    dimensiones: ['salud_mental', 'bienestar_emocional', 'estres', 'ansiedad', 'depresion', 'presion'],
     umbralActivacion: 3.3,
-    categoria: 'salud_bienestar'
+    categoria: 'salud_mental',
+    incluidoEnPrecio: true,
+    duracion: '2 sesiones/mes por empresa',
+    formato: 'Sesiones individuales',
+    participantes: 'Todos los colaboradores'
+  },
+
+  // ── CLIMA LABORAL ──
+  {
+    id: 'coaching-lideres',
+    nombre: 'Coaching Personalizado para Líderes',
+    descripcion: 'Un acompañamiento individualizado para los mandos medios y gerentes de la organización, enfocado en potenciar sus habilidades de gestión de personas y resolución de conflictos dentro de sus equipos.',
+    icono: '🎯',
+    dimensiones: ['clima_laboral', 'liderazgo', 'supervision', 'conflictos', 'relaciones_laborales', 'gestion_equipos'],
+    umbralActivacion: 3.5,
+    categoria: 'clima_laboral',
+    incluidoEnPrecio: true,
+    duracion: '4 sesiones/mes por empresa',
+    formato: 'Sesiones individuales',
+    participantes: 'Mandos medios y gerentes'
   },
   {
-    id: 'trabajo-equipo',
-    nombre: 'Fortalecimiento de Trabajo en Equipo',
-    descripcion: 'Dinámicas de team building y colaboración efectiva entre áreas.',
+    id: 'transformacion-cultural',
+    nombre: 'Transformación Cultura Organizacional',
+    descripcion: 'Servicio de consultoría estratégica y facilitación grupal orientado a redefinir los valores y comportamientos de la empresa, eliminando silos y promoviendo una cultura de colaboración real.',
+    icono: '🏛️',
+    dimensiones: ['clima_laboral', 'ambiente_trabajo', 'colaboracion', 'trabajo_equipo', 'pertenencia', 'valores'],
+    umbralActivacion: 3.5,
+    categoria: 'clima_laboral',
+    incluidoEnPrecio: false,
+    duracion: 'Según necesidad',
+    formato: 'Consultoría estratégica',
+    participantes: 'Toda la organización'
+  },
+
+  // ── CARGA DE TRABAJO ──
+  {
+    id: 'gestion-prioridades',
+    nombre: 'Multiplica el Tiempo Gestionando Prioridades',
+    descripcion: 'En este taller práctico los participantes aprenderán a diferenciar lo urgente de lo importante, utilizando herramientas de planificación que permiten organizar la carga laboral de manera inteligente y realista para reducir la sensación de caos.',
+    icono: '⏰',
+    dimensiones: ['carga_trabajo', 'estres', 'horarios', 'balance_vida_trabajo', 'organizacion', 'eficiencia'],
+    umbralActivacion: 3.3,
+    categoria: 'carga_trabajo',
+    incluidoEnPrecio: true,
+    duracion: '90 minutos',
+    formato: 'Programa grupal',
+    participantes: 'Todos los colaboradores'
+  },
+  {
+    id: 'cliente-dificil',
+    nombre: 'Identificando y Gestionando al Cliente Difícil',
+    descripcion: 'En este taller práctico los equipos aprenderán a identificar los diferentes perfiles de clientes difíciles, entender las razones detrás de sus comportamientos y aplicar herramientas efectivas para manejarlos.',
     icono: '🤝',
-    dimensiones: ['colaboracion', 'trabajo_equipo', 'coordinacion'],
-    umbralActivacion: 3.5,
-    categoria: 'trabajo_equipo'
-  },
-  {
-    id: 'gestion-conflictos',
-    nombre: 'Gestión de Conflictos y Mediación',
-    descripcion: 'Herramientas para resolver conflictos de manera constructiva.',
-    icono: '🤲',
-    dimensiones: ['conflictos', 'relaciones_laborales', 'resolucion'],
+    dimensiones: ['carga_trabajo', 'estres', 'comunicacion', 'conflictos', 'resolucion', 'bienestar_emocional'],
     umbralActivacion: 3.3,
-    categoria: 'resolucion_conflictos'
+    categoria: 'carga_trabajo',
+    incluidoEnPrecio: true,
+    duracion: '90 minutos',
+    formato: 'Programa grupal',
+    participantes: 'Equipos de servicio y atención al cliente'
   },
+
+  // ── COMUNICACIÓN ──
   {
-    id: 'autonomia-empoderamiento',
-    nombre: 'Autonomía y Empoderamiento',
-    descripcion: 'Promover la toma de decisiones y la responsabilidad individual.',
-    icono: '💪',
-    dimensiones: ['autonomia', 'empoderamiento', 'participacion', 'decision'],
+    id: 'comunicacion-360',
+    nombre: 'Comunicación 360°',
+    descripcion: 'Este programa está diseñado para transformar la forma en que los líderes transmiten la estrategia a sus equipos. Se enfoca en eliminar el ruido informativo y asegurar que cada mensaje inspire acción, seguridad y confianza.',
+    icono: '💬',
+    dimensiones: ['comunicacion', 'transparencia', 'informacion', 'liderazgo', 'confianza'],
     umbralActivacion: 3.5,
-    categoria: 'empoderamiento'
+    categoria: 'comunicacion',
+    incluidoEnPrecio: true,
+    duracion: '6 horas (4 sesiones de 90 min)',
+    formato: 'Programa grupal',
+    participantes: 'Líderes y mandos medios'
   },
+
+  // ── DESARROLLO PROFESIONAL ──
   {
-    id: 'recursos-condiciones',
-    nombre: 'Optimización de Recursos y Condiciones',
-    descripcion: 'Mejora de infraestructura, herramientas y condiciones físicas de trabajo.',
-    icono: '🛠️',
-    dimensiones: ['recursos', 'herramientas', 'condiciones_fisicas', 'infraestructura'],
+    id: 'smart-skills',
+    nombre: 'SMART Skills',
+    descripcion: 'Programas de capacitación especializada en habilidades de alta demanda diseñados de forma personalizada para mantener a los colaboradores a la vanguardia de su sector.',
+    icono: '🚀',
+    dimensiones: ['desarrollo', 'crecimiento', 'capacitacion', 'carrera', 'competencias'],
     umbralActivacion: 3.5,
-    categoria: 'recursos_infraestructura'
+    categoria: 'desarrollo_profesional',
+    incluidoEnPrecio: false,
+    duracion: 'Según programa',
+    formato: 'Capacitación especializada',
+    participantes: 'Colaboradores según necesidad'
   },
   {
-    id: 'cultura-innovacion',
-    nombre: 'Cultura de Innovación y Creatividad',
-    descripcion: 'Espacios y programas para fomentar la innovación y nuevas ideas.',
+    id: 'habilidades-blandas',
+    nombre: 'El Poder de las Habilidades Blandas',
+    descripcion: 'Talleres enfocados en la inteligencia emocional, gestión del cambio, liderazgo, gestión del estrés y otros programas enfocados a desarrollar habilidades que permitan a los miembros del equipo fortalecer su liderazgo personal.',
     icono: '💡',
-    dimensiones: ['innovacion', 'creatividad', 'propuestas'],
+    dimensiones: ['desarrollo', 'crecimiento', 'liderazgo', 'inteligencia_emocional', 'resiliencia', 'colaboracion'],
     umbralActivacion: 3.5,
-    categoria: 'innovacion'
+    categoria: 'desarrollo_profesional',
+    incluidoEnPrecio: true,
+    duracion: 'Según programa',
+    formato: 'Programa grupal',
+    participantes: 'Todos los colaboradores'
+  },
+
+  // ── BIENESTAR GENERAL ──
+  {
+    id: 'gestion-energia',
+    nombre: 'De Gestión del Tiempo a la Gestión de Energía',
+    descripcion: 'Un programa práctico que enseña a los colaboradores a optimizar su jornada laboral basándose en sus picos de energía biológica, permitiéndoles trabajar de forma más fluida y sin agotamiento.',
+    icono: '⚡',
+    dimensiones: ['balance_vida_trabajo', 'carga_trabajo', 'estres', 'bienestar_emocional', 'horarios'],
+    umbralActivacion: 3.3,
+    categoria: 'bienestar_general',
+    incluidoEnPrecio: true,
+    duracion: '2 sesiones mensuales',
+    formato: 'Programa grupal',
+    participantes: 'Todos los colaboradores'
+  },
+  {
+    id: 'pausa-consciente',
+    nombre: 'Pausa Consciente para tu Calma Laboral',
+    descripcion: 'Actividades como sesiones guiadas de estiramientos ergonómicos, respiración y relajación diseñadas para realizarse fuera y/o dentro del entorno laboral, ayudando a liberar la tensión física y mental.',
+    icono: '🧘',
+    dimensiones: ['estres', 'salud_mental', 'bienestar_emocional', 'presion', 'condiciones_fisicas'],
+    umbralActivacion: 3.3,
+    categoria: 'bienestar_general',
+    incluidoEnPrecio: true,
+    duracion: 'Sesiones periódicas',
+    formato: 'Programa grupal',
+    participantes: 'Todos los colaboradores'
+  },
+
+  // ── CONSULTORÍA ──
+  {
+    id: 'smart-advisory',
+    nombre: 'SMART Advisory',
+    descripcion: 'Un servicio de acompañamiento experto diseñado para ayudar a las empresas a interpretar los datos de la plataforma, obtener una visión externa y objetiva de su situación actual y diseñar planes de acción a medida que mejoren la experiencia de cada colaborador.',
+    icono: '📊',
+    dimensiones: ['clima_laboral', 'ambiente_trabajo', 'liderazgo', 'comunicacion', 'desarrollo'],
+    umbralActivacion: 3.5,
+    categoria: 'consultoria',
+    incluidoEnPrecio: true,
+    duracion: '2 sesiones de 30 min/mes',
+    formato: 'Consultoría estratégica',
+    participantes: 'Dirección y RRHH'
   }
 ];
 
@@ -174,7 +237,7 @@ export const obtenerRecomendaciones = (resultados) => {
 
   // Si el promedio global es bajo, agregar servicios generales
   if (promedioGlobal < 3.5) {
-    const serviciosGenerales = ['clima-laboral', 'salud-mental', 'trabajo-equipo'];
+    const serviciosGenerales = ['liderazgo-consciente', 'smart-care', 'pausa-consciente'];
     serviciosGenerales.forEach(servicioId => {
       const servicio = serviciosSmart.find(s => s.id === servicioId);
       if (servicio && !recomendacionesMap.has(servicioId)) {
@@ -206,18 +269,13 @@ export const obtenerTextoPrioridad = (prioridad) => {
 // Función para obtener color de categoría
 export const obtenerColorCategoria = (categoria) => {
   const colores = {
-    bienestar_organizacional: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
-    desarrollo_liderazgo: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700' },
-    bienestar_personal: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' },
-    comunicacion: { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700' },
-    motivacion: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700' },
-    desarrollo_profesional: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700' },
-    salud_bienestar: { bg: 'bg-pink-50', border: 'border-pink-200', text: 'text-pink-700' },
-    trabajo_equipo: { bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-700' },
-    resolucion_conflictos: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700' },
-    empoderamiento: { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700' },
-    recursos_infraestructura: { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700' },
-    innovacion: { bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', text: 'text-fuchsia-700' }
+    salud_mental: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700' },
+    clima_laboral: { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700' },
+    carga_trabajo: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700' },
+    comunicacion: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
+    desarrollo_profesional: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700' },
+    bienestar_general: { bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-700' },
+    consultoria: { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700' }
   };
   return colores[categoria] || { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700' };
 };

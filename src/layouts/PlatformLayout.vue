@@ -37,7 +37,7 @@ const loadStats = async () => {
     const { count: solicitudes } = await supabase
       .from('solicitudes_servicios')
       .select('*', { count: 'exact', head: true })
-      .eq('estado', 'Pendiente');
+      .eq('estado', 'pendiente');
 
     solicitudesPendientes.value = solicitudes || 0;
   } catch (error) {

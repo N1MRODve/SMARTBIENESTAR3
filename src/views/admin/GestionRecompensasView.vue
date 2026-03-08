@@ -153,7 +153,7 @@ const cargarEncuestas = async () => {
       .from('encuestas')
       .select('id, titulo, estado, puntos_recompensa')
       .eq('empresa_id', authStore.empresaId)
-      .eq('estado', 'Activa')
+      .eq('estado', 'activa')
       .limit(5);
 
     if (err) throw err;

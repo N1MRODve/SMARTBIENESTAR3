@@ -34,7 +34,7 @@ const loadBadgeCounts = async () => {
       .from('encuestas')
       .select('*', { count: 'exact', head: true })
       .eq('empresa_id', authStore.empresaId)
-      .eq('estado', 'Activa');
+      .eq('estado', 'activa');
 
     encuestasActivas.value = encuestasCount || 0;
 
@@ -43,7 +43,7 @@ const loadBadgeCounts = async () => {
       .from('solicitudes_servicios')
       .select('*', { count: 'exact', head: true })
       .eq('empresa_id', authStore.empresaId)
-      .eq('estado', 'Pendiente');
+      .eq('estado', 'pendiente');
 
     solicitudesPendientes.value = solicitudesCount || 0;
   } catch (error) {

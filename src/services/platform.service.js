@@ -5,8 +5,8 @@ export const platformService = {
     const [empresasResult, empleadosResult, encuestasResult, solicitudesResult] = await Promise.all([
       supabase.from('empresas').select('*', { count: 'exact', head: true }),
       supabase.from('empleados').select('*', { count: 'exact', head: true }),
-      supabase.from('encuestas').select('*', { count: 'exact', head: true }).eq('estado', 'Activa'),
-      supabase.from('solicitudes_servicios').select('*', { count: 'exact', head: true }).eq('estado', 'Pendiente')
+      supabase.from('encuestas').select('*', { count: 'exact', head: true }).eq('estado', 'activa'),
+      supabase.from('solicitudes_servicios').select('*', { count: 'exact', head: true }).eq('estado', 'pendiente')
     ]);
 
     return {

@@ -189,7 +189,7 @@ const formData = ref({
   fecha_implementacion: '',
   objetivos: '',
   comentarios: '',
-  estado: 'Pendiente'
+  estado: 'pendiente'
 });
 
 const fechaMinima = computed(() => {
@@ -211,7 +211,7 @@ const resetFormulario = () => {
     fecha_implementacion: '',
     objetivos: '',
     comentarios: '',
-    estado: 'Pendiente'
+    estado: 'pendiente'
   };
 };
 

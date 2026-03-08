@@ -139,7 +139,7 @@ const loadEncuestasCount = async () => {
     .from('encuestas')
     .select('*', { count: 'exact', head: true })
     .eq('empresa_id', authStore.empresaId)
-    .eq('estado', 'Activa');
+    .eq('estado', 'activa');
 
   stats.value.encuestasActivas = count || 0;
 };
@@ -216,7 +216,7 @@ const loadHealthData = async () => {
       .from('solicitudes_servicios')
       .select('*', { count: 'exact', head: true })
       .eq('empresa_id', authStore.empresaId)
-      .eq('estado', 'Pendiente');
+      .eq('estado', 'pendiente');
 
     healthData.value.solicitudesPendientes = solicitudesCount || 0;
 
@@ -225,7 +225,7 @@ const loadHealthData = async () => {
       .from('encuestas')
       .select('id, titulo, fecha_cierre, estado')
       .eq('empresa_id', authStore.empresaId)
-      .eq('estado', 'Activa');
+      .eq('estado', 'activa');
 
     if (encuestasError) throw encuestasError;
 

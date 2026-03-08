@@ -13,6 +13,7 @@ import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import NotFoundView from '../views/NotFoundView.vue';
 import AccessDeniedView from '../views/AccessDeniedView.vue';
+import PoliticaCookiesView from '../views/PoliticaCookiesView.vue';
 
 // Vistas Admin
 import AdminDashboardView from '../views/admin/DashboardView.vue';
@@ -81,6 +82,14 @@ const routes = [
       requiresAuth: true,
       roles: ['empleado']
     }
+  },
+
+  // === RUTAS LEGALES (PÚBLICAS) ===
+  {
+    path: '/politica-cookies',
+    name: 'politica-cookies',
+    component: PoliticaCookiesView,
+    meta: { requiresAuth: false, isPublic: true }
   },
 
   // === RUTAS DE ERROR ===

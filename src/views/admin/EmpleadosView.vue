@@ -244,7 +244,6 @@ const handleInvitar = async (datosEmpleados) => {
       estado: 'Invitado',
       puntos: 0,
       es_admin: false,
-      invitacion_enviada_at: new Date().toISOString(),
       token_invitacion: crypto.randomUUID(),
       token_expira: tokenExpira.toISOString()
     }));

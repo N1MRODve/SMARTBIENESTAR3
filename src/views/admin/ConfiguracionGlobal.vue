@@ -406,6 +406,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
+import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/stores/auth.store';
 import {
   Building2,
   ClipboardList,
@@ -421,14 +423,14 @@ import {
 } from 'lucide-vue-next';
 
 const toast = useToast();
+const authStore = useAuthStore();
+const cargando = ref(true);
 
-// TODO: Load configuration from Supabase configuracion_empresa and parametros_encuestas tables
-
-// Estado
+// Estado — se carga desde Supabase empresas.configuracion (jsonb)
 const config = reactive({
   empresa: {
-    nombre: 'Mi Empresa',
-    pais: 'Chile',
+    nombre: '',
+    pais: '',
     idioma: 'Español'
   },
   encuestas: {
@@ -450,7 +452,7 @@ const config = reactive({
 });
 
 const opciones = {
-  paises: ['Chile', 'Argentina', 'Colombia', 'México', 'Perú'],
+  paises: ['España', 'Portugal', 'Francia', 'Alemania', 'Italia', 'Reino Unido', 'Países Bajos', 'Bélgica', 'Irlanda', 'Suiza'],
   idiomas: ['Español', 'Inglés', 'Portugués'],
   escalas: ['1-5', '1-10', 'NPS (0-10)'],
   nivelesAnonimato: [
@@ -469,9 +471,25 @@ const guardarConfiguracion = async () => {
   guardando.value = true;
 
   try {
-    // TODO: Save to Supabase configuracion_empresa table
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('Guardando configuración:', config);
+    const empresaId = authStore.empresaId;
+    if (!empresaId) throw new Error('No se pudo identificar la empresa');
+
+    // Guardar nombre y país en la tabla empresas
+    const { error: empresaError } = await supabase
+      .from('empresas')
+      .update({
+        nombre: config.empresa.nombre,
+        pais: config.empresa.pais,
+        configuracion: {
+          idioma: config.empresa.idioma,
+          encuestas: config.encuestas,
+          interfaz: config.interfaz,
+          privacidad: config.privacidad
+        }
+      })
+      .eq('id', empresaId);
+
+    if (empresaError) throw empresaError;
 
     toast.add({
       severity: 'success',
@@ -492,28 +510,22 @@ const guardarConfiguracion = async () => {
 };
 
 const resetearConfiguracion = () => {
-  Object.assign(config, {
-    empresa: {
-      nombre: 'Mi Empresa',
-      pais: 'Chile',
-      idioma: 'Español'
-    },
-    encuestas: {
-      escala: '1-5',
-      anonimato_predeterminado: 'Anónimo completo',
-      umbral_resultados: 5,
-      frecuencia_pulso: 'Mensual',
-      recordatorio_automatico: true,
-      dias_recordatorio: 3
-    },
-    interfaz: {
-      tema: 'Claro',
-      idioma_ui: 'Español',
-      notificaciones_email: true
-    },
-    privacidad: {
-      retencion_datos_meses: 24
-    }
+  // Resetear solo los valores de configuración (no los de empresa que vienen de Supabase)
+  Object.assign(config.encuestas, {
+    escala: '1-5',
+    anonimato_predeterminado: 'Anónimo completo',
+    umbral_resultados: 5,
+    frecuencia_pulso: 'Mensual',
+    recordatorio_automatico: true,
+    dias_recordatorio: 3
+  });
+  Object.assign(config.interfaz, {
+    tema: 'Claro',
+    idioma_ui: 'Español',
+    notificaciones_email: true
+  });
+  Object.assign(config.privacidad, {
+    retencion_datos_meses: 24
   });
 
   toast.add({
@@ -533,8 +545,36 @@ const handleLogoUpload = () => {
   });
 };
 
-onMounted(() => {
-  // TODO: Load configuration from Supabase
-  console.log('Configuración Global cargada');
+onMounted(async () => {
+  try {
+    const empresaId = authStore.empresaId;
+    if (!empresaId) return;
+
+    const { data, error } = await supabase
+      .from('empresas')
+      .select('nombre, pais, configuracion')
+      .eq('id', empresaId)
+      .single();
+
+    if (error) throw error;
+
+    if (data) {
+      config.empresa.nombre = data.nombre || '';
+      config.empresa.pais = data.pais || '';
+
+      // Cargar configuración adicional del campo jsonb
+      if (data.configuracion) {
+        const cfg = data.configuracion;
+        if (cfg.idioma) config.empresa.idioma = cfg.idioma;
+        if (cfg.encuestas) Object.assign(config.encuestas, cfg.encuestas);
+        if (cfg.interfaz) Object.assign(config.interfaz, cfg.interfaz);
+        if (cfg.privacidad) Object.assign(config.privacidad, cfg.privacidad);
+      }
+    }
+  } catch (error) {
+    console.error('Error cargando configuración:', error);
+  } finally {
+    cargando.value = false;
+  }
 });
 </script>

@@ -155,7 +155,7 @@ onMounted(() => {
             id="emails"
             v-model="emails"
             rows="5"
-            placeholder="empleado1@empresa.com, empleado2@empresa.com"
+            placeholder="colaborador1@empresa.com, colaborador2@empresa.com"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
           ></textarea>
         </div>

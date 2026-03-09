@@ -14,6 +14,14 @@ import RegisterView from '../views/RegisterView.vue';
 import NotFoundView from '../views/NotFoundView.vue';
 import AccessDeniedView from '../views/AccessDeniedView.vue';
 import PoliticaCookiesView from '../views/PoliticaCookiesView.vue';
+import AvisoLegalView from '../views/AvisoLegalView.vue';
+import PoliticaPrivacidadView from '../views/PoliticaPrivacidadView.vue';
+import ContratoLicenciaView from '../views/ContratoLicenciaView.vue';
+
+// Vistas de autenticación
+import VerificacionPendiente from '../views/auth/VerificacionPendiente.vue';
+import AuthCallback from '../views/auth/AuthCallback.vue';
+import RegistroEmpleadoView from '../views/auth/RegistroEmpleadoView.vue';
 
 // Vistas Admin
 import AdminDashboardView from '../views/admin/DashboardView.vue';
@@ -55,6 +63,30 @@ const routes = [
     meta: { requiresAuth: false }
   },
 
+  // Verificación de email pendiente
+  {
+    path: '/verificacion-pendiente',
+    name: 'verificacion-pendiente',
+    component: VerificacionPendiente,
+    meta: { requiresAuth: false }
+  },
+
+  // Callback de autenticación (verificación de email)
+  {
+    path: '/auth/callback',
+    name: 'auth-callback',
+    component: AuthCallback,
+    meta: { requiresAuth: false }
+  },
+
+  // Registro de empleados (invitación o auto-registro)
+  {
+    path: '/unirse',
+    name: 'unirse',
+    component: RegistroEmpleadoView,
+    meta: { requiresAuth: false }
+  },
+
   // === RUTAS ADMIN ===
   {
     path: '/admin/dashboard',
@@ -89,6 +121,24 @@ const routes = [
     path: '/politica-cookies',
     name: 'politica-cookies',
     component: PoliticaCookiesView,
+    meta: { requiresAuth: false, isPublic: true }
+  },
+  {
+    path: '/aviso-legal',
+    name: 'aviso-legal',
+    component: AvisoLegalView,
+    meta: { requiresAuth: false, isPublic: true }
+  },
+  {
+    path: '/politica-privacidad',
+    name: 'politica-privacidad',
+    component: PoliticaPrivacidadView,
+    meta: { requiresAuth: false, isPublic: true }
+  },
+  {
+    path: '/contrato-licencia',
+    name: 'contrato-licencia',
+    component: ContratoLicenciaView,
     meta: { requiresAuth: false, isPublic: true }
   },
 
@@ -133,11 +183,32 @@ router.beforeEach(async (to, from) => {
     return '/empleado/dashboard';
   };
 
+  // Permitir acceso a rutas de callback, verificación y registro de empleados
+  if (to.name === 'auth-callback' || to.name === 'verificacion-pendiente' || to.name === 'unirse') {
+    return true;
+  }
+
+  // Verificar si el email está confirmado para usuarios autenticados
+  if (authStore.isAuthenticated && requiresAuth) {
+    const emailVerificado = authStore.user?.email_confirmed_at;
+    if (!emailVerificado) {
+      return { name: 'verificacion-pendiente' };
+    }
+  }
+
   if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
+    // Si está autenticado pero no verificado, ir a verificación
+    if (!authStore.user?.email_confirmed_at) {
+      return { name: 'verificacion-pendiente' };
+    }
     return getRedirectPath();
   }
 
   if (to.name === 'landing' && authStore.isAuthenticated) {
+    // Si está autenticado pero no verificado, ir a verificación
+    if (!authStore.user?.email_confirmed_at) {
+      return { name: 'verificacion-pendiente' };
+    }
     return getRedirectPath();
   }
 

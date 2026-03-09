@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { supabase } from '@/lib/supabase';
+import { notificacionesService } from '@/services/notificaciones.service';
 import {
   Users, Plus, Mail, Search, CheckCircle, Clock, AlertCircle,
   Info, AlertTriangle, Activity, Edit3, Trash2,
@@ -230,6 +231,10 @@ const cargarDepartamentos = async () => {
 
 const handleInvitar = async (datosEmpleados) => {
   try {
+    // Fecha de expiración del token (7 días)
+    const tokenExpira = new Date();
+    tokenExpira.setDate(tokenExpira.getDate() + 7);
+
     const empleadosParaInsertar = datosEmpleados.map(emp => ({
       empresa_id: authStore.empresaId,
       nombre: emp.nombre,
@@ -239,25 +244,59 @@ const handleInvitar = async (datosEmpleados) => {
       estado: 'Invitado',
       puntos: 0,
       es_admin: false,
-      invitacion_enviada_at: new Date().toISOString()
+      invitacion_enviada_at: new Date().toISOString(),
+      token_invitacion: crypto.randomUUID(),
+      token_expira: tokenExpira.toISOString()
     }));
 
-    const { error } = await supabase
+    const { data: empleadosCreados, error } = await supabase
       .from('empleados')
-      .insert(empleadosParaInsertar);
+      .insert(empleadosParaInsertar)
+      .select('id, email, nombre, token_invitacion, departamento_id');
 
     if (error) throw error;
+
+    // Obtener nombre del departamento
+    const deptId = datosEmpleados[0]?.departamento_id;
+    const dept = departamentos.value.find(d => d.id === deptId);
+    const departamentoNombre = dept?.nombre || '';
+
+    // Enviar emails de invitación
+    let emailsEnviados = 0;
+    for (const emp of empleadosCreados) {
+      try {
+        await notificacionesService.notificarInvitacionEmpleado(
+          authStore.empresaId,
+          {
+            email: emp.email,
+            nombre: emp.nombre,
+            token_invitacion: emp.token_invitacion,
+            departamento_nombre: departamentoNombre
+          }
+        );
+        emailsEnviados++;
+      } catch (emailError) {
+        console.error(`Error enviando invitación a ${emp.email}:`, emailError);
+      }
+    }
 
     await cargarEmpleados();
     isModalVisible.value = false;
 
     const count = datosEmpleados.length;
-    toast.success(
-      count === 1
-        ? `${datosEmpleados[0].nombre} ha sido invitado correctamente`
-        : `${count} colaboradores han sido invitados correctamente`,
-      { icon: '👥', timeout: 5000 }
-    );
+    if (emailsEnviados === count) {
+      toast.success(
+        count === 1
+          ? `${datosEmpleados[0].nombre} ha sido invitado y recibirá un email`
+          : `${count} colaboradores han sido invitados y recibirán un email`,
+        { icon: '📧', timeout: 5000 }
+      );
+    } else {
+      toast.warning(
+        `${count} colaboradores creados, pero solo ${emailsEnviados} emails enviados`,
+        { icon: '⚠️', timeout: 5000 }
+      );
+    }
   } catch (error) {
     console.error('Error invitando empleados:', error);
     toast.error('Error al invitar colaboradores. Por favor, verifica los datos e intenta de nuevo.');
@@ -327,13 +366,35 @@ const getOrdenIcon = (campo) => {
 
 const reenviarInvitacion = async (empleado) => {
   try {
-    // Actualizar fecha de reenvío
-    const { error } = await supabase
+    // Generar nuevo token y actualizar fecha de expiración
+    const nuevoToken = crypto.randomUUID();
+    const tokenExpira = new Date();
+    tokenExpira.setDate(tokenExpira.getDate() + 7);
+
+    const { error: updateError } = await supabase
       .from('empleados')
-      .update({ invitacion_enviada_at: new Date().toISOString() })
+      .update({
+        invitacion_enviada_at: new Date().toISOString(),
+        token_invitacion: nuevoToken,
+        token_expira: tokenExpira.toISOString()
+      })
       .eq('id', empleado.id);
 
-    if (error) throw error;
+    if (updateError) throw updateError;
+
+    // Obtener nombre del departamento
+    const dept = departamentos.value.find(d => d.id === empleado.departamento_id);
+
+    // Enviar email de invitación
+    await notificacionesService.notificarInvitacionEmpleado(
+      authStore.empresaId,
+      {
+        email: empleado.email,
+        nombre: empleado.nombre,
+        token_invitacion: nuevoToken,
+        departamento_nombre: dept?.nombre || ''
+      }
+    );
 
     toast.success(`Invitación reenviada a ${empleado.nombre}`, { icon: '📧' });
     await cargarEmpleados();
@@ -354,14 +415,52 @@ const reenviarInvitacionesBloque = async () => {
       return;
     }
 
-    const { error } = await supabase
-      .from('empleados')
-      .update({ invitacion_enviada_at: new Date().toISOString() })
-      .in('id', empleadosInvitados.map(e => e.id));
+    const tokenExpira = new Date();
+    tokenExpira.setDate(tokenExpira.getDate() + 7);
 
-    if (error) throw error;
+    let emailsEnviados = 0;
 
-    toast.success(`${empleadosInvitados.length} invitaciones reenviadas`, { icon: '📧' });
+    // Actualizar cada empleado con nuevo token y enviar email
+    for (const emp of empleadosInvitados) {
+      const nuevoToken = crypto.randomUUID();
+
+      const { error: updateError } = await supabase
+        .from('empleados')
+        .update({
+          invitacion_enviada_at: new Date().toISOString(),
+          token_invitacion: nuevoToken,
+          token_expira: tokenExpira.toISOString()
+        })
+        .eq('id', emp.id);
+
+      if (updateError) {
+        console.error(`Error actualizando ${emp.email}:`, updateError);
+        continue;
+      }
+
+      try {
+        const dept = departamentos.value.find(d => d.id === emp.departamento_id);
+        await notificacionesService.notificarInvitacionEmpleado(
+          authStore.empresaId,
+          {
+            email: emp.email,
+            nombre: emp.nombre,
+            token_invitacion: nuevoToken,
+            departamento_nombre: dept?.nombre || ''
+          }
+        );
+        emailsEnviados++;
+      } catch (emailError) {
+        console.error(`Error enviando email a ${emp.email}:`, emailError);
+      }
+    }
+
+    if (emailsEnviados === empleadosInvitados.length) {
+      toast.success(`${emailsEnviados} invitaciones reenviadas`, { icon: '📧' });
+    } else {
+      toast.warning(`${emailsEnviados} de ${empleadosInvitados.length} emails enviados`, { icon: '⚠️' });
+    }
+
     empleadosSeleccionados.value = [];
     await cargarEmpleados();
   } catch (error) {
@@ -477,22 +576,31 @@ const getNivelBarClass = (puntos) => {
   return 'bg-gray-300';
 };
 
+// Colores generados dinámicamente por hash del nombre del departamento
+const colorPalette = [
+  'bg-blue-100 text-blue-800',
+  'bg-purple-100 text-purple-800',
+  'bg-green-100 text-green-800',
+  'bg-pink-100 text-pink-800',
+  'bg-yellow-100 text-yellow-800',
+  'bg-indigo-100 text-indigo-800',
+  'bg-orange-100 text-orange-800',
+  'bg-teal-100 text-teal-800',
+  'bg-rose-100 text-rose-800',
+  'bg-cyan-100 text-cyan-800',
+  'bg-emerald-100 text-emerald-800',
+  'bg-violet-100 text-violet-800'
+];
+
 const getDepartamentoBadgeClass = (departamento) => {
-  const clases = {
-    'RRHH': 'bg-blue-100 text-blue-800',
-    'Tecnología': 'bg-purple-100 text-purple-800',
-    'Ventas': 'bg-green-100 text-green-800',
-    'Marketing': 'bg-pink-100 text-pink-800',
-    'Operaciones': 'bg-yellow-100 text-yellow-800',
-    'Finanzas': 'bg-indigo-100 text-indigo-800',
-    'Entrenamiento Personal': 'bg-orange-100 text-orange-800',
-    'Nutrición Deportiva': 'bg-green-100 text-green-800',
-    'Fisioterapia': 'bg-blue-100 text-blue-800',
-    'Recepción y Atención': 'bg-purple-100 text-purple-800',
-    'Clases Grupales': 'bg-pink-100 text-pink-800',
-    'Dirección': 'bg-gray-800 text-white'
-  };
-  return clases[departamento] || 'bg-gray-100 text-gray-800';
+  if (!departamento) return 'bg-gray-100 text-gray-800';
+  // Generar un hash simple del nombre para asignar color consistente
+  let hash = 0;
+  for (let i = 0; i < departamento.length; i++) {
+    hash = departamento.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % colorPalette.length;
+  return colorPalette[index];
 };
 
 const verActividad = (empleado) => {

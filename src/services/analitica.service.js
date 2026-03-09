@@ -153,8 +153,8 @@ const analiticaService = {
         return this._getEvolutionFallback(empresaId, meses);
       }
 
-      if (!data || !Array.isArray(data)) {
-        return [];
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return this._getEvolutionFallback(empresaId, meses);
       }
 
       // Transformar al formato esperado

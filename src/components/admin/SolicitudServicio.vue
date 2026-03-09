@@ -40,22 +40,63 @@
         </div>
       </div>
 
-      <!-- Departamento -->
+      <!-- Destino: Toda la empresa o departamentos -->
       <div>
-        <label for="departamento" class="block text-sm font-medium text-gray-700 mb-2">
-          Departamento destino <span class="text-red-500">*</span>
+        <label class="block text-sm font-medium text-gray-700 mb-3">
+          Destino del servicio <span class="text-red-500">*</span>
         </label>
-        <select
-          id="departamento"
-          v-model="formData.departamento"
-          required
-          class="w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 px-4 py-2.5 text-gray-900"
-        >
-          <option value="" disabled>Selecciona un departamento</option>
-          <option v-for="dept in departamentos" :key="dept" :value="dept">
-            {{ dept }}
-          </option>
-        </select>
+
+        <!-- Toggle Toda la empresa -->
+        <div class="mb-4">
+          <label class="flex items-center gap-3 p-3 bg-indigo-50 rounded-lg cursor-pointer hover:bg-indigo-100 transition-colors">
+            <input
+              type="checkbox"
+              v-model="formData.todaEmpresa"
+              class="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            />
+            <div>
+              <span class="font-medium text-gray-900">Toda la empresa</span>
+              <p class="text-xs text-gray-600">El servicio aplicará a todos los departamentos</p>
+            </div>
+          </label>
+        </div>
+
+        <!-- Lista de departamentos (solo si no es toda la empresa) -->
+        <div v-if="!formData.todaEmpresa" class="space-y-2">
+          <p class="text-sm text-gray-600 mb-2">Selecciona uno o más departamentos:</p>
+
+          <div v-if="cargandoDepartamentos" class="flex items-center justify-center py-4">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+            <span class="ml-2 text-sm text-gray-600">Cargando departamentos...</span>
+          </div>
+
+          <div v-else-if="departamentos.length === 0" class="text-center py-4 text-gray-500">
+            No hay departamentos configurados en tu empresa
+          </div>
+
+          <div v-else class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
+            <label
+              v-for="dept in departamentos"
+              :key="dept.id"
+              class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer transition-colors"
+              :class="formData.departamentosSeleccionados.includes(dept.id)
+                ? 'bg-indigo-50 border-indigo-300'
+                : 'bg-white border-gray-200 hover:border-indigo-200'"
+            >
+              <input
+                type="checkbox"
+                :value="dept.id"
+                v-model="formData.departamentosSeleccionados"
+                class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+              />
+              <span class="text-sm text-gray-900">{{ dept.nombre }}</span>
+            </label>
+          </div>
+
+          <p v-if="formData.departamentosSeleccionados.length > 0" class="text-xs text-indigo-600 mt-2">
+            {{ formData.departamentosSeleccionados.length }} departamento(s) seleccionado(s)
+          </p>
+        </div>
       </div>
 
       <!-- Fecha de Implementación -->
@@ -136,11 +177,12 @@
         </button>
         <button
           type="submit"
-          :disabled="!formularioValido"
+          :disabled="!formularioValido || guardando"
           class="px-5 py-2.5 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
-          <Save class="h-5 w-5" />
-          Guardar solicitud
+          <span v-if="guardando" class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+          <Save v-else class="h-5 w-5" />
+          {{ guardando ? 'Guardando...' : 'Guardar solicitud' }}
         </button>
       </div>
     </form>
@@ -148,7 +190,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import Dialog from 'primevue/dialog';
 import {
@@ -157,10 +199,11 @@ import {
   Clock,
   Save
 } from 'lucide-vue-next';
-
-// TODO: conectar con tablas "solicitudes_servicios" y "departamentos" en futuras iteraciones.
+import { solicitudesService } from '@/services/solicitudes.service';
+import { useAuthStore } from '@/stores/auth.store';
 
 const toast = useToast();
+const authStore = useAuthStore();
 
 const props = defineProps({
   visible: {
@@ -175,21 +218,39 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'solicitud-guardada']);
 
-const departamentos = ref([
-  'Recursos Humanos',
-  'Tecnología',
-  'Ventas',
-  'Marketing',
-  'Operaciones',
-  'Finanzas'
-]);
+// Departamentos cargados desde BD
+const departamentos = ref([]);
+const cargandoDepartamentos = ref(false);
+const guardando = ref(false);
 
 const formData = ref({
-  departamento: '',
+  todaEmpresa: false,
+  departamentosSeleccionados: [],
   fecha_implementacion: '',
   objetivos: '',
   comentarios: '',
   estado: 'pendiente'
+});
+
+// Cargar departamentos al montar o cuando cambia visible
+const cargarDepartamentos = async () => {
+  if (!authStore.empresaId) return;
+
+  cargandoDepartamentos.value = true;
+  try {
+    departamentos.value = await solicitudesService.getDepartamentos(authStore.empresaId);
+  } catch (error) {
+    console.error('Error cargando departamentos:', error);
+    toast.error('Error al cargar los departamentos');
+  } finally {
+    cargandoDepartamentos.value = false;
+  }
+};
+
+onMounted(() => {
+  if (props.visible) {
+    cargarDepartamentos();
+  }
 });
 
 const fechaMinima = computed(() => {
@@ -198,8 +259,9 @@ const fechaMinima = computed(() => {
 });
 
 const formularioValido = computed(() => {
+  const tieneDestino = formData.value.todaEmpresa || formData.value.departamentosSeleccionados.length > 0;
   return (
-    formData.value.departamento !== '' &&
+    tieneDestino &&
     formData.value.fecha_implementacion !== '' &&
     formData.value.objetivos.trim().length > 0
   );
@@ -207,7 +269,8 @@ const formularioValido = computed(() => {
 
 const resetFormulario = () => {
   formData.value = {
-    departamento: '',
+    todaEmpresa: false,
+    departamentosSeleccionados: [],
     fecha_implementacion: '',
     objetivos: '',
     comentarios: '',
@@ -215,32 +278,37 @@ const resetFormulario = () => {
   };
 };
 
-const guardarSolicitud = () => {
+const guardarSolicitud = async () => {
   if (!formularioValido.value || !props.servicio) return;
 
-  const nuevaSolicitud = {
-    servicio: {
-      id: props.servicio.id,
-      nombre: props.servicio.nombre,
-      icono: props.servicio.icono
-    },
-    departamento: formData.value.departamento,
-    fecha_implementacion: formData.value.fecha_implementacion,
-    objetivos: formData.value.objetivos,
-    comentarios: formData.value.comentarios,
-    estado: formData.value.estado
-  };
+  guardando.value = true;
 
-  // TODO: Save to Supabase solicitudes_servicios table
-  console.log('Guardando solicitud:', nuevaSolicitud);
+  try {
+    const solicitud = await solicitudesService.crearConDestinatarios({
+      empleado_id: authStore.empleado?.id,
+      empresa_id: authStore.empresaId,
+      servicio_nombre: props.servicio.nombre,
+      servicio_categoria: props.servicio.categoria,
+      objetivos: formData.value.objetivos,
+      comentarios: formData.value.comentarios,
+      fecha_implementacion: formData.value.fecha_implementacion,
+      todaEmpresa: formData.value.todaEmpresa,
+      departamentos: formData.value.departamentosSeleccionados
+    });
 
-  toast.success('Solicitud registrada correctamente', {
-    timeout: 4000
-  });
+    toast.success('Solicitud registrada correctamente', {
+      timeout: 4000
+    });
 
-  emit('solicitud-guardada', nuevaSolicitud);
-  emit('update:visible', false);
-  resetFormulario();
+    emit('solicitud-guardada', solicitud);
+    emit('update:visible', false);
+    resetFormulario();
+  } catch (error) {
+    console.error('Error guardando solicitud:', error);
+    toast.error('Error al guardar la solicitud. Intenta de nuevo.');
+  } finally {
+    guardando.value = false;
+  }
 };
 
 const cancelar = () => {
@@ -249,7 +317,9 @@ const cancelar = () => {
 };
 
 watch(() => props.visible, (newVal) => {
-  if (!newVal) {
+  if (newVal) {
+    cargarDepartamentos();
+  } else {
     resetFormulario();
   }
 });

@@ -6,9 +6,10 @@ import { supabase } from '@/lib/supabase';
 import {
   FileText, Plus, BarChart3, Edit, Trash2, ArrowRight,
   CheckCircle, Settings, Sparkles, TrendingUp, Clock, Users,
-  Shield, Info
+  Shield, Info, Bell
 } from 'lucide-vue-next';
 import { useToast } from '@/composables/useToast';
+import { notificacionesService } from '@/services/notificaciones.service';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -115,6 +116,45 @@ const formatearFecha = (fecha) => {
     month: 'short',
     year: 'numeric'
   });
+};
+
+const enviandoRecordatorio = ref({});
+
+const enviarRecordatorio = async (encuesta) => {
+  if (enviandoRecordatorio.value[encuesta.id]) return;
+
+  enviandoRecordatorio.value[encuesta.id] = true;
+
+  try {
+    // Obtener colaboradores que no han respondido
+    const sinResponder = await notificacionesService.getColaboradoresSinResponder(
+      authStore.empresaId,
+      encuesta.id
+    );
+
+    if (sinResponder.length === 0) {
+      toast.info('Todos los colaboradores ya han respondido esta encuesta', { icon: '✅' });
+      return;
+    }
+
+    await notificacionesService.enviarRecordatorioEncuesta(
+      authStore.empresaId,
+      encuesta,
+      sinResponder
+    );
+
+    toast.success(`Recordatorio enviado a ${sinResponder.length} colaborador${sinResponder.length !== 1 ? 'es' : ''}`, { icon: '📧' });
+  } catch (error) {
+    console.error('Error enviando recordatorio:', error);
+    toast.error('Error al enviar el recordatorio. Por favor, intenta de nuevo.');
+  } finally {
+    enviandoRecordatorio.value[encuesta.id] = false;
+  }
+};
+
+const esEncuestaActiva = (estado) => {
+  if (!estado) return false;
+  return estado.toLowerCase() === 'activa';
 };
 </script>
 
@@ -520,6 +560,16 @@ const formatearFecha = (fecha) => {
                 >
                   <BarChart3 class="h-3.5 w-3.5 mr-1.5" />
                   Resultados
+                </button>
+                <button
+                  v-if="esEncuestaActiva(encuesta.estado)"
+                  @click="enviarRecordatorio(encuesta)"
+                  :disabled="enviandoRecordatorio[encuesta.id]"
+                  class="bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white font-medium py-2 px-3 rounded-lg transition-colors inline-flex items-center justify-center text-xs"
+                  :title="enviandoRecordatorio[encuesta.id] ? 'Enviando...' : 'Enviar recordatorio a colaboradores que no han respondido'"
+                >
+                  <Bell v-if="!enviandoRecordatorio[encuesta.id]" class="h-3.5 w-3.5" />
+                  <span v-else class="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full"></span>
                 </button>
                 <button
                   @click="editarEncuesta(encuesta.id)"

@@ -1250,6 +1250,7 @@ import { useEncuestasStore } from '@/stores/encuestas.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { departamentosService } from '@/services/departamentos.service';
 import { empleadosService } from '@/services/empleados.service';
+import { notificacionesService } from '@/services/notificaciones.service';
 import Button from '@/components/ui/Button.vue';
 import {
   ArrowLeft,
@@ -1821,7 +1822,7 @@ const lanzarEncuesta = async () => {
 
   loading.value = true;
   try {
-    await encuestasStore.createNewSurvey({
+    const resultado = await encuestasStore.createNewSurvey({
       titulo: encuesta.value.titulo,
       descripcion: encuesta.value.descripcion,
       categoria: encuesta.value.categoria,
@@ -1833,6 +1834,22 @@ const lanzarEncuesta = async () => {
       empresa_id: authStore.empresaId
     });
     toast.success('¡Encuesta lanzada exitosamente!');
+
+    // Notificar a todos los colaboradores de la empresa por email
+    try {
+      const encuestaCreada = resultado?.encuesta || resultado;
+      await notificacionesService.notificarNuevaEncuesta(authStore.empresaId, {
+        id: encuestaCreada.id,
+        titulo: encuesta.value.titulo,
+        descripcion: encuesta.value.descripcion,
+        fecha_fin: encuesta.value.fechaFin
+      });
+      toast.info('Se ha notificado a los colaboradores por correo electrónico');
+    } catch (notifError) {
+      console.error('Error al enviar notificaciones:', notifError);
+      toast.warning('La encuesta se lanzó correctamente, pero hubo un problema al enviar las notificaciones por correo');
+    }
+
     router.push('/admin/encuestas');
   } catch (error) {
     toast.error(error.message || 'Error al lanzar la encuesta');

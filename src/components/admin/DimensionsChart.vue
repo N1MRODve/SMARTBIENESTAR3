@@ -11,8 +11,14 @@
       </div>
     </div>
 
+    <!-- Empty state -->
+    <div v-if="!hasDimensions" class="text-center py-8 text-gray-500">
+      <p class="text-sm">No hay datos de dimensiones disponibles aún.</p>
+      <p class="text-xs mt-1">Los datos se mostrarán cuando se procesen respuestas de encuestas.</p>
+    </div>
+
     <!-- Dimensions Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div 
         v-for="dimension in dimensions" 
         :key="dimension.id"
@@ -113,80 +119,53 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import { TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-vue-next';
 import { Chart, registerables } from 'chart.js';
 
 // Register Chart.js components
 Chart.register(...registerables);
 
+// Props — dimensiones se reciben del componente padre (datos reales de encuestas)
+const props = defineProps({
+  dimensionsData: {
+    type: Array,
+    default: () => []
+  }
+});
+
 const chartCanvas = ref(null);
 let chartInstance = null;
 
-// Mock data for wellness dimensions
-const dimensions = ref([
-  {
-    id: 'salud-mental',
-    name: 'Salud Mental',
-    description: 'Estrés, ansiedad y bienestar emocional',
-    icon: '🧠',
-    score: 5.8,
-    trend: -0.2,
-    weight: 0.3
-  },
-  {
-    id: 'carga-laboral',
-    name: 'Carga Laboral',
-    description: 'Balance trabajo-vida y presión laboral',
-    icon: '⚖️',
-    score: 6.5,
-    trend: 0.1,
-    weight: 0.25
-  },
-  {
-    id: 'comunicacion',
-    name: 'Comunicación',
-    description: 'Claridad y efectividad comunicativa',
-    icon: '💬',
-    score: 8.3,
-    trend: 0.4,
-    weight: 0.2
-  },
-  {
-    id: 'ergonomia',
-    name: 'Ergonomía',
-    description: 'Comodidad física y ambiente de trabajo',
-    icon: '🪑',
-    score: 7.9,
-    trend: 0.2,
-    weight: 0.15
-  },
-  {
-    id: 'desarrollo',
-    name: 'Desarrollo',
-    description: 'Oportunidades de crecimiento profesional',
-    icon: '📈',
-    score: 6.8,
-    trend: 0.0,
-    weight: 0.1
+// Dimensiones desde props (datos reales)
+const dimensions = computed(() => {
+  if (props.dimensionsData && props.dimensionsData.length > 0) {
+    return props.dimensionsData;
   }
-]);
+  // Retornar array vacío si no hay datos
+  return [];
+});
 
 // Computed properties
+const hasDimensions = computed(() => dimensions.value.length > 0);
+
 const overallScore = computed(() => {
+  if (!hasDimensions.value) return 0;
   return dimensions.value.reduce((total, dim) => {
-    return total + (dim.score * dim.weight);
+    return total + (dim.score * (dim.weight || 1 / dimensions.value.length));
   }, 0);
 });
 
 const strongestDimension = computed(() => {
-  return dimensions.value.reduce((max, dim) => 
+  if (!hasDimensions.value) return { name: '—', score: 0 };
+  return dimensions.value.reduce((max, dim) =>
     dim.score > max.score ? dim : max
   );
 });
 
 const weakestDimension = computed(() => {
-  return dimensions.value.reduce((min, dim) => 
+  if (!hasDimensions.value) return { name: '—', score: 0 };
+  return dimensions.value.reduce((min, dim) =>
     dim.score < min.score ? dim : min
   );
 });
@@ -207,7 +186,7 @@ const getProgressColorClass = (score) => {
 };
 
 const createChart = () => {
-  if (!chartCanvas.value) return;
+  if (!chartCanvas.value || !hasDimensions.value) return;
 
   // Destroy existing chart
   if (chartInstance) {
@@ -316,10 +295,16 @@ const createChart = () => {
 // Lifecycle
 onMounted(async () => {
   await nextTick();
-  setTimeout(() => {
-    createChart();
-  }, 100);
+  if (hasDimensions.value) {
+    setTimeout(() => createChart(), 100);
+  }
 });
+
+// Recrear chart cuando cambien los datos
+watch(() => props.dimensionsData, async () => {
+  await nextTick();
+  createChart();
+}, { deep: true });
 </script>
 
 <style scoped>

@@ -201,7 +201,7 @@
                     <div>
                       <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Índice de Bienestar</p>
                       <p class="text-4xl font-bold" :class="getBienestarColorClasses(indiceBienestarGlobal).textClass">
-                        {{ indiceBienestarGlobal }}%
+                        {{ indiceBienestarGlobal !== null ? indiceBienestarGlobal + '%' : '—' }}
                       </p>
                     </div>
                   </div>
@@ -355,7 +355,7 @@
                        :class="getBienestarColorClasses(indiceBienestarGlobal).bgClass">
                     <div class="text-center">
                       <div class="text-4xl font-bold" :class="getBienestarColorClasses(indiceBienestarGlobal).textClass">
-                        {{ indiceBienestarGlobal }}%
+                        {{ indiceBienestarGlobal !== null ? indiceBienestarGlobal + '%' : '—' }}
                       </div>
                       <div class="text-xs font-medium mt-1" :class="getBienestarColorClasses(indiceBienestarGlobal).textClass">
                         Bienestar Global
@@ -495,8 +495,8 @@
                               </div>
                             </div>
                           </div>
-                          <Button 
-                            @click="handleSolicitarServicio(pregunta.recomendacion.id)"
+                          <Button
+                            @click="handleSolicitarServicio(pregunta.recomendacion)"
                             class="ml-4 flex-shrink-0"
                           >
                             <Send class="h-4 w-4 mr-2" />
@@ -724,6 +724,102 @@
       @close="cerrarModalComunicado"
       @comunicado-enviado="handleComunicadoEnviado"
     />
+
+    <!-- Modal de Servicio Recomendado -->
+    <Teleport to="body">
+      <div v-if="modalServicioAbierto" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="fixed inset-0 bg-black/50" @click="cerrarModalServicio"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div v-if="servicioSeleccionado" class="p-6">
+            <!-- Header con icono -->
+            <div class="flex items-start gap-4 mb-6">
+              <div class="w-14 h-14 rounded-xl flex items-center justify-center text-3xl bg-indigo-100 flex-shrink-0">
+                {{ servicioSeleccionado.icono }}
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold text-gray-900">{{ servicioSeleccionado.nombre }}</h3>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 mt-1">
+                  {{ servicioSeleccionado.categoria?.replace(/_/g, ' ') }}
+                </span>
+              </div>
+              <button @click="cerrarModalServicio" class="text-gray-400 hover:text-gray-600 p-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Descripción -->
+            <p class="text-gray-600 text-sm leading-relaxed mb-6">
+              {{ servicioSeleccionado.descripcion }}
+            </p>
+
+            <!-- Detalles del servicio -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-xs font-medium text-gray-500 mb-1">Duración</p>
+                <p class="text-sm font-medium text-gray-900">{{ servicioSeleccionado.duracion }}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-xs font-medium text-gray-500 mb-1">Formato</p>
+                <p class="text-sm font-medium text-gray-900">{{ servicioSeleccionado.formato }}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-xs font-medium text-gray-500 mb-1">Participantes</p>
+                <p class="text-sm font-medium text-gray-900">{{ servicioSeleccionado.participantes }}</p>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-xs font-medium text-gray-500 mb-1">Incluido en plan</p>
+                <p class="text-sm font-medium" :class="servicioSeleccionado.incluidoEnPrecio ? 'text-green-600' : 'text-amber-600'">
+                  {{ servicioSeleccionado.incluidoEnPrecio ? 'Sí, incluido' : 'Servicio adicional' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Estado de éxito -->
+            <div v-if="solicitudExitosa" class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6 text-center">
+              <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <CheckCircle class="h-7 w-7 text-green-600" />
+              </div>
+              <h4 class="text-lg font-semibold text-green-900 mb-1">¡Solicitud enviada con éxito!</h4>
+              <p class="text-sm text-green-700">
+                Un asesor de SMART Bienestar revisará tu solicitud y se pondrá en contacto para coordinar la implementación.
+              </p>
+            </div>
+
+            <!-- Info (antes de enviar) -->
+            <div v-else class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <p class="text-sm text-blue-800">
+                Al solicitar este servicio, un asesor de SMART Bienestar revisará tu solicitud y se pondrá en contacto para coordinar la implementación.
+              </p>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex gap-3">
+              <button
+                @click="cerrarModalServicio"
+                class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+              >
+                {{ solicitudExitosa ? 'Cerrar' : 'Cancelar' }}
+              </button>
+              <button
+                v-if="!solicitudExitosa"
+                @click="confirmarSolicitudServicio"
+                :disabled="enviandoSolicitud"
+                class="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <svg v-if="enviandoSolicitud" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <Send v-else class="h-4 w-4" />
+                {{ enviandoSolicitud ? 'Enviando...' : 'Solicitar Servicio' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -773,6 +869,7 @@ import {
   ClipboardList
 } from 'lucide-vue-next';
 import { Chart, registerables } from 'chart.js';
+import { serviciosSmart } from '@/utils/serviciosSmart.js';
 
 Chart.register(...registerables);
 
@@ -781,14 +878,50 @@ const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
 
+// --- Modal de Servicio Recomendado ---
+const modalServicioAbierto = ref(false);
+const servicioSeleccionado = ref(null);
+const enviandoSolicitud = ref(false);
+const solicitudExitosa = ref(false);
+
+// Función para encontrar el servicio más relevante del catálogo según la categoría de la pregunta
+const encontrarServicioRecomendado = (categoriaPregunta, nivelRiesgo) => {
+  if (!categoriaPregunta) return null;
+
+  const catNorm = categoriaPregunta.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, '_');
+
+  // Buscar servicios cuyas dimensiones coincidan con la categoría de la pregunta
+  const coincidencias = serviciosSmart
+    .map(servicio => {
+      let score = 0;
+      servicio.dimensiones.forEach(dim => {
+        const dimNorm = dim.toLowerCase().replace(/\s+/g, '_');
+        if (catNorm.includes(dimNorm) || dimNorm.includes(catNorm)) {
+          score += 2;
+        }
+      });
+      // También verificar por categoría del servicio
+      if (servicio.categoria && catNorm.includes(servicio.categoria.replace(/_/g, ''))) {
+        score += 1;
+      }
+      return { ...servicio, matchScore: score };
+    })
+    .filter(s => s.matchScore > 0)
+    .sort((a, b) => b.matchScore - a.matchScore);
+
+  return coincidencias.length > 0 ? coincidencias[0] : serviciosSmart[0]; // fallback al primer servicio
+};
+
 const encuesta = ref(null);
 const loading = ref(true);
 const error = ref(null);
 const charts = ref({});
 const totalEmpleadosEmpresa = ref(0);
 
-const indiceBienestarGlobal = ref(72);
-const tendenciaBienestar = ref('up'); // 'up', 'down', 'stable'
+const indiceBienestarGlobal = ref(null); // Se calcula dinámicamente desde las respuestas
+const tendenciaBienestar = ref('stable'); // Se actualiza al calcular resultados
 
 // Computed for participation rate
 const tasaParticipacion = computed(() => {
@@ -1004,26 +1137,35 @@ const cargarResultados = async () => {
 
         if (scoreParaAnalisis < 53) {
           nivelRiesgo = 'critico';
+          const servMatch = encontrarServicioRecomendado(pregunta.categoria, 'critico');
           recomendacion = {
             tipo: 'critico',
             titulo: 'CRÍTICO - Intervención urgente',
-            descripcion: `Score: ${Math.round(scoreParaAnalisis)}%. Estado crítico que requiere intervención inmediata. Alto riesgo de impacto negativo en rotación y productividad.`
+            descripcion: `Score: ${Math.round(scoreParaAnalisis)}%. Estado crítico que requiere intervención inmediata. Alto riesgo de impacto negativo en rotación y productividad.`,
+            id: servMatch?.id || null,
+            servicioRecomendado: servMatch
           };
         } else if (scoreParaAnalisis < 66) {
           nivelRiesgo = 'alto';
+          const servMatch = encontrarServicioRecomendado(pregunta.categoria, 'alto');
           recomendacion = {
             tipo: 'atencion',
             titulo: 'Requiere atención prioritaria',
-            descripcion: `Score: ${Math.round(scoreParaAnalisis)}%. Situación preocupante. Se recomienda investigar causas y desarrollar plan de acción inmediato.`
+            descripcion: `Score: ${Math.round(scoreParaAnalisis)}%. Situación preocupante. Se recomienda investigar causas y desarrollar plan de acción inmediato.`,
+            id: servMatch?.id || null,
+            servicioRecomendado: servMatch
           };
         } else if (scoreParaAnalisis < 75 || esRespuestaNeutral) {
           nivelRiesgo = 'medio';
+          const servMatch = encontrarServicioRecomendado(pregunta.categoria, 'medio');
           recomendacion = {
             tipo: 'mejora',
             titulo: 'Oportunidad de mejora',
             descripcion: esRespuestaNeutral
               ? `Score: ${Math.round(scoreParaAnalisis)}%. Mayoría de respuestas neutrales indica ambivalencia. Requiere investigación para entender causas.`
-              : `Score: ${Math.round(scoreParaAnalisis)}%. Área con potencial de mejora. Considere acciones proactivas.`
+              : `Score: ${Math.round(scoreParaAnalisis)}%. Área con potencial de mejora. Considere acciones proactivas.`,
+            id: servMatch?.id || null,
+            servicioRecomendado: servMatch
           };
         } else if (scoreParaAnalisis < 88) {
           nivelRiesgo = 'bajo';
@@ -1214,8 +1356,85 @@ const handleComunicadoEnviado = (comunicado) => {
   });
 };
 
-const handleSolicitarServicio = (servicioId) => {
-  router.push({ name: 'admin-servicio-detalle', params: { id: servicioId } });
+const handleSolicitarServicio = (recomendacion) => {
+  if (recomendacion?.servicioRecomendado) {
+    servicioSeleccionado.value = recomendacion.servicioRecomendado;
+    solicitudExitosa.value = false;
+    enviandoSolicitud.value = false;
+    modalServicioAbierto.value = true;
+  } else {
+    // Fallback: navegar al catálogo de servicios
+    router.push({ name: 'admin-servicios' });
+  }
+};
+
+const cerrarModalServicio = () => {
+  modalServicioAbierto.value = false;
+  servicioSeleccionado.value = null;
+  solicitudExitosa.value = false;
+  enviandoSolicitud.value = false;
+};
+
+const confirmarSolicitudServicio = async () => {
+  if (!servicioSeleccionado.value || enviandoSolicitud.value) return;
+
+  enviandoSolicitud.value = true;
+
+  try {
+    const empleadoId = authStore.empleado?.id;
+    if (!empleadoId) {
+      toast.add({
+        severity: 'error',
+        summary: 'Error de autenticación',
+        detail: 'No se pudo identificar tu perfil de empleado. Intenta cerrar sesión e iniciar de nuevo.',
+        life: 5000
+      });
+      enviandoSolicitud.value = false;
+      return;
+    }
+
+    const servicio = servicioSeleccionado.value;
+
+    const { data, error: insertError } = await supabase
+      .from('solicitudes_servicios')
+      .insert([{
+        empleado_id: empleadoId,
+        empresa_id: authStore.empresaId,
+        estado: 'pendiente',
+        servicio_nombre: servicio.nombre,
+        servicio_categoria: servicio.categoria?.replace(/_/g, ' '),
+        motivo: `Servicio recomendado basado en resultados de encuesta: ${servicio.nombre} (${servicio.categoria?.replace(/_/g, ' ')}). ${servicio.descripcion}`,
+        fecha_solicitud: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    // Mostrar estado de éxito dentro del modal
+    solicitudExitosa.value = true;
+
+    toast.add({
+      severity: 'success',
+      summary: 'Solicitud enviada',
+      detail: `Se ha solicitado "${servicio.nombre}". Un asesor se pondrá en contacto contigo.`,
+      life: 5000
+    });
+
+    // Cerrar modal automáticamente después de 2.5 segundos
+    setTimeout(() => {
+      cerrarModalServicio();
+    }, 2500);
+  } catch (err) {
+    console.error('Error al crear solicitud:', err);
+    toast.add({
+      severity: 'error',
+      summary: 'Error al enviar solicitud',
+      detail: err.message || 'No se pudo enviar la solicitud. Intenta de nuevo.',
+      life: 5000
+    });
+    enviandoSolicitud.value = false;
+  }
 };
 
 const exportarResultados = () => {
@@ -1245,6 +1464,16 @@ const tieneGruposConPocasRespuestas = (pregunta) => {
  * 88-100: Óptimo (verde)
  */
 const getBienestarColorClasses = (valor) => {
+  if (valor === null || valor === undefined) {
+    return {
+      bgClass: 'bg-gray-100',
+      bgLightClass: 'bg-gray-50',
+      textClass: 'text-gray-400',
+      textDarkClass: 'text-gray-500',
+      borderClass: 'border-gray-200',
+      badgeClass: 'bg-gray-100 text-gray-500'
+    };
+  }
   if (valor < 53) {
     return {
       bgClass: 'bg-red-100',
@@ -1344,6 +1573,9 @@ const getInterpretacionGlobal = (valor) => {
 };
 
 const getEstadoGeneralTexto = (valor) => {
+  if (valor === null || valor === undefined) {
+    return 'Calculando índice de bienestar... Los datos se actualizarán cuando se procesen las respuestas.';
+  }
   if (valor < 53) {
     return 'Estado CRÍTICO de bienestar. Intervención urgente obligatoria.';
   } else if (valor < 66) {

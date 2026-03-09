@@ -368,6 +368,10 @@ const servicioSeleccionado = ref(null);
 const modalDetalleAbierto = ref(false);
 const modalSolicitudAbierto = ref(false);
 
+// Catálogo de servicios SMART Bienestar (contenido de plataforma, no datos por empresa).
+// Este catálogo describe los programas que SMART Bienestar ofrece a todas las empresas.
+// En el futuro, podría gestionarse desde un CMS o panel de administración de la plataforma.
+// La tabla Supabase `servicios` se usa para el tracking operativo de servicios contratados.
 const servicios = ref([
   // ── SALUD MENTAL ──
   {

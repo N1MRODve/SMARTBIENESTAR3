@@ -4,31 +4,57 @@ import { useRouter } from 'vue-router';
 import Card from '@/components/ui/Card.vue';
 import Button from '@/components/ui/Button.vue';
 import { comunicadosService } from '@/services/comunicados.service.js';
+import { notificacionesService } from '@/services/notificaciones.service';
 import { useAuthStore } from '@/stores/auth.store';
+import { useToast } from '@/composables/useToast';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const toast = useToast();
 const titulo = ref('');
 const contenido = ref('');
+const publicando = ref(false);
 
 const handlePublicar = async () => {
   if (!titulo.value || !contenido.value) {
-    alert('El título y el contenido son obligatorios.');
+    toast.warning('El título y el contenido son obligatorios.');
     return;
   }
 
+  publicando.value = true;
+
   try {
-    await comunicadosService.create({
+    const comunicado = await comunicadosService.create({
       titulo: titulo.value,
       contenido: contenido.value,
       autor_id: authStore.empleado?.id,
       fecha_publicacion: new Date().toISOString()
     });
-    alert('Comunicado publicado con éxito.');
-    router.push('/admin/dashboard'); // Vuelve al dashboard
+
+    toast.success('¡Comunicado publicado con éxito!');
+
+    // Notificar a los colaboradores por email
+    try {
+      await notificacionesService.notificarNuevoComunicado(
+        authStore.empresaId,
+        {
+          id: comunicado?.id,
+          titulo: titulo.value,
+          contenido: contenido.value
+        }
+      );
+      toast.info('Se ha notificado a los colaboradores por correo electrónico');
+    } catch (notifError) {
+      console.error('Error al enviar notificaciones:', notifError);
+      toast.warning('El comunicado se publicó, pero hubo un problema al enviar las notificaciones');
+    }
+
+    router.push('/admin/dashboard');
   } catch (error) {
     console.error('Error al publicar comunicado:', error);
-    alert('Error al publicar el comunicado.');
+    toast.error('Error al publicar el comunicado.');
+  } finally {
+    publicando.value = false;
   }
 };
 </script>
@@ -50,7 +76,13 @@ const handlePublicar = async () => {
           <textarea id="contenido" v-model="contenido" rows="10" class="w-full mt-1 p-2 border border-outline rounded-lg bg-surface"></textarea>
         </div>
         <div class="text-right">
-          <Button type="submit" variant="primary">Publicar Comunicado</Button>
+          <Button type="submit" variant="primary" :disabled="publicando">
+            <span v-if="publicando" class="inline-flex items-center">
+              <span class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>
+              Publicando...
+            </span>
+            <span v-else>Publicar Comunicado</span>
+          </Button>
         </div>
       </form>
     </Card>

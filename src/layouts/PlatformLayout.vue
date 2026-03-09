@@ -76,14 +76,9 @@ const canAccessUsuarios = computed(() => {
   <div class="flex h-screen bg-gray-100">
     <aside class="w-64 flex-shrink-0 bg-slate-900 text-white">
       <div class="p-4 border-b border-slate-700">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-            <span class="text-white font-bold text-sm">SB</span>
-          </div>
-          <div>
-            <h1 class="text-lg font-bold text-white">SMART Bienestar</h1>
-            <span class="text-xs text-slate-400">Back Office</span>
-          </div>
+        <div>
+          <h1 class="text-lg font-bold text-white">SMART Bienestar</h1>
+          <span class="text-xs text-slate-400">Back Office</span>
         </div>
       </div>
 

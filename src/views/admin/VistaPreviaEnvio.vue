@@ -81,7 +81,7 @@
                   class="text-primary hover:text-primary-dark font-medium text-sm flex items-center"
                 >
                   <Eye class="h-4 w-4 mr-2" />
-                  Ver cómo la recibe un empleado
+                  Ver cómo la recibe un colaborador
                 </button>
               </div>
             </div>
@@ -90,10 +90,10 @@
             <div class="bg-white rounded-xl shadow-sm p-6">
               <h2 class="text-xl font-semibold text-gray-900 mb-2">Seleccionar Destinatarios</h2>
               <p class="text-sm text-gray-600 mb-6">
-                Selecciona los departamentos o grupos de empleados a los que deseas enviar esta encuesta.
+                Selecciona los departamentos o grupos de colaboradores a los que deseas enviar esta encuesta.
               </p>
 
-              <!-- Opción: Todos los empleados -->
+              <!-- Opción: Todos los colaboradores -->
               <div class="mb-4">
                 <label
                   class="flex items-center p-4 bg-indigo-50 border-2 border-indigo-200 rounded-lg cursor-pointer hover:bg-indigo-100 transition-colors"
@@ -137,7 +137,7 @@
                       <span class="font-medium text-gray-900">{{ dept.nombre }}</span>
                     </div>
                     <span class="text-sm text-gray-600">
-                      {{ dept.empleados }} empleados
+                      {{ dept.empleados }} colaboradores
                     </span>
                   </div>
                 </div>
@@ -181,7 +181,7 @@
                       {{ departamentosSeleccionados.length }} departamento{{ departamentosSeleccionados.length !== 1 ? 's' : '' }}
                     </p>
                     <p class="text-indigo-600 font-semibold mt-1">
-                      {{ totalEmpleadosSeleccionados }} empleado{{ totalEmpleadosSeleccionados !== 1 ? 's' : '' }}
+                      {{ totalEmpleadosSeleccionados }} colaborador{{ totalEmpleadosSeleccionados !== 1 ? 'es' : '' }}
                     </p>
                   </div>
                 </div>
@@ -308,7 +308,7 @@
         </div>
         <h3 class="text-2xl font-bold text-gray-900 mb-2">¡Encuesta Enviada!</h3>
         <p class="text-gray-600 mb-6">
-          La encuesta ha sido enviada correctamente a {{ totalEmpleadosSeleccionados }} empleados en {{ departamentosSeleccionados.length }} departamento{{ departamentosSeleccionados.length !== 1 ? 's' : '' }}.
+          La encuesta ha sido enviada correctamente a {{ totalEmpleadosSeleccionados }} colaboradores en {{ departamentosSeleccionados.length }} departamento{{ departamentosSeleccionados.length !== 1 ? 's' : '' }}.
         </p>
         <Button @click="irAListaEncuestas" class="w-full">
           Ver Lista de Encuestas
@@ -323,6 +323,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useEncuestasStore } from '@/stores/encuestas.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { supabase } from '@/lib/supabase';
 import Button from '@/components/ui/Button.vue';
 import {
   ArrowLeft,
@@ -343,16 +345,10 @@ const router = useRouter();
 const route = useRoute();
 const toast = useToast();
 const encuestasStore = useEncuestasStore();
+const authStore = useAuthStore();
 
-// Departamentos (TODO: load from Supabase)
-const departamentos = ref([
-  { id: '1', nombre: 'Recursos Humanos', empleados: 12 },
-  { id: '2', nombre: 'Tecnología', empleados: 25 },
-  { id: '3', nombre: 'Ventas', empleados: 18 },
-  { id: '4', nombre: 'Marketing', empleados: 15 },
-  { id: '5', nombre: 'Operaciones', empleados: 20 },
-  { id: '6', nombre: 'Finanzas', empleados: 10 }
-]);
+// Departamentos se cargan desde Supabase en onMounted
+const departamentos = ref([]);
 
 // Estado
 const encuesta = ref({
@@ -390,9 +386,47 @@ const fechaActual = computed(() => {
 });
 
 // Métodos
-onMounted(() => {
+onMounted(async () => {
   cargarDatosEncuesta();
+  await cargarDepartamentos();
 });
+
+const cargarDepartamentos = async () => {
+  try {
+    const empresaId = authStore.empresaId;
+    if (!empresaId) return;
+
+    const { data, error } = await supabase
+      .from('departamentos')
+      .select('id, nombre')
+      .eq('empresa_id', empresaId);
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      // Contar empleados por departamento
+      const { data: empleadosData } = await supabase
+        .from('empleados')
+        .select('departamento_id')
+        .eq('empresa_id', empresaId)
+        .eq('estado', 'Activo');
+
+      const conteo = {};
+      (empleadosData || []).forEach(e => {
+        if (e.departamento_id) {
+          conteo[e.departamento_id] = (conteo[e.departamento_id] || 0) + 1;
+        }
+      });
+
+      departamentos.value = data.map(d => ({
+        ...d,
+        empleados: conteo[d.id] || 0
+      }));
+    }
+  } catch (error) {
+    console.error('Error cargando departamentos:', error);
+  }
+};
 
 const cargarDatosEncuesta = () => {
   const datosEncuesta = sessionStorage.getItem('encuesta_preview');

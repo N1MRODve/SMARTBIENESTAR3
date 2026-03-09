@@ -825,16 +825,10 @@ const plantillas = ref([
   }
 ]);
 
-// Datos de departamentos (se cargarán desde Supabase)
-const departamentos = ref([
-  { id: 1, nombre: 'Recursos Humanos', empleados: 12 },
-  { id: 2, nombre: 'Tecnología', empleados: 28 },
-  { id: 3, nombre: 'Ventas', empleados: 35 },
-  { id: 4, nombre: 'Marketing', empleados: 15 },
-  { id: 5, nombre: 'Operaciones', empleados: 42 },
-  { id: 6, nombre: 'Finanzas', empleados: 8 }
-]);
+// Departamentos se cargan desde Supabase en onMounted → cargarDepartamentos()
+const departamentos = ref([]);
 
+// Roles estáticos de la plataforma (no dependen de la empresa)
 const roles = ref([
   { id: 1, nombre: 'Todos', descripcion: 'Todos los colaboradores' },
   { id: 2, nombre: 'Líderes', descripcion: 'Managers y supervisores' },
@@ -969,6 +963,8 @@ const aplicarPlantilla = (plantilla) => {
   plantillaSeleccionada.value = plantilla;
   formData.value.tipo = plantilla.nombre;
   formData.value.contenido = plantilla.cuerpo;
+  // Avanzar automáticamente al paso de contenido
+  nextStep();
 };
 
 const toggleEnviarATodos = () => {

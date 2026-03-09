@@ -3,11 +3,12 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { supabase } from '@/lib/supabase';
-import { MessageSquare, Plus, AlertCircle, RefreshCw, Edit, Trash2, Eye, AlertOctagon, AlertTriangle, CheckCircle, Circle } from 'lucide-vue-next';
+import { MessageSquare, Plus, AlertCircle, RefreshCw, Edit, Trash2, Eye, AlertOctagon, AlertTriangle, CheckCircle, Circle, Bell } from 'lucide-vue-next';
 import Button from '@/components/common/Button.vue';
 import Card from '@/components/ui/Card.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 import { useToast } from '@/composables/useToast';
+import { notificacionesService } from '@/services/notificaciones.service';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -125,6 +126,28 @@ const formatearFecha = (fecha) => {
     hour: '2-digit',
     minute: '2-digit'
   });
+};
+
+const enviandoNotificacion = ref({});
+
+const enviarNotificacion = async (comunicado) => {
+  if (enviandoNotificacion.value[comunicado.id]) return;
+
+  enviandoNotificacion.value[comunicado.id] = true;
+
+  try {
+    await notificacionesService.notificarNuevoComunicado(
+      authStore.empresaId,
+      comunicado
+    );
+
+    toast.success('Notificación enviada a todos los colaboradores', { icon: '📧' });
+  } catch (error) {
+    console.error('Error enviando notificación:', error);
+    toast.error('Error al enviar la notificación. Por favor, intenta de nuevo.');
+  } finally {
+    enviandoNotificacion.value[comunicado.id] = false;
+  }
 };
 </script>
 
@@ -271,6 +294,15 @@ const formatearFecha = (fecha) => {
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end gap-2">
+                  <button
+                    @click="enviarNotificacion(comunicado)"
+                    :disabled="enviandoNotificacion[comunicado.id]"
+                    class="text-amber-600 hover:text-amber-900 disabled:text-amber-300 transition-colors"
+                    :title="enviandoNotificacion[comunicado.id] ? 'Enviando...' : 'Reenviar notificación por email'"
+                  >
+                    <Bell v-if="!enviandoNotificacion[comunicado.id]" class="h-4 w-4" />
+                    <span v-else class="animate-spin h-4 w-4 border-2 border-amber-400 border-t-transparent rounded-full inline-block"></span>
+                  </button>
                   <button
                     @click="editarComunicado(comunicado.id)"
                     class="text-blue-600 hover:text-blue-900 transition-colors"

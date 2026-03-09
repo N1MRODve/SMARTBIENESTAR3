@@ -175,12 +175,7 @@ const goToDemo = () => {
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
           <!-- Logo -->
-          <div class="flex items-center gap-2">
-            <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <Heart class="h-5 w-5 text-white" />
-            </div>
-            <span class="text-xl font-bold text-gray-900">SMART Bienestar</span>
-          </div>
+          <span class="text-xl font-bold text-gray-900">SMART Bienestar</span>
 
           <!-- Desktop Navigation -->
           <div class="hidden md:flex items-center gap-8">
@@ -657,7 +652,7 @@ const goToDemo = () => {
             Tecnología de clase empresarial
           </h2>
           <p class="mt-4 text-xl text-gray-400">
-            Infraestructura robusta y segura para empresas de cualquier tamaño.
+            Infraestructura robusta y segura para empresas desde 20 colaboradores.
           </p>
         </div>
 
@@ -708,17 +703,12 @@ const goToDemo = () => {
     <footer class="py-12 px-4 sm:px-6 lg:px-8 bg-gray-900">
       <div class="max-w-7xl mx-auto">
         <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div class="flex items-center gap-2">
-            <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <Heart class="h-5 w-5 text-white" />
-            </div>
-            <span class="text-xl font-bold text-white">SMART Bienestar</span>
-          </div>
+          <span class="text-xl font-bold text-white">SMART Bienestar</span>
           <div class="flex items-center gap-6 text-gray-400 text-sm">
-            <a href="#" class="hover:text-white transition-colors">Términos de uso</a>
-            <a href="#" class="hover:text-white transition-colors">Privacidad</a>
+            <router-link to="/aviso-legal" class="hover:text-white transition-colors">Aviso Legal</router-link>
+            <router-link to="/politica-privacidad" class="hover:text-white transition-colors">Privacidad</router-link>
             <router-link to="/politica-cookies" class="hover:text-white transition-colors">Política de Cookies</router-link>
-            <a href="#" class="hover:text-white transition-colors">Contacto</a>
+            <router-link to="/contrato-licencia" class="hover:text-white transition-colors">Contrato de Licencia</router-link>
           </div>
           <div class="text-gray-500 text-sm">
             © 2026 SMART Bienestar. Todos los derechos reservados.

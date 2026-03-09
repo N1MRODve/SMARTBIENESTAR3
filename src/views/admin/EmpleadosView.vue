@@ -231,6 +231,20 @@ const cargarDepartamentos = async () => {
 
 const handleInvitar = async (datosEmpleados) => {
   try {
+    // Verificar si algún email ya existe
+    const emails = datosEmpleados.map(e => e.email.toLowerCase());
+    const { data: existentes } = await supabase
+      .from('empleados')
+      .select('email')
+      .eq('empresa_id', authStore.empresaId)
+      .in('email', emails);
+
+    if (existentes && existentes.length > 0) {
+      const emailsDuplicados = existentes.map(e => e.email).join(', ');
+      toast.error(`Los siguientes emails ya están registrados: ${emailsDuplicados}`);
+      return;
+    }
+
     // Fecha de expiración del token (7 días)
     const tokenExpira = new Date();
     tokenExpira.setDate(tokenExpira.getDate() + 7);
@@ -238,7 +252,7 @@ const handleInvitar = async (datosEmpleados) => {
     const empleadosParaInsertar = datosEmpleados.map(emp => ({
       empresa_id: authStore.empresaId,
       nombre: emp.nombre,
-      email: emp.email,
+      email: emp.email.toLowerCase(),
       departamento_id: emp.departamento_id,
       cargo: emp.cargo || '',
       estado: 'Invitado',
@@ -253,7 +267,13 @@ const handleInvitar = async (datosEmpleados) => {
       .insert(empleadosParaInsertar)
       .select('id, email, nombre, token_invitacion, departamento_id');
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '23505' || error.status === 409) {
+        toast.error('Uno o más emails ya están registrados');
+        return;
+      }
+      throw error;
+    }
 
     // Obtener nombre del departamento
     const deptId = datosEmpleados[0]?.departamento_id;

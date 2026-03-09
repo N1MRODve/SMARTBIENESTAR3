@@ -373,7 +373,6 @@ const reenviarInvitacion = async (empleado) => {
     const { error: updateError } = await supabase
       .from('empleados')
       .update({
-        invitacion_enviada_at: new Date().toISOString(),
         token_invitacion: nuevoToken,
         token_expira: tokenExpira.toISOString()
       })
@@ -426,7 +425,6 @@ const reenviarInvitacionesBloque = async () => {
       const { error: updateError } = await supabase
         .from('empleados')
         .update({
-          invitacion_enviada_at: new Date().toISOString(),
           token_invitacion: nuevoToken,
           token_expira: tokenExpira.toISOString()
         })

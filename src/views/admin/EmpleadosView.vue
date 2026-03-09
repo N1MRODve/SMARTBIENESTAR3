@@ -20,6 +20,7 @@ const toast = useToast();
 
 const empleados = ref([]);
 const departamentos = ref([]);
+const empresaDominio = ref(null);
 const isLoading = ref(true);
 const isModalVisible = ref(false);
 const isEditModalVisible = ref(false);
@@ -184,9 +185,26 @@ const todosSeleccionados = computed({
 onMounted(async () => {
   await Promise.all([
     cargarEmpleados(),
-    cargarDepartamentos()
+    cargarDepartamentos(),
+    cargarEmpresaDominio()
   ]);
 });
+
+const cargarEmpresaDominio = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('empresas')
+      .select('dominio')
+      .eq('id', authStore.empresaId)
+      .single();
+
+    if (!error && data) {
+      empresaDominio.value = data.dominio?.toLowerCase() || null;
+    }
+  } catch (error) {
+    console.error('Error cargando dominio de empresa:', error);
+  }
+};
 
 const cargarEmpleados = async () => {
   isLoading.value = true;
@@ -231,6 +249,20 @@ const cargarDepartamentos = async () => {
 
 const handleInvitar = async (datosEmpleados) => {
   try {
+    // Verificar que los emails pertenezcan al dominio de la empresa
+    if (empresaDominio.value) {
+      const emailsInvalidos = datosEmpleados.filter(e => {
+        const emailDomain = e.email.toLowerCase().split('@')[1];
+        return emailDomain !== empresaDominio.value;
+      });
+
+      if (emailsInvalidos.length > 0) {
+        const emailsList = emailsInvalidos.map(e => e.email).join(', ');
+        toast.error(`Los emails deben pertenecer al dominio @${empresaDominio.value}: ${emailsList}`);
+        return;
+      }
+    }
+
     // Verificar si algún email ya existe
     const emails = datosEmpleados.map(e => e.email.toLowerCase());
     const { data: existentes } = await supabase

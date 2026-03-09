@@ -401,6 +401,8 @@ const EMAIL_TEMPLATES = {
 };
 
 async function sendEmail(to: string, subject: string, html: string, resendApiKey: string) {
+  console.log(`Attempting to send email to: ${to}`);
+
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -415,12 +417,14 @@ async function sendEmail(to: string, subject: string, html: string, resendApiKey
     }),
   });
 
+  const responseText = await response.text();
+  console.log(`Resend response for ${to}: status=${response.status}, body=${responseText}`);
+
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Error sending email: ${error}`);
+    throw new Error(`Error sending email: ${responseText}`);
   }
 
-  return await response.json();
+  return JSON.parse(responseText);
 }
 
 Deno.serve(async (req: Request) => {
